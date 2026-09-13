@@ -1,7 +1,6 @@
-/* =========================================================
-   RPG CHARACTER CARD
-   ESTILO CARD / FICHA DE RPG
-========================================================= */
+/* =========================================
+   RESET
+========================================= */
 
 * {
     box-sizing: border-box;
@@ -10,40 +9,28 @@
 html,
 body {
     margin: 0;
+    padding: 0;
     min-height: 100%;
+}
 
+body {
     font-family: Arial, sans-serif;
-
-    color: #f5f0ff;
 
     background:
         radial-gradient(
             circle at top,
-            #321454 0%,
-            #130a20 38%,
-            #06040a 100%
+            #241044 0%,
+            #0a0712 42%,
+            #050409 100%
         );
-}
 
-body {
-    min-height: 100vh;
-}
-
-button,
-input,
-select,
-textarea {
-    font-family: inherit;
-}
-
-button {
-    -webkit-tap-highlight-color: transparent;
+    color: #f5f0ff;
 }
 
 
-/* =========================================================
+/* =========================================
    APP
-========================================================= */
+========================================= */
 
 .app {
     width: 100%;
@@ -51,88 +38,76 @@ button {
 
     margin: 0 auto;
 
-    padding: 20px 12px 40px;
+    padding: 20px 14px 40px;
 }
-
-
-/* =========================================================
-   CABEÇALHO
-========================================================= */
 
 .app-header {
     text-align: center;
 
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .app-header h1 {
     margin: 0;
 
-    font-size: 25px;
-
-    letter-spacing: 3px;
-
-    text-shadow:
-        0 0 20px rgba(168, 85, 247, 0.4);
+    font-size: 28px;
+    letter-spacing: 2px;
 }
 
 .app-header p {
-    margin: 7px 0 0;
+    margin: 8px 0 0;
 
-    color: #91849d;
-
-    font-size: 11px;
+    color: #aaa0bd;
 }
 
 
-/* =========================================================
-   NAVEGAÇÃO
-========================================================= */
+/* =========================================
+   NAVEGAÇÃO DAS DIMENSÕES
+========================================= */
 
 .dimension-nav {
     display: grid;
 
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns:
+        repeat(4, 1fr);
 
     gap: 6px;
 
-    padding: 7px;
+    margin-bottom: 12px;
 
-    margin-bottom: 10px;
+    padding: 6px;
 
     border:
-        1px solid rgba(168, 85, 247, 0.25);
+        1px solid rgba(139, 92, 246, 0.25);
 
-    border-radius: 17px;
+    border-radius: 14px;
 
     background:
-        rgba(8, 5, 13, 0.9);
+        rgba(7, 5, 13, 0.85);
 
     box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.3);
+        0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
 .dimension-button {
-    min-height: 48px;
+    border: 0;
 
-    padding: 7px 3px;
+    border-radius: 9px;
 
-    border: 1px solid transparent;
-
-    border-radius: 11px;
+    padding: 10px 4px;
 
     background: transparent;
 
-    color: #776b83;
+    color: #8f839d;
 
-    font-size: 9px;
-
-    font-weight: bold;
+    font-size: 10px;
 
     cursor: pointer;
 
     transition:
-        0.2s ease;
+        color 0.25s ease,
+        background 0.25s ease,
+        transform 0.25s ease;
 }
 
 .dimension-button:hover {
@@ -143,532 +118,540 @@ button {
 }
 
 .dimension-button.active {
-    color: #f2e7ff;
-
-    border-color:
-        rgba(168, 85, 247, 0.55);
+    color: #f5f0ff;
 
     background:
-        linear-gradient(
-            145deg,
-            rgba(124, 58, 237, 0.28),
-            rgba(88, 28, 135, 0.13)
-        );
+        rgba(124, 58, 237, 0.20);
 
     box-shadow:
-        0 0 15px rgba(124, 58, 237, 0.18);
+        inset 0 0 12px rgba(124, 58, 237, 0.12);
 }
 
 
-/* =========================================================
-   CARD PRINCIPAL
-========================================================= */
+/* =========================================
+   CARTÃO PRINCIPAL
+========================================= */
 
 .character-card {
-    width: 100%;
-
     position: relative;
 
-    overflow: hidden;
+    width: 100%;
+
+    min-height: 720px;
 
     border-radius: 25px;
 
     border:
-        1px solid #713bb0;
+        1px solid #6f3aa8;
 
     background:
         linear-gradient(
-            145deg,
-            #19111f,
-            #0d0813 55%,
-            #08050c
+            160deg,
+            #171020,
+            #0b0910
         );
 
     box-shadow:
-        0 25px 70px rgba(0, 0, 0, 0.5),
-        0 0 35px rgba(124, 58, 237, 0.13),
-        inset 0 0 50px rgba(124, 58, 237, 0.035);
+        0 0 35px rgba(124, 58, 237, 0.20),
+        inset 0 0 35px rgba(124, 58, 237, 0.035);
+
+    overflow: hidden;
+
+    isolation: isolate;
 }
 
 
-/* =========================================================
+/* =========================================
    DIMENSÕES
-   IMPORTANTE:
-   O HTML usa .dimension
-========================================================= */
+========================================= */
 
 .dimension {
     display: none;
 
+    position: relative;
+
     width: 100%;
 
     animation:
-        dimensionIn 0.25s ease;
+        dimensionEnter 0.3s ease;
 }
 
 .dimension.active {
     display: block;
 }
 
-@keyframes dimensionIn {
-
+@keyframes dimensionEnter {
     from {
         opacity: 0;
-        transform: translateY(7px);
+
+        transform:
+            translateY(5px);
     }
 
     to {
         opacity: 1;
-        transform: translateY(0);
+
+        transform:
+            translateY(0);
     }
 }
 
 
-/* =========================================================
-   CARD — PERSONAGEM
-========================================================= */
+/* =========================================
+   DIMENSÃO — PERSONAGEM
+========================================= */
 
 .character-dimension {
-    padding-bottom: 22px;
-}
-
-
-/* =========================================================
-   CABEÇALHO DO CARD
-========================================================= */
-
-.card-front {
-    width: 100%;
-}
-
-.card-header {
-    min-height: 78px;
-
-    display: grid;
-
-    grid-template-columns:
-        1fr 70px 1fr;
-
-    align-items: center;
-
-    padding: 9px 17px;
-
-    border-bottom:
-        1px solid rgba(255, 255, 255, 0.06);
+    min-height: 720px;
 
     background:
-        rgba(0, 0, 0, 0.16);
-}
-
-
-/* =========================================================
-   RARIDADE
-========================================================= */
-
-.rarity {
-    color: #d8b4fe;
-
-    font-size: 10px;
-
-    font-weight: bold;
-
-    letter-spacing: 2px;
-}
-
-
-/* =========================================================
-   BRASÃO
-========================================================= */
-
-.character-crest {
-    width: 56px;
-    height: 56px;
-
-    margin: auto;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    border:
-        1px solid #a855f7;
-
-    background:
-        radial-gradient(
-            circle,
-            #422469,
-            #120a1c 72%
+        linear-gradient(
+            180deg,
+            rgba(26, 16, 40, 0.96),
+            rgba(9, 7, 13, 0.98)
         );
-
-    box-shadow:
-        0 0 22px rgba(168, 85, 247, 0.45),
-        inset 0 0 14px rgba(255, 255, 255, 0.05);
-
-    transition:
-        0.3s ease;
-}
-
-.character-crest:hover {
-    transform: scale(1.07);
-}
-
-#crest-symbol {
-    font-size: 25px;
 }
 
 
-/* =========================================================
-   NÍVEL
-========================================================= */
+/*
+   Faixa de brilho muito sutil atrás do
+   conteúdo da dimensão.
+*/
 
-.level {
-    text-align: right;
-
-    color: #eadcff;
-
-    font-size: 20px;
-
-    font-weight: bold;
-}
-
-
-/* =========================================================
-   IMAGEM
-========================================================= */
-
-.character-image {
-    position: relative;
-
-    height: 360px;
-
-    margin: 15px;
-
-    overflow: hidden;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 19px;
-
-    border:
-        1px solid rgba(168, 85, 247, 0.42);
-
-    background:
-        radial-gradient(
-            circle at center,
-            #412466 0%,
-            #1c1029 43%,
-            #08050d 100%
-        );
-
-    box-shadow:
-        inset 0 0 55px rgba(124, 58, 237, 0.16),
-        0 10px 25px rgba(0, 0, 0, 0.3);
-}
-
-.character-image::before {
+.character-dimension::before {
     content: "";
 
     position: absolute;
 
-    width: 240px;
-    height: 240px;
+    inset: 0;
 
-    border-radius: 50%;
+    pointer-events: none;
 
     background:
         radial-gradient(
-            circle,
-            rgba(192, 132, 252, 0.13),
-            transparent 70%
+            ellipse at 50% 22%,
+            rgba(139, 92, 246, 0.13),
+            transparent 45%
         );
+
+    z-index: 0;
 }
 
-.character-image img {
+
+/* =========================================
+   CABEÇALHO DO PERSONAGEM
+========================================= */
+
+.character-dimension .card-header {
     position: relative;
 
     z-index: 2;
 
-    width: 100%;
-    height: 100%;
+    display: grid;
 
-    object-fit: cover;
+    grid-template-columns:
+        1fr auto 1fr;
+
+    align-items: center;
+
+    gap: 10px;
+
+    min-height: 65px;
+
+    padding: 12px 16px;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.30),
+            rgba(0, 0, 0, 0.10)
+        );
+
+    border-bottom:
+        1px solid rgba(139, 92, 246, 0.16);
 }
 
-.image-placeholder {
+.character-dimension .rarity {
+    justify-self: start;
+
+    color: #c084fc;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+    letter-spacing: 1.5px;
+
+    text-transform: uppercase;
+}
+
+
+/* =========================================
+   BRASÃO DO CABEÇALHO
+========================================= */
+
+.character-dimension #character-crest {
+    position: relative;
+
+    justify-self: center;
+
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border:
+        1px solid #8b5cf6;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(53, 32, 90, 0.95),
+            rgba(16, 11, 24, 0.98)
+        );
+
+    color: #d8b4fe;
+
+    box-shadow:
+        0 0 15px rgba(139, 92, 246, 0.38),
+        inset 0 0 12px rgba(139, 92, 246, 0.10);
+
+    overflow: hidden;
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+.character-dimension #character-crest:hover {
+    transform:
+        scale(1.06);
+
+    box-shadow:
+        0 0 22px rgba(139, 92, 246, 0.55),
+        inset 0 0 14px rgba(139, 92, 246, 0.14);
+}
+
+.character-dimension #crest-symbol {
+    font-size: 23px;
+
+    line-height: 1;
+}
+
+.character-dimension .level {
+    justify-self: end;
+
+    color: #e9d5ff;
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   ÁREA DA IMAGEM
+========================================= */
+
+.character-dimension .character-image {
     position: relative;
 
     z-index: 1;
 
+    height: 360px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    border-radius: 19px;
+
+    margin: 12px;
+
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            #35205a 0%,
+            #171020 48%,
+            #08060b 100%
+        );
+
+    border:
+        1px solid rgba(139, 92, 246, 0.20);
+
+    box-shadow:
+        inset 0 0 35px rgba(0, 0, 0, 0.45),
+        0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+
+/*
+   Brilho ambiental atrás do personagem.
+*/
+
+.character-dimension .character-image::before {
+    content: "";
+
+    position: absolute;
+
+    inset: -20%;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(124, 58, 237, 0.12),
+            transparent 55%
+        );
+
+    z-index: 0;
+}
+
+
+/*
+   Garante que a arte fique acima
+   do ambiente visual.
+*/
+
+.character-dimension .character-image img {
+    position: relative;
+
+    z-index: 2;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    object-fit: contain;
+}
+
+.character-dimension .image-placeholder {
+    position: relative;
+
+    z-index: 2;
+
     display: flex;
 
     flex-direction: column;
 
     align-items: center;
 
-    gap: 9px;
+    gap: 14px;
 
-    text-align: center;
+    color: #81758f;
 
-    color: #80738d;
-
-    font-size: 10px;
+    font-size: 12px;
 
     letter-spacing: 1px;
+
+    text-align: center;
+}
+
+.character-dimension .image-button {
+    padding: 9px 14px;
+
+    border:
+        1px solid #68408a;
+
+    border-radius: 10px;
+
+    background: #1b1424;
+
+    color: #d8c7e8;
+
+    cursor: pointer;
 }
 
 
-/* =========================================================
-   INFORMAÇÕES
-========================================================= */
+/* =========================================
+   INFORMAÇÕES DO PERSONAGEM
+========================================= */
 
-.character-info {
-    padding:
-        0 17px;
+.character-dimension .character-info {
+    position: relative;
+
+    z-index: 2;
+
+    padding: 14px 18px 22px;
 }
 
-.character-info h2 {
-    margin:
-        0 0 14px;
+.character-dimension .character-info h2 {
+    margin: 0;
 
     font-size: 26px;
+
+    line-height: 1.15;
 
     letter-spacing: 0.5px;
 }
 
-.title {
-    display: none;
+.character-dimension .title {
+    margin: 5px 0 18px;
+
+    color: #a99db7;
+
+    font-size: 12px;
+
+    font-style: italic;
 }
 
 
-/* =========================================================
+/* =========================================
    IDENTIDADE
-========================================================= */
+========================================= */
 
-.identity {
+.character-dimension .identity {
     display: grid;
 
     grid-template-columns:
-        repeat(2, 1fr);
+        1fr 1fr;
 
     gap: 8px;
+
+    margin-bottom: 18px;
 }
 
-.identity > div {
-    min-height: 61px;
+.character-dimension .identity div {
+    min-width: 0;
 
-    padding:
-        10px 11px;
+    padding: 10px 11px;
 
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.065);
+    border-radius: 11px;
 
     background:
         linear-gradient(
             145deg,
-            rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.015)
+            rgba(255, 255, 255, 0.055),
+            rgba(255, 255, 255, 0.025)
         );
-}
-
-.identity span {
-    display: block;
-
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
-
-    margin-bottom: 5px;
-}
-
-.identity strong {
-    color: #ded2e8;
-
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   XP
-========================================================= */
-
-.xp-section {
-    margin-top: 14px;
-
-    padding: 13px;
-
-    border-radius: 13px;
 
     border:
-        1px solid rgba(111, 58, 168, 0.5);
+        1px solid rgba(255, 255, 255, 0.07);
 
-    background:
-        rgba(124, 58, 237, 0.05);
+    box-shadow:
+        inset 0 0 12px rgba(255, 255, 255, 0.015);
 }
 
-.xp-info {
-    display: flex;
+.character-dimension .identity span {
+    display: block;
 
-    align-items: center;
-    justify-content: space-between;
+    margin-bottom: 4px;
 
-    margin-bottom: 7px;
-
-    color: #887c94;
+    color: #8f839d;
 
     font-size: 9px;
 
     letter-spacing: 1px;
+
+    text-transform: uppercase;
 }
 
-#character-xp-text {
-    color: #cdbed8;
-
-    letter-spacing: 0;
-}
-
-.xp-bar,
-.badge-xp-bar {
-    width: 100%;
+.character-dimension .identity strong {
+    display: block;
 
     overflow: hidden;
 
-    border-radius: 20px;
+    color: #eee7f7;
+
+    font-size: 13px;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* =========================================
+   XP DO PERSONAGEM
+========================================= */
+
+.character-dimension .xp-info {
+    display: flex;
+
+    justify-content: space-between;
+    align-items: center;
+
+    margin-bottom: 7px;
+
+    color: #c9bdd5;
+
+    font-size: 11px;
+}
+
+.character-dimension .xp-bar {
+    width: 100%;
+
+    height: 8px;
+
+    overflow: hidden;
+
+    border-radius: 10px;
 
     background: #211a29;
+
+    box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.4);
 }
 
-.xp-bar {
-    height: 8px;
-}
-
-.badge-xp-bar {
-    height: 7px;
-}
-
-.xp-progress,
-.badge-xp-progress {
+.character-dimension .xp-progress {
     width: 0%;
 
     height: 100%;
 
-    border-radius: 20px;
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            90deg,
+            #7c3aed,
+            #c084fc
+        );
+
+    box-shadow:
+        0 0 10px rgba(168, 85, 247, 0.35);
 
     transition:
         width 0.4s ease;
 }
 
-.xp-progress {
-    background:
-        linear-gradient(
-            90deg,
-            #6d28d9,
-            #c084fc
-        );
 
-    box-shadow:
-        0 0 10px rgba(168, 85, 247, 0.4);
-}
+/* =========================================
+   ESTADO DO BRASÃO
+========================================= */
 
-.badge-xp-progress {
-    background:
-        linear-gradient(
-            90deg,
-            #581c87,
-            #c084fc
-        );
-}
+.character-dimension #crest-stage {
+    margin-top: 8px;
 
-
-/* =========================================================
-   XP BRASÃO
-========================================================= */
-
-.badge-xp-section {
-    margin-top: 9px;
-
-    padding: 12px 13px;
-
-    border-radius: 13px;
-
-    border:
-        1px solid rgba(104, 64, 138, 0.45);
-
-    background:
-        rgba(0, 0, 0, 0.17);
-}
-
-.badge-xp-header {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    margin-bottom: 7px;
-}
-
-.badge-xp-header strong {
     color: #c084fc;
 
     font-size: 9px;
 
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
+
+    text-align: center;
+
+    text-transform: uppercase;
 }
 
-.badge-xp-header span {
-    color: #91849d;
 
-    font-size: 9px;
-}
-
-
-/* =========================================================
+/* =========================================
    EDITOR
-========================================================= */
+========================================= */
 
 .character-editor {
-    margin:
-        17px;
+    margin-bottom: 15px;
 
-    padding: 17px;
-
-    border-radius: 17px;
-
-    border:
-        1px solid rgba(168, 85, 247, 0.28);
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(124, 58, 237, 0.08),
-            rgba(0, 0, 0, 0.2)
-        );
-}
-
-.character-editor h3 {
-    margin:
-        0 0 16px;
-
-    color: #c084fc;
-
-    font-size: 12px;
-
-    letter-spacing: 2px;
+    padding-bottom: 5px;
 }
 
 .editor-field {
@@ -676,15 +659,15 @@ button {
 
     flex-direction: column;
 
-    gap: 6px;
+    gap: 5px;
 
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .editor-field label {
-    color: #82758e;
+    color: #8f839d;
 
-    font-size: 8px;
+    font-size: 9px;
 
     letter-spacing: 1px;
 }
@@ -693,8 +676,7 @@ button {
 .editor-field select {
     width: 100%;
 
-    padding:
-        10px 11px;
+    padding: 10px;
 
     border:
         1px solid #68408a;
@@ -703,12 +685,9 @@ button {
 
     outline: none;
 
-    background:
-        #0e0915;
+    background: #100b18;
 
     color: #f5f0ff;
-
-    font-size: 12px;
 }
 
 .editor-field input:focus,
@@ -716,586 +695,485 @@ button {
     border-color: #a855f7;
 
     box-shadow:
-        0 0 10px rgba(168, 85, 247, 0.15);
+        0 0 10px rgba(168, 85, 247, 0.20);
 }
 
 
-/* =========================================================
-   BOTÕES DO EDITOR
-========================================================= */
+/* =========================================
+   MASTER
+========================================= */
 
-.editor-buttons {
-    display: grid;
-
-    grid-template-columns: 1fr 1fr;
-
-    gap: 8px;
-}
-
-.editor-buttons button {
-    min-height: 37px;
-
-    border:
-        1px solid #68408a;
-
-    border-radius: 9px;
-
-    background:
-        #1b1424;
-
-    color: #d8c7e8;
-
-    font-size: 10px;
-
-    cursor: pointer;
-}
-
-.editor-buttons button:hover {
-    border-color: #a855f7;
-
-    background:
-        #251535;
-}
-
-
-/* =========================================================
-   MODO MESTRE
-========================================================= */
-
-.master-button {
+.master-toggle {
     width: 100%;
 
-    margin-top: 13px;
+    margin-top: 20px;
 
     padding: 12px;
 
     border:
-        1px solid #70419a;
+        1px solid #68408a;
 
-    border-radius: 11px;
+    border-radius: 12px;
 
-    background:
-        linear-gradient(
-            145deg,
-            #21142d,
-            #120b19
-        );
+    background: #1b1424;
 
     color: #d8c7e8;
 
-    font-size: 11px;
-
     font-weight: bold;
 
-    letter-spacing: 1px;
-
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
 }
 
-.master-button:hover {
-    border-color: #a855f7;
+.master-toggle:hover {
+    background: #241633;
 
-    background:
-        #29183a;
+    border-color: #8b5cf6;
+
+    transform:
+        translateY(-1px);
 }
 
 .master-controls {
     display: none;
 
-    margin-top: 12px;
+    margin-top: 15px;
 
-    padding: 14px;
+    padding: 15px;
 
     border-radius: 14px;
 
-    border:
-        1px solid rgba(168, 85, 247, 0.25);
-
     background:
-        rgba(0, 0, 0, 0.28);
+        rgba(0, 0, 0, 0.25);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
 }
 
 .master-controls.active {
     display: block;
+
+    animation:
+        masterOpen 0.25s ease;
+}
+
+@keyframes masterOpen {
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
 }
 
 .master-controls h3 {
-    margin:
-        0 0 13px;
+    margin-top: 0;
 
     color: #c084fc;
-
-    font-size: 12px;
 }
 
 .control {
-    margin-bottom: 10px;
-
-    padding: 8px;
-
     display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 7px;
 
     align-items: center;
 
-    border-radius: 9px;
+    gap: 8px;
 
-    background:
-        rgba(255, 255, 255, 0.025);
+    margin-bottom: 10px;
 }
 
 .control label {
-    width: 100%;
-
-    color: #a99db7;
-
-    font-size: 9px;
-
-    letter-spacing: 1px;
-}
-
-.control input {
     flex: 1;
-
-    min-width: 80px;
-
-    padding: 9px;
-
-    border:
-        1px solid #68408a;
-
-    border-radius: 8px;
-
-    background:
-        #0e0915;
-
-    color: white;
-
-    outline: none;
 }
 
 .control button {
-    min-width: 75px;
-
-    padding: 9px;
+    width: 38px;
+    height: 32px;
 
     border:
         1px solid #68408a;
 
     border-radius: 8px;
 
-    background:
-        #1b1424;
+    background: #1b1424;
 
-    color: #ddd;
+    color: #fff;
+
+    font-size: 18px;
 
     cursor: pointer;
 }
 
-#reset-character {
+.control button:hover {
+    border-color: #a855f7;
+
+    background: #241633;
+}
+
+.xp-control {
+    flex-wrap: wrap;
+}
+
+.xp-control input {
     width: 100%;
 
     padding: 10px;
 
     border:
-        1px solid #6b2f45;
+        1px solid #68408a;
 
-    border-radius: 9px;
+    border-radius: 8px;
 
-    background:
-        rgba(100, 20, 40, 0.18);
+    outline: none;
 
-    color: #dbaebe;
+    background: #100b18;
 
-    cursor: pointer;
+    color: #fff;
+}
+
+.xp-control input:focus {
+    border-color: #a855f7;
+}
+
+.xp-control button {
+    flex: 1;
+
+    width: auto;
+
+    font-size: 12px;
 }
 
 
-/* =========================================================
+/* =========================================
    STATUS
-========================================================= */
+========================================= */
 
-.status-dimension,
-.combat-dimension,
-.inventory-dimension {
-    padding: 20px;
+.status-dimension {
+    padding: 18px;
 }
 
-.status-section > h2,
-.combat-dimension > h2,
-.inventory-dimension > h2 {
-    margin:
-        0 0 18px;
-
-    font-size: 24px;
-
-    letter-spacing: 1px;
-}
-
-
-/* =========================================================
-   TÍTULOS INTERNOS
-========================================================= */
-
-.stats-title {
-    margin:
-        18px 0 11px;
-
-    color: #b9a9c8;
-
-    font-size: 11px;
-
-    letter-spacing: 2px;
-}
-
-.element-description {
-    margin:
-        -4px 0 12px;
-
-    color: #75687f;
-
-    font-size: 9px;
-}
-
-
-/* =========================================================
-   STATUS / ATRIBUTOS
-========================================================= */
-
-.stats-grid {
+.resource-grid {
     display: grid;
 
     grid-template-columns:
         repeat(2, 1fr);
 
-    gap: 9px;
+    gap: 8px;
 }
 
-.stat {
-    position: relative;
-
-    min-height: 85px;
-
+.resource-card {
     padding: 12px;
 
-    display: flex;
+    border-radius: 12px;
 
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    border-radius: 15px;
+    background:
+        rgba(255, 255, 255, 0.04);
 
     border:
         1px solid rgba(255, 255, 255, 0.07);
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.015)
-        );
-
-    transition:
-        0.2s ease;
+    text-align: center;
 }
 
-.stat:hover {
-    border-color:
-        rgba(168, 85, 247, 0.3);
+.resource-card span {
+    display: block;
 
-    transform: translateY(-1px);
+    color: #8f839d;
+
+    font-size: 10px;
 }
 
-.stat span {
-    font-size: 22px;
+.resource-card strong {
+    display: block;
 
-    margin-bottom: 5px;
-}
-
-.stat strong {
-    color: #eee5f5;
+    margin-top: 5px;
 
     font-size: 19px;
 }
 
-.stat small {
-    margin-top: 4px;
 
-    color: #75687f;
+/* =========================================
+   ATRIBUTOS
+========================================= */
 
-    font-size: 8px;
-
-    letter-spacing: 1px;
+.attributes {
+    margin-top: 20px;
 }
 
+.attributes h3,
+.elements h3,
+.badges h3 {
+    margin: 0 0 12px;
 
-/* =========================================================
-   BOTÃO +
-========================================================= */
+    color: #b9a9c8;
+
+    font-size: 13px;
+
+    letter-spacing: 2px;
+}
+
+.attributes-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 8px;
+}
+
+.attribute {
+    position: relative;
+
+    padding: 12px 5px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    text-align: center;
+}
+
+.attribute span {
+    display: block;
+
+    color: #8f839d;
+
+    font-size: 10px;
+}
+
+.attribute strong {
+    display: block;
+
+    margin-top: 5px;
+
+    font-size: 20px;
+}
 
 .attribute-plus {
     position: absolute;
 
-    top: 7px;
-    right: 7px;
+    top: 6px;
+    right: 6px;
 
-    width: 23px;
-    height: 23px;
-
-    padding: 0;
+    width: 22px;
+    height: 22px;
 
     border:
         1px solid #68408a;
 
     border-radius: 50%;
 
-    background:
-        #1b1424;
+    background: #1b1424;
 
     color: #d8b4fe;
 
+    font-size: 14px;
+
+    line-height: 18px;
+
     cursor: pointer;
 
-    opacity: 0.6;
+    opacity: 0.45;
 }
 
 .attribute-plus:hover {
     opacity: 1;
 
-    border-color: #a855f7;
-
-    transform: scale(1.07);
+    transform:
+        scale(1.08);
 }
 
 
-/* =========================================================
+/* =========================================
    PONTOS DE ATRIBUTO
-========================================================= */
+========================================= */
 
 .attribute-points {
-    margin:
-        16px -20px;
+    margin-top: 20px;
 
-    padding:
-        15px 20px;
+    padding: 14px;
 
-    text-align: center;
+    border:
+        1px solid #6f3aa8;
 
-    border-top:
-        1px solid rgba(168, 85, 247, 0.2);
-
-    border-bottom:
-        1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 14px;
 
     background:
         rgba(124, 58, 237, 0.08);
+
+    text-align: center;
 }
 
 .attribute-points h3 {
-    margin:
-        0 0 5px;
+    margin: 0 0 8px;
 
     color: #c084fc;
 
-    font-size: 10px;
+    font-size: 12px;
 
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 .attribute-points strong {
     display: block;
 
-    color: #f0ddff;
+    color: #e9d5ff;
 
-    font-size: 28px;
+    font-size: 25px;
 }
 
 .attribute-points span {
-    color: #75687f;
+    color: #8f839d;
 
-    font-size: 8px;
+    font-size: 10px;
 }
 
 
-/* =========================================================
-   ELEMENTOS — CARDS
-========================================================= */
+/* =========================================
+   ELEMENTOS
+========================================= */
+
+.elements {
+    margin-top: 20px;
+}
 
 .element-grid {
     display: grid;
 
     grid-template-columns:
-        repeat(2, 1fr);
+        repeat(3, 1fr);
 
-    gap: 9px;
+    gap: 8px;
 }
 
 .element-option {
-    min-height: 100px;
-
-    padding: 13px 7px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 8px;
+    padding: 10px 4px;
 
     border:
-        1px solid rgba(255, 255, 255, 0.08);
+        1px solid rgba(255, 255, 255, 0.07);
 
-    border-radius: 15px;
+    border-radius: 12px;
 
     background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.015)
-        );
+        rgba(255, 255, 255, 0.04);
 
-    color: #bcaec7;
+    color: #f5f0ff;
+
+    text-align: center;
 
     cursor: pointer;
 
     transition:
-        0.2s ease;
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
 .element-option:hover {
-    transform: translateY(-2px);
+    transform:
+        translateY(-1px);
 
-    border-color:
-        rgba(168, 85, 247, 0.45);
+    border-color: #8b5cf6;
 }
 
 .element-option.selected {
-    border-color:
-        #a855f7;
-
-    color: #f0ddff;
+    border-color: #a855f7;
 
     background:
-        linear-gradient(
-            145deg,
-            rgba(124, 58, 237, 0.28),
-            rgba(124, 58, 237, 0.08)
-        );
+        rgba(124, 58, 237, 0.14);
 
     box-shadow:
-        0 0 18px rgba(124, 58, 237, 0.2);
+        0 0 15px rgba(124, 58, 237, 0.18);
 }
 
 .element-option span {
-    font-size: 28px;
+    display: block;
+
+    margin-bottom: 4px;
+
+    font-size: 20px;
 }
 
 .element-option small {
-    font-size: 9px;
+    color: #8f839d;
+
+    font-size: 8px;
 
     letter-spacing: 1px;
 }
 
-
-/* =========================================================
-   CONFIRMAR ELEMENTO
-========================================================= */
-
 #confirm-element {
     width: 100%;
 
-    margin-top: 10px;
+    margin-top: 12px;
 
-    padding: 12px;
+    padding: 11px;
 
     border:
-        1px solid #70419a;
+        1px solid #68408a;
 
-    border-radius: 11px;
+    border-radius: 10px;
 
-    background:
-        #1b1424;
+    background: #1b1424;
 
     color: #d8c7e8;
-
-    font-weight: bold;
 
     cursor: pointer;
 }
 
-#confirm-element:not(:disabled):hover {
-    border-color: #c084fc;
-
-    background:
-        #29183a;
-}
-
 #confirm-element:disabled {
-    opacity: 0.4;
-
     cursor: not-allowed;
+
+    opacity: 0.4;
 }
 
 
-/* =========================================================
+/* =========================================
    BRASÕES
-========================================================= */
+========================================= */
 
 .badges {
-    margin-top: 22px;
-
-    padding-top: 17px;
-
-    border-top:
-        1px solid rgba(255, 255, 255, 0.06);
-}
-
-.badges h3 {
-    margin:
-        0 0 11px;
-
-    color: #b9a9c8;
-
-    font-size: 11px;
-
-    letter-spacing: 2px;
+    margin-top: 20px;
 }
 
 .badge-list {
-    display: grid;
+    display: flex;
 
-    grid-template-columns:
-        repeat(4, 1fr);
-
-    gap: 8px;
+    gap: 10px;
 }
 
 .badge {
-    height: 55px;
+    width: 48px;
+    height: 48px;
 
     display: flex;
 
     align-items: center;
     justify-content: center;
 
-    border-radius: 13px;
-
     border:
         1px solid #68408a;
 
-    background:
-        #17101f;
+    border-radius: 50%;
 
-    font-size: 22px;
+    background: #1b1424;
+
+    font-weight: bold;
 }
 
 .badge.locked {
@@ -1305,612 +1183,270 @@ button {
 }
 
 
-/* =========================================================
+/* =========================================
    COMBATE
-========================================================= */
+========================================= */
 
-.combat-dimension > p {
-    margin:
-        -10px 0 18px;
-
-    color: #75687f;
-
-    font-size: 10px;
+.combat-dimension {
+    padding: 18px;
 }
 
 .combat-resources {
     display: grid;
 
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns:
+        repeat(2, 1fr);
 
-    gap: 9px;
-
-    margin-bottom: 18px;
+    gap: 8px;
 }
 
 .combat-resource {
-    padding: 14px;
+    padding: 12px;
 
-    text-align: center;
-
-    border-radius: 14px;
-
-    border:
-        1px solid rgba(168, 85, 247, 0.2);
+    border-radius: 12px;
 
     background:
-        rgba(124, 58, 237, 0.06);
-}
-
-.combat-resource strong {
-    color: #eee5f5;
-
-    font-size: 20px;
-}
-
-.combat-resource small {
-    display: block;
-
-    margin-top: 4px;
-
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
-}
-
-
-/* =========================================================
-   AÇÕES DE COMBATE
-========================================================= */
-
-.combat-action {
-    margin-bottom: 10px;
-
-    padding: 15px;
-
-    border-radius: 16px;
+        rgba(255, 255, 255, 0.04);
 
     border:
         1px solid rgba(255, 255, 255, 0.07);
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.015)
-        );
+    text-align: center;
 }
 
-.combat-action h3 {
-    margin:
-        0 0 7px;
-
-    color: #eee5f5;
-
-    font-size: 15px;
-}
-
-.combat-action p {
-    margin:
-        0 0 11px;
-
-    color: #8f839d;
-
-    font-size: 10px;
-}
-
-.combat-use-button {
-    padding:
-        9px 14px;
-
-    border:
-        1px solid #70419a;
-
-    border-radius: 9px;
-
-    background:
-        #1b1424;
-
-    color: #d8c7e8;
-
-    font-size: 9px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-}
-
-.combat-use-button:hover {
-    border-color: #a855f7;
-
-    background:
-        #29183a;
-}
-
-
-/* =========================================================
-   HABILIDADES
-========================================================= */
-
-.abilities-section {
-    margin-top: 20px;
-}
-
-.abilities-section > h3 {
-    margin:
-        0 0 11px;
-
-    color: #b9a9c8;
-
-    font-size: 12px;
-
-    letter-spacing: 2px;
-}
-
-.ability-card {
-    margin-bottom: 10px;
-
-    padding: 15px;
-
-    border-radius: 16px;
-
-    border:
-        1px solid rgba(168, 85, 247, 0.2);
-
-    background:
-        linear-gradient(
-            145deg,
-            #19121f,
-            #0e0914
-        );
-}
-
-.ability-card input,
-.ability-card select,
-.ability-card textarea {
-    width: 100%;
-
-    padding:
-        9px 10px;
-
-    margin-bottom: 8px;
-
-    border:
-        1px solid #68408a;
-
-    border-radius: 8px;
-
-    background:
-        #0d0813;
-
-    color: #f5f0ff;
-
-    outline: none;
-
-    font-size: 10px;
-}
-
-.ability-card textarea {
-    min-height: 60px;
-
-    resize: vertical;
-}
-
-.ability-card input:focus,
-.ability-card select:focus,
-.ability-card textarea:focus {
-    border-color: #a855f7;
-}
-
-
-/* =========================================================
-   PASSIVA
-========================================================= */
-
-.passive-card {
-    margin-top: 20px;
-
-    padding: 16px;
-
-    border-radius: 17px;
-
-    border:
-        1px solid rgba(192, 132, 252, 0.3);
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(124, 58, 237, 0.1),
-            rgba(0, 0, 0, 0.18)
-        );
-}
-
-.passive-card h3 {
-    margin:
-        0 0 12px;
-
-    color: #c084fc;
-
-    font-size: 12px;
-
-    letter-spacing: 2px;
-}
-
-.passive-card input,
-.passive-card textarea {
-    width: 100%;
-
-    padding: 10px;
-
-    border:
-        1px solid #68408a;
-
-    border-radius: 9px;
-
-    background:
-        #0d0813;
-
-    color: #f5f0ff;
-
-    outline: none;
-
-    font-size: 10px;
-}
-
-.passive-card textarea {
-    min-height: 70px;
-
-    margin-top: 8px;
-
-    resize: vertical;
-}
-
-
-/* =========================================================
-   LOG DE COMBATE
-========================================================= */
-
-#combat-log {
-    min-height: 50px;
-
-    max-height: 160px;
-
-    overflow-y: auto;
-
-    margin-top: 15px;
-
-    padding: 11px;
-
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.05);
-
-    background:
-        rgba(0, 0, 0, 0.28);
-
-    color: #81758d;
-
-    font-size: 9px;
-
-    line-height: 1.6;
-}
-
-
-/* =========================================================
-   INVENTÁRIO
-========================================================= */
-
-.inventory-dimension > p {
-    color: #75687f;
-
-    font-size: 10px;
-}
-
-.inventory-capacity {
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 14px 15px;
-
-    margin-bottom: 18px;
-
-    border-radius: 14px;
-
-    border:
-        1px solid rgba(168, 85, 247, 0.25);
-
-    background:
-        rgba(124, 58, 237, 0.06);
-}
-
-.inventory-capacity span {
-    color: #75687f;
-
-    font-size: 9px;
-
-    letter-spacing: 1px;
-}
-
-#inventory-capacity {
-    color: #d8b4fe;
-
-    font-size: 18px;
-
-    font-weight: bold;
-}
-
-
-/* =========================================================
-   EQUIPAMENTOS
-========================================================= */
-
-.equipment-list {
+.combat-actions {
     display: grid;
 
     grid-template-columns:
         repeat(2, 1fr);
 
-    gap: 9px;
+    gap: 8px;
+
+    margin-top: 15px;
 }
 
-.equipment-item {
-    min-height: 70px;
-
+.combat-action {
     padding: 12px;
 
+    border:
+        1px solid #68408a;
+
+    border-radius: 10px;
+
+    background: #1b1424;
+
+    color: #eee7f7;
+
+    cursor: pointer;
+}
+
+.abilities {
+    margin-top: 20px;
+}
+
+.ability-slot {
+    margin-bottom: 10px;
+
+    padding: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.passive {
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+}
+
+.combat-log {
+    margin-top: 20px;
+
+    padding: 14px;
+
+    border-radius: 13px;
+
+    background:
+        rgba(0, 0, 0, 0.20);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+
+/* =========================================
+   INVENTÁRIO
+========================================= */
+
+.inventory-dimension {
+    padding: 18px;
+}
+
+.inventory-capacity {
+    margin-bottom: 15px;
+
+    padding: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    text-align: center;
+}
+
+.inventory-list {
     display: flex;
 
     flex-direction: column;
 
-    justify-content: center;
+    gap: 8px;
+}
 
-    border-radius: 14px;
+.inventory-item {
+    padding: 11px;
 
     border:
         1px solid rgba(255, 255, 255, 0.07);
 
-    background:
-        linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.04),
-            rgba(255, 255, 255, 0.015)
-        );
-}
-
-.equipment-item small {
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
-}
-
-.equipment-item strong {
-    margin-top: 5px;
-
-    color: #d8c7e8;
-
-    font-size: 10px;
-}
-
-
-/* =========================================================
-   SLOTS
-========================================================= */
-
-#inventory-list {
-    margin-bottom: 10px;
-}
-
-#inventory-slots {
-    display: grid;
-
-    grid-template-columns:
-        repeat(5, 1fr);
-
-    gap: 7px;
-}
-
-.inventory-slot {
-    min-height: 44px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 9px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.065);
+    border-radius: 10px;
 
     background:
-        linear-gradient(
-            145deg,
-            #15101b,
-            #0c0811
-        );
-
-    color: #62576c;
-
-    font-size: 9px;
+        rgba(255, 255, 255, 0.035);
 }
 
-.inventory-slot:hover {
-    border-color:
-        rgba(168, 85, 247, 0.35);
+.inventory-equipment {
+    margin-top: 20px;
 }
 
 
-/* =========================================================
-   EFEITOS ELEMENTAIS
-========================================================= */
+/* =========================================
+   EFEITOS EXTERNOS POR ELEMENTO
+   Mantidos para trabalhar junto com
+   card.css e effects.css
+========================================= */
 
 .character-card.element-agua {
     box-shadow:
-        0 0 45px rgba(56, 189, 248, 0.22),
-        inset 0 0 45px rgba(56, 189, 248, 0.04);
-}
-
-.character-card.element-fogo {
-    box-shadow:
-        0 0 45px rgba(249, 115, 22, 0.22),
-        inset 0 0 45px rgba(249, 115, 22, 0.04);
-}
-
-.character-card.element-terra {
-    box-shadow:
-        0 0 45px rgba(120, 113, 108, 0.2),
-        inset 0 0 45px rgba(120, 113, 108, 0.04);
-}
-
-.character-card.element-vento {
-    box-shadow:
-        0 0 45px rgba(125, 211, 252, 0.2),
-        inset 0 0 45px rgba(125, 211, 252, 0.04);
+        0 0 38px rgba(59, 130, 246, 0.20);
 }
 
 .character-card.element-luz {
     box-shadow:
-        0 0 45px rgba(253, 224, 71, 0.22),
-        inset 0 0 45px rgba(253, 224, 71, 0.04);
+        0 0 38px rgba(226, 232, 240, 0.20);
+}
+
+.character-card.element-terra {
+    box-shadow:
+        0 0 38px rgba(120, 80, 45, 0.20);
 }
 
 .character-card.element-trevas {
     box-shadow:
-        0 0 50px rgba(109, 40, 217, 0.3),
-        inset 0 0 50px rgba(88, 28, 135, 0.06);
+        0 0 38px rgba(80, 30, 100, 0.25);
+}
+
+.character-card.element-vento {
+    box-shadow:
+        0 0 38px rgba(34, 197, 94, 0.20);
+}
+
+.character-card.element-fogo {
+    box-shadow:
+        0 0 38px rgba(249, 115, 22, 0.22);
 }
 
 .character-card.element-fisico {
     box-shadow:
-        0 0 45px rgba(251, 191, 36, 0.18),
-        inset 0 0 45px rgba(251, 191, 36, 0.035);
+        0 0 38px rgba(180, 180, 200, 0.18);
 }
 
 .character-card.element-magico {
     box-shadow:
-        0 0 50px rgba(217, 70, 239, 0.24),
-        inset 0 0 50px rgba(217, 70, 239, 0.05);
+        0 0 42px rgba(168, 85, 247, 0.25);
 }
 
 
-/* =========================================================
+/* =========================================
    RESPONSIVO
-========================================================= */
+========================================= */
 
 @media (max-width: 420px) {
 
     .app {
         padding:
-            14px 7px 30px;
+            15px 10px 30px;
     }
 
     .app-header h1 {
-        font-size: 21px;
-
-        letter-spacing: 2px;
-    }
-
-    .dimension-nav {
-        gap: 3px;
-
-        padding: 5px;
-
-        border-radius: 15px;
+        font-size: 24px;
     }
 
     .dimension-button {
-        min-height: 44px;
-
-        font-size: 8px;
-    }
-
-    .character-card {
-        border-radius: 21px;
-    }
-
-    .card-header {
-        grid-template-columns:
-            1fr 62px 1fr;
-
         padding:
-            8px 13px;
+            9px 2px;
+
+        font-size: 9px;
     }
 
-    .character-crest {
-        width: 51px;
-        height: 51px;
+    .character-dimension .character-image {
+        height: 330px;
+
+        margin: 10px;
     }
 
-    #crest-symbol {
-        font-size: 22px;
-    }
-
-    .character-image {
-        height: 320px;
-
-        margin: 12px;
-    }
-
-    .character-info {
+    .character-dimension .character-info {
         padding:
-            0 13px;
+            12px 14px 20px;
     }
 
-    .identity {
-        gap: 7px;
-    }
-
-    .status-dimension,
-    .combat-dimension,
-    .inventory-dimension {
-        padding: 16px;
-    }
-
-    .element-option {
-        min-height: 92px;
-    }
-
-    #inventory-slots {
-        gap: 5px;
-    }
-
-    .inventory-slot {
-        min-height: 39px;
+    .character-dimension .character-info h2 {
+        font-size: 23px;
     }
 }
 
 
-/* =========================================================
-   CELULARES PEQUENOS
-========================================================= */
+@media (max-width: 360px) {
 
-@media (max-width: 340px) {
-
-    .dimension-button {
-        font-size: 7px;
-    }
-
-    .character-image {
-        height: 285px;
-    }
-
-    .identity {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-grid {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    #inventory-slots {
+    .character-dimension .card-header {
         grid-template-columns:
-            repeat(4, 1fr);
+            1fr auto 1fr;
+
+        padding:
+            10px 11px;
+    }
+
+    .character-dimension #character-crest {
+        width: 44px;
+        height: 44px;
+    }
+
+    .character-dimension #crest-symbol {
+        font-size: 21px;
+    }
+
+    .character-dimension .character-image {
+        height: 300px;
+    }
+
+    .character-dimension .identity {
+        grid-template-columns:
+            1fr;
     }
 }
