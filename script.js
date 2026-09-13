@@ -922,12 +922,23 @@ function configurarReset() {
 
             CharacterModule.atualizarImagem();
 
+
             if (
                 typeof CombatModule !==
                 "undefined"
             ) {
 
                 CombatModule.iniciar();
+
+            }
+
+
+            if (
+                typeof InventoryModule !==
+                "undefined"
+            ) {
+
+                InventoryModule.iniciar();
 
             }
 
@@ -1098,99 +1109,6 @@ function atualizarBrasao() {
 
 
 /* =========================================================
-   INVENTÁRIO
-========================================================= */
-
-function atualizarInventario() {
-
-    const slots =
-        get("inventory-slots");
-
-
-    const capacity =
-        get("inventory-capacity");
-
-
-    const bonus =
-        Math.floor(
-            character.level / 10
-        ) * 50;
-
-
-    const maxSlots =
-        50 + bonus;
-
-
-    const used =
-        character.inventory.items.length;
-
-
-    if (capacity) {
-
-        capacity.textContent =
-            `${used} / ${maxSlots}`;
-
-    }
-
-
-    if (!slots) {
-
-        return;
-
-    }
-
-
-    slots.innerHTML = "";
-
-
-    for (
-        let i = 0;
-        i < maxSlots;
-        i++
-    ) {
-
-        const slot =
-            document.createElement(
-                "div"
-            );
-
-
-        slot.className =
-            "inventory-slot";
-
-
-        if (
-            character.inventory.items[i]
-        ) {
-
-            slot.textContent =
-                character.inventory.items[i];
-
-
-            slot.classList.add(
-                "occupied"
-            );
-
-        }
-
-        else {
-
-            slot.textContent =
-                i + 1;
-
-        }
-
-
-        slots.appendChild(
-            slot
-        );
-
-    }
-
-}
-
-
-/* =========================================================
    INTERFACE PRINCIPAL
 ========================================================= */
 
@@ -1339,7 +1257,14 @@ function atualizarInterface() {
        INVENTÁRIO
     ===================================================== */
 
-    atualizarInventario();
+    if (
+        typeof InventoryModule !==
+        "undefined"
+    ) {
+
+        InventoryModule.atualizar();
+
+    }
 
 
     /* =====================================================
@@ -1411,7 +1336,8 @@ function iniciar() {
        5. XP
        6. Reset
        7. Combate
-       8. Interface
+       8. Inventário
+       9. Interface
     */
 
 
@@ -1439,6 +1365,16 @@ function iniciar() {
     ) {
 
         CombatModule.iniciar();
+
+    }
+
+
+    if (
+        typeof InventoryModule !==
+        "undefined"
+    ) {
+
+        InventoryModule.iniciar();
 
     }
 
