@@ -1,1 +1,1088 @@
+/* =========================================================
+   RPG CHARACTER CARD — 4 DIMENSÕES
+   ========================================================= */
 
+:root {
+    --bg: #03050a;
+    --panel: #071026;
+    --panel-light: #0c1733;
+    --panel-hover: #111f42;
+
+    --purple: #7c3aed;
+    --purple-light: #a78bfa;
+    --purple-dark: #4c1d95;
+
+    --blue: #2563eb;
+    --cyan: #06b6d4;
+    --teal: #0ea5a4;
+
+    --gold: #f59e0b;
+    --red: #ef4444;
+    --green: #22c55e;
+
+    --text: #f8fafc;
+    --text-soft: #cbd5e1;
+    --text-muted: #64748b;
+
+    --border: rgba(124, 58, 237, 0.35);
+    --border-soft: rgba(148, 163, 184, 0.15);
+
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+}
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    min-height: 100%;
+    background: var(--bg);
+}
+
+body {
+    min-height: 100vh;
+    background:
+        radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.12), transparent 35%),
+        radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.08), transparent 30%),
+        var(--bg);
+
+    color: var(--text);
+    font-family:
+        Inter,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+
+    padding: 24px 14px;
+}
+
+
+/* =========================================================
+   APP
+   ========================================================= */
+
+.app {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+
+/* =========================================================
+   CARTA
+   ========================================================= */
+
+.character-card {
+    position: relative;
+
+    width: 100%;
+    min-height: 780px;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle at 50% 0%,
+            rgba(124, 58, 237, 0.13),
+            transparent 35%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(7, 16, 38, 0.98),
+            rgba(3, 5, 10, 0.98)
+        );
+
+    border: 1px solid var(--border);
+
+    border-radius: 24px;
+
+    box-shadow:
+        var(--shadow),
+        0 0 50px rgba(124, 58, 237, 0.08);
+
+    isolation: isolate;
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO
+   ========================================================= */
+
+.card-navigation {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+
+    width: 100%;
+
+    padding: 8px;
+
+    background:
+        rgba(3, 5, 10, 0.94);
+
+    border-bottom: 1px solid var(--border-soft);
+
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+
+
+.dimension-button {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    min-height: 58px;
+
+    padding: 7px 4px;
+
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    background: transparent;
+
+    color: var(--text-muted);
+
+    font: inherit;
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+.dimension-button span:first-child {
+    font-size: 17px;
+    line-height: 1;
+}
+
+.dimension-button:hover {
+    color: var(--text-soft);
+    background: rgba(124, 58, 237, 0.08);
+}
+
+.dimension-button:active {
+    transform: scale(0.96);
+}
+
+.dimension-button.active {
+    color: var(--text);
+    background:
+        linear-gradient(
+            180deg,
+            rgba(124, 58, 237, 0.22),
+            rgba(124, 58, 237, 0.08)
+        );
+
+    border-color: rgba(124, 58, 237, 0.4);
+
+    box-shadow:
+        inset 0 0 20px rgba(124, 58, 237, 0.08),
+        0 0 18px rgba(124, 58, 237, 0.08);
+}
+
+.dimension-button.active::after {
+    content: "";
+
+    position: absolute;
+
+    left: 20%;
+    right: 20%;
+    bottom: 2px;
+
+    height: 2px;
+
+    background: var(--purple-light);
+
+    border-radius: 99px;
+
+    box-shadow: 0 0 8px var(--purple);
+}
+
+
+/* =========================================================
+   DIMENSÕES
+   ========================================================= */
+
+.card-dimension {
+    display: none;
+
+    min-height: 700px;
+
+    padding: 22px;
+}
+
+.card-dimension.active {
+    display: block;
+}
+
+
+/* =========================================================
+   CABEÇALHO DA DIMENSÃO
+   ========================================================= */
+
+.dimension-header {
+    display: flex;
+    align-items: center;
+
+    gap: 13px;
+
+    margin-bottom: 24px;
+
+    padding-bottom: 15px;
+
+    border-bottom: 1px solid var(--border-soft);
+}
+
+.dimension-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.3),
+            rgba(37, 99, 235, 0.1)
+        );
+
+    border: 1px solid rgba(124, 58, 237, 0.45);
+
+    color: var(--purple-light);
+
+    font-size: 19px;
+
+    box-shadow:
+        inset 0 0 16px rgba(124, 58, 237, 0.08),
+        0 0 15px rgba(124, 58, 237, 0.08);
+}
+
+.dimension-header h1 {
+    font-size: 18px;
+    font-weight: 800;
+
+    letter-spacing: 0.08em;
+}
+
+.dimension-header p {
+    margin-top: 3px;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   PERSONAGEM
+   ========================================================= */
+
+.character-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 22px;
+}
+
+
+/* Arte */
+
+.character-art {
+    position: relative;
+
+    width: min(100%, 330px);
+
+    aspect-ratio: 3 / 4;
+
+    padding: 7px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.7),
+            rgba(37, 99, 235, 0.25),
+            rgba(124, 58, 237, 0.5)
+        );
+
+    border-radius: 20px;
+
+    box-shadow:
+        0 0 30px rgba(124, 58, 237, 0.15);
+}
+
+.character-art::before {
+    content: "";
+
+    position: absolute;
+    inset: 2px;
+
+    border-radius: 18px;
+
+    border: 1px solid rgba(167, 139, 250, 0.25);
+
+    pointer-events: none;
+}
+
+.art-placeholder {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(124, 58, 237, 0.2),
+            transparent 35%
+        ),
+        linear-gradient(
+            160deg,
+            #101b3a,
+            #050914
+        );
+
+    color: var(--text-muted);
+
+    font-size: 13px;
+    font-weight: 800;
+
+    letter-spacing: 0.2em;
+}
+
+
+/* Informações */
+
+.character-information {
+    width: 100%;
+
+    text-align: center;
+}
+
+.rarity {
+    display: inline-block;
+
+    margin-bottom: 8px;
+    padding: 4px 10px;
+
+    border: 1px solid rgba(245, 158, 11, 0.35);
+
+    border-radius: 99px;
+
+    color: var(--gold);
+
+    background: rgba(245, 158, 11, 0.08);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.15em;
+}
+
+.character-information h2 {
+    font-size: clamp(24px, 7vw, 34px);
+    line-height: 1.1;
+
+    margin-bottom: 18px;
+
+    text-shadow:
+        0 0 25px rgba(124, 58, 237, 0.25);
+}
+
+
+/* Identidade */
+
+.character-identity {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 10px;
+
+    margin-bottom: 12px;
+}
+
+.character-identity > div,
+.character-level,
+.affinity {
+    padding: 12px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 12px;
+}
+
+.character-identity span,
+.character-level span,
+.affinity > span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+.character-identity strong {
+    font-size: 14px;
+}
+
+
+/* Nível */
+
+.character-level {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    margin-bottom: 12px;
+
+    text-align: left;
+}
+
+.level-information strong,
+.xp-information strong {
+    font-size: 15px;
+}
+
+
+/* Afinidade */
+
+.affinity {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    text-align: left;
+}
+
+.affinity-crest {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.3),
+            rgba(124, 58, 237, 0.04)
+        );
+
+    border: 1px solid rgba(124, 58, 237, 0.4);
+
+    color: var(--purple-light);
+
+    font-size: 20px;
+
+    box-shadow:
+        0 0 18px rgba(124, 58, 237, 0.15);
+}
+
+
+/* =========================================================
+   STATUS
+   ========================================================= */
+
+.stats-content {
+    display: flex;
+    flex-direction: column;
+
+    gap: 24px;
+}
+
+.status-section {
+    padding: 15px;
+
+    background:
+        rgba(255, 255, 255, 0.02);
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 16px;
+}
+
+.status-section h2 {
+    margin-bottom: 13px;
+
+    color: var(--text-soft);
+
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.12em;
+}
+
+
+/* Recursos */
+
+.resource-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 9px;
+}
+
+.resource-card {
+    padding: 13px;
+
+    border: 1px solid rgba(14, 165, 164, 0.18);
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(14, 165, 164, 0.08),
+            rgba(255, 255, 255, 0.015)
+        );
+}
+
+.resource-card span,
+.attribute-card span {
+    display: block;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+    font-weight: 800;
+
+    letter-spacing: 0.1em;
+}
+
+.resource-card strong {
+    display: block;
+
+    margin-top: 4px;
+
+    color: #5eead4;
+
+    font-size: 22px;
+}
+
+
+/* Atributos */
+
+.attribute-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 9px;
+}
+
+.attribute-card {
+    padding: 12px;
+
+    border: 1px solid rgba(124, 58, 237, 0.18);
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.08),
+            rgba(255, 255, 255, 0.015)
+        );
+}
+
+.attribute-card strong {
+    display: block;
+
+    margin-top: 4px;
+
+    font-size: 20px;
+}
+
+
+/* Características */
+
+.characteristics {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.characteristic {
+    padding: 12px;
+
+    background: rgba(255, 255, 255, 0.025);
+
+    border-radius: 10px;
+}
+
+.characteristic span {
+    color: var(--purple-light);
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.characteristic p {
+    margin-top: 5px;
+
+    color: var(--text-soft);
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   HABILIDADES
+   ========================================================= */
+
+.abilities-content {
+    display: flex;
+    flex-direction: column;
+
+    gap: 22px;
+}
+
+.ability-section {
+    padding: 15px;
+
+    background: rgba(255, 255, 255, 0.02);
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 16px;
+}
+
+.ability-section.special {
+    border-color: rgba(245, 158, 11, 0.2);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(245, 158, 11, 0.045),
+            rgba(255, 255, 255, 0.015)
+        );
+}
+
+
+/* Títulos */
+
+.section-title {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 13px;
+}
+
+.section-title > span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+
+    border-radius: 10px;
+
+    background: rgba(124, 58, 237, 0.12);
+
+    border: 1px solid rgba(124, 58, 237, 0.25);
+
+    color: var(--purple-light);
+
+    font-size: 16px;
+}
+
+.special .section-title > span {
+    color: var(--gold);
+
+    background: rgba(245, 158, 11, 0.1);
+
+    border-color: rgba(245, 158, 11, 0.25);
+}
+
+.section-title h2 {
+    font-size: 11px;
+    font-weight: 800;
+
+    letter-spacing: 0.1em;
+}
+
+.section-title p {
+    margin-top: 2px;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+}
+
+
+/* Lista */
+
+.ability-list {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.ability-card {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 12px;
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.ability-card.empty {
+    border-style: dashed;
+}
+
+.ability-card.locked {
+    opacity: 0.65;
+
+    border-color: rgba(245, 158, 11, 0.18);
+}
+
+.ability-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex: 0 0 auto;
+
+    width: 40px;
+    height: 40px;
+
+    border-radius: 10px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(124, 58, 237, 0.18),
+            rgba(124, 58, 237, 0.05)
+        );
+
+    border: 1px solid rgba(124, 58, 237, 0.25);
+
+    color: var(--purple-light);
+
+    font-size: 18px;
+}
+
+.ability-card h3 {
+    font-size: 12px;
+}
+
+.ability-card p {
+    margin-top: 3px;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   INVENTÁRIO
+   ========================================================= */
+
+.inventory-content {
+    display: flex;
+    flex-direction: column;
+
+    gap: 22px;
+}
+
+.inventory-section {
+    padding: 15px;
+
+    background: rgba(255, 255, 255, 0.02);
+
+    border: 1px solid var(--border-soft);
+
+    border-radius: 16px;
+}
+
+
+/* Equipamentos */
+
+.equipment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 9px;
+}
+
+.equipment-slot {
+    min-height: 90px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+
+    padding: 12px;
+
+    border: 1px dashed rgba(124, 58, 237, 0.25);
+
+    border-radius: 12px;
+
+    background:
+        rgba(124, 58, 237, 0.025);
+
+    text-align: center;
+}
+
+.equipment-slot span {
+    color: var(--text-muted);
+
+    font-size: 8px;
+    font-weight: 800;
+
+    letter-spacing: 0.1em;
+}
+
+.equipment-slot strong {
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+
+/* Itens */
+
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 9px;
+}
+
+.inventory-empty {
+    grid-column: 1 / -1;
+
+    padding: 28px 15px;
+
+    text-align: center;
+
+    border: 1px dashed var(--border-soft);
+
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.015);
+}
+
+.inventory-empty > span {
+    display: block;
+
+    margin-bottom: 8px;
+
+    font-size: 25px;
+
+    opacity: 0.6;
+}
+
+.inventory-empty h3 {
+    font-size: 12px;
+}
+
+.inventory-empty p {
+    margin-top: 5px;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+
+/* Itens especiais */
+
+.special-items {
+    display: flex;
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
+.character-card {
+    scrollbar-width: thin;
+    scrollbar-color: var(--purple-dark) transparent;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--purple-dark);
+
+    border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--purple);
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+   ========================================================= */
+
+@media (max-width: 430px) {
+
+    body {
+        padding: 10px 7px;
+    }
+
+    .character-card {
+        min-height: 760px;
+
+        border-radius: 19px;
+    }
+
+    .card-navigation {
+        padding: 6px;
+    }
+
+    .dimension-button {
+        min-height: 53px;
+
+        font-size: 8px;
+    }
+
+    .dimension-button span:first-child {
+        font-size: 15px;
+    }
+
+    .card-dimension {
+        padding: 17px;
+    }
+
+    .dimension-header {
+        margin-bottom: 19px;
+    }
+
+    .dimension-number {
+        width: 37px;
+        height: 37px;
+
+        font-size: 17px;
+    }
+
+    .dimension-header h1 {
+        font-size: 15px;
+    }
+
+    .character-art {
+        width: min(100%, 290px);
+    }
+}
+
+
+@media (max-width: 350px) {
+
+    .dimension-button {
+        font-size: 7px;
+    }
+
+    .card-dimension {
+        padding: 14px;
+    }
+
+    .character-identity,
+    .resource-grid,
+    .attribute-grid,
+    .equipment-grid,
+    .item-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .character-art {
+        width: 100%;
+    }
+}
+
+
+/* =========================================================
+   ACESSIBILIDADE
+   ========================================================= */
+
+button:focus-visible {
+    outline: 2px solid var(--purple-light);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
