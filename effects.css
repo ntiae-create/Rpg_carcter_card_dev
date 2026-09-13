@@ -292,12 +292,41 @@
    BRASÃO
 ========================================= */
 
+/* =========================================
+   BRASÃO — PULSAÇÃO
+========================================= */
+
 #character-crest {
+    position: relative;
 
     transition:
         transform 0.5s ease,
         filter 0.5s ease;
+
+    animation:
+        crestPulse 2s ease-in-out infinite;
 }
+
+@keyframes crestPulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.08);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* =========================================
+   BRILHO DO BRASÃO POR ELEMENTO
+========================================= */
 
 .character-card.element-agua #character-crest {
     filter: drop-shadow(0 0 10px #38bdf8);
