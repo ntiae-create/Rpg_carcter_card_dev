@@ -1,1 +1,452 @@
+/* =========================================================
+   RPG CHARACTER CARD
+   EFFECTS.CSS
+   Camada exclusiva para efeitos visuais
+========================================================= */
 
+
+/* =========================================================
+   AURA DA ÁREA DO PERSONAGEM
+========================================================= */
+
+.character-image {
+    isolation: isolate;
+}
+
+.character-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle at 50% 55%,
+            rgba(192, 132, 252, 0.12),
+            transparent 55%
+        );
+
+    opacity: 0.8;
+
+    z-index: 1;
+
+    animation:
+        characterAura 4s ease-in-out infinite;
+}
+
+@keyframes characterAura {
+
+    0%,
+    100% {
+        opacity: 0.45;
+        transform: scale(0.98);
+    }
+
+    50% {
+        opacity: 0.9;
+        transform: scale(1.02);
+    }
+}
+
+
+/* =========================================================
+   IMAGEM DO PERSONAGEM
+========================================================= */
+
+.character-image img {
+    filter:
+        drop-shadow(
+            0 0 12px rgba(192, 132, 252, 0.25)
+        );
+
+    transition:
+        filter 0.4s ease,
+        transform 0.4s ease;
+}
+
+.character-image img:hover {
+    transform: scale(1.015);
+
+    filter:
+        drop-shadow(
+            0 0 18px rgba(192, 132, 252, 0.4)
+        );
+}
+
+
+/* =========================================================
+   BRILHO NAS BORDAS
+========================================================= */
+
+.character-image {
+    box-shadow:
+        inset 0 0 35px rgba(124, 58, 237, 0.15),
+        0 0 18px rgba(124, 58, 237, 0.08);
+}
+
+
+/* =========================================================
+   EFEITO DE ENERGIA FLUTUANTE
+========================================================= */
+
+.character-image::before {
+    animation:
+        energyPulse 5s ease-in-out infinite;
+}
+
+@keyframes energyPulse {
+
+    0%,
+    100% {
+        transform: scale(0.85);
+        opacity: 0.25;
+    }
+
+    50% {
+        transform: scale(1.15);
+        opacity: 0.55;
+    }
+}
+
+
+/* =========================================================
+   BRASÃO
+========================================================= */
+
+.character-crest {
+    position: relative;
+
+    animation:
+        crestFloat 4s ease-in-out infinite;
+}
+
+@keyframes crestFloat {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-2px);
+    }
+}
+
+.character-crest::after {
+    content: "";
+
+    position: absolute;
+
+    inset: -5px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(192, 132, 252, 0.18);
+
+    pointer-events: none;
+
+    animation:
+        crestPulse 3s ease-in-out infinite;
+}
+
+@keyframes crestPulse {
+
+    0%,
+    100% {
+        opacity: 0.25;
+        transform: scale(0.95);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.08);
+    }
+}
+
+
+/* =========================================================
+   XP
+========================================================= */
+
+.xp-progress {
+    position: relative;
+
+    overflow: hidden;
+}
+
+.xp-progress::after {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: -80px;
+
+    width: 60px;
+    height: 100%;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.45),
+            transparent
+        );
+
+    animation:
+        xpShine 3s linear infinite;
+}
+
+@keyframes xpShine {
+
+    from {
+        left: -80px;
+    }
+
+    to {
+        left: 110%;
+    }
+}
+
+
+/* =========================================================
+   BOTÃO DE NAVEGAÇÃO
+========================================================= */
+
+.dimension-button.active {
+    position: relative;
+
+    overflow: hidden;
+}
+
+.dimension-button.active::after {
+    content: "";
+
+    position: absolute;
+
+    left: 15%;
+    right: 15%;
+    bottom: 3px;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(192, 132, 252, 0.8),
+            transparent
+        );
+
+    animation:
+        navigationGlow 2s ease-in-out infinite;
+}
+
+@keyframes navigationGlow {
+
+    0%,
+    100% {
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   ELEMENTO SELECIONADO
+========================================================= */
+
+.element-option.selected {
+    position: relative;
+
+    overflow: hidden;
+}
+
+.element-option.selected::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(255, 255, 255, 0.08),
+            transparent 65%
+        );
+
+    pointer-events: none;
+
+    animation:
+        elementSelection 2.5s ease-in-out infinite;
+}
+
+@keyframes elementSelection {
+
+    0%,
+    100% {
+        opacity: 0.25;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+
+/* =========================================================
+   CARTAS DE HABILIDADE
+========================================================= */
+
+.ability-card {
+    position: relative;
+
+    overflow: hidden;
+}
+
+.ability-card::before {
+    content: "";
+
+    position: absolute;
+
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 2px;
+
+    background:
+        linear-gradient(
+            180deg,
+            transparent,
+            #a855f7,
+            transparent
+        );
+
+    opacity: 0.6;
+}
+
+.ability-card:hover::before {
+    opacity: 1;
+
+    animation:
+        abilityGlow 1.2s ease-in-out infinite;
+}
+
+@keyframes abilityGlow {
+
+    0%,
+    100% {
+        opacity: 0.45;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   PASSIVA
+========================================================= */
+
+.passive-card {
+    position: relative;
+
+    overflow: hidden;
+}
+
+.passive-card::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle at 0% 50%,
+            rgba(192, 132, 252, 0.08),
+            transparent 45%
+        );
+}
+
+
+/* =========================================================
+   EFEITO DE USO DE HABILIDADE
+   O JavaScript poderá adicionar .ability-used
+========================================================= */
+
+.character-card.ability-used {
+    animation:
+        abilityUsed 0.45s ease;
+}
+
+@keyframes abilityUsed {
+
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.008);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+/* =========================================================
+   EFEITO DE ATAQUE
+========================================================= */
+
+.character-card.attack-used {
+    animation:
+        attackUsed 0.35s ease;
+}
+
+@keyframes attackUsed {
+
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-3px);
+    }
+
+    50% {
+        transform: translateX(3px);
+    }
+
+    75% {
+        transform: translateX(-2px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+@media (max-width: 420px) {
+
+    .character-image img:hover {
+        transform: none;
+    }
+
+}
