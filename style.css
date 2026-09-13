@@ -27,8 +27,14 @@ body {
         );
 }
 
-button {
+button,
+input,
+select {
     font-family: inherit;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
 }
 
 .app {
@@ -113,7 +119,7 @@ button {
     padding: 8px;
 
     background:
-        rgba(0, 0, 0, 0.3);
+        rgba(0, 0, 0, 0.32);
 
     border-bottom:
         1px solid rgba(255, 255, 255, 0.06);
@@ -131,7 +137,7 @@ button {
     align-items: center;
     justify-content: center;
 
-    gap: 3px;
+    gap: 4px;
 
     border: 1px solid transparent;
 
@@ -151,7 +157,15 @@ button {
 }
 
 .dimension-button span {
-    font-size: 9px;
+    font-size: 17px;
+
+    line-height: 1;
+}
+
+.dimension-button strong {
+    font-size: 8px;
+
+    font-weight: normal;
 
     letter-spacing: 0.5px;
 }
@@ -161,6 +175,10 @@ button {
 
     background:
         rgba(124, 58, 237, 0.08);
+}
+
+.dimension-button:active {
+    transform: scale(0.96);
 }
 
 .dimension-button.active {
@@ -212,7 +230,7 @@ button {
 
 
 /* =================================
-   TÍTULOS DAS DIMENSÕES
+   TÍTULOS
 ================================= */
 
 .dimension-title {
@@ -222,19 +240,19 @@ button {
 
     gap: 12px;
 
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .dimension-number {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
     width: 38px;
     height: 38px;
 
     flex-shrink: 0;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     border-radius: 11px;
 
@@ -269,17 +287,13 @@ button {
 
 
 /* =================================
-   DIMENSÃO 1 — PERSONAGEM
+   CARD 1 — PERSONAGEM
 ================================= */
 
 #dimension-character {
-    padding: 0 18px 22px;
+    padding:
+        0 18px 22px;
 }
-
-
-/* =================================
-   TOPO DO PERSONAGEM
-================================= */
 
 #dimension-character .dimension-header {
     display: grid;
@@ -367,8 +381,13 @@ button {
 
     color: #d8b4fe;
 
-    animation:
-        crestPulse 3s ease-in-out infinite;
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+#dimension-character .affinity-crest:hover {
+    transform: scale(1.05);
 }
 
 #dimension-character .crest-symbol {
@@ -383,21 +402,6 @@ button {
     color: #8f839d;
 
     letter-spacing: 1px;
-}
-
-@keyframes crestPulse {
-
-    0%,
-    100% {
-        box-shadow:
-            0 0 14px rgba(139, 92, 246, 0.25);
-    }
-
-    50% {
-        box-shadow:
-            0 0 25px rgba(168, 85, 247, 0.55);
-    }
-
 }
 
 
@@ -433,17 +437,12 @@ button {
 
 
 /* =================================
-   CONTEÚDO PRINCIPAL
+   ARTE
 ================================= */
 
 .character-content {
     padding-top: 18px;
 }
-
-
-/* =================================
-   ARTE
-================================= */
 
 .character-art {
     position: relative;
@@ -481,19 +480,32 @@ button {
 
     position: absolute;
 
-    width: 180px;
-    height: 180px;
+    width: 190px;
+    height: 190px;
 
     border-radius: 50%;
 
     background:
         radial-gradient(
             circle,
-            rgba(168, 85, 247, 0.12),
+            rgba(168, 85, 247, 0.13),
             transparent 70%
         );
 
     pointer-events: none;
+}
+
+.character-art img {
+    position: relative;
+
+    z-index: 2;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    display: block;
 }
 
 .art-placeholder {
@@ -534,7 +546,8 @@ button {
 ================================= */
 
 .character-information {
-    padding: 18px 4px 0;
+    padding:
+        18px 4px 0;
 }
 
 .character-information h2 {
@@ -547,11 +560,6 @@ button {
     letter-spacing: 0.5px;
 }
 
-
-/* =================================
-   RAÇA / CLASSE
-================================= */
-
 .character-identity {
     display: grid;
 
@@ -562,7 +570,8 @@ button {
 }
 
 .identity-item {
-    padding: 10px 12px;
+    padding:
+        10px 12px;
 
     border-radius: 11px;
 
@@ -599,7 +608,8 @@ button {
 .character-affinity {
     margin-top: 9px;
 
-    padding: 11px 12px;
+    padding:
+        11px 12px;
 
     border-radius: 11px;
 
@@ -642,13 +652,14 @@ button {
 
 
 /* =================================
-   XP DO PERSONAGEM
+   XP
 ================================= */
 
 .character-xp {
     margin-top: 20px;
 
-    padding: 13px 14px;
+    padding:
+        13px 14px;
 
     border-radius: 13px;
 
@@ -719,13 +730,14 @@ button {
 
 
 /* =================================
-   ESTADO DO BRASÃO
+   BRASÃO — STATUS
 ================================= */
 
 .crest-status {
     margin-top: 12px;
 
-    padding: 13px 14px;
+    padding:
+        13px 14px;
 
     border-radius: 13px;
 
@@ -814,8 +826,320 @@ button {
 
 
 /* =================================
-   BLOCOS DAS OUTRAS DIMENSÕES
+   EDITOR
 ================================= */
+
+.character-editor {
+    margin-top: 20px;
+
+    padding: 15px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+
+    background:
+        rgba(0, 0, 0, 0.2);
+}
+
+.character-editor h3 {
+    margin:
+        0 0 14px;
+
+    color: #c084fc;
+
+    font-size: 11px;
+
+    letter-spacing: 2px;
+}
+
+.editor-field {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    margin-bottom: 10px;
+}
+
+.editor-field > span {
+    color: #75687f;
+
+    font-size: 8px;
+
+    letter-spacing: 1px;
+}
+
+.editor-field input,
+.editor-field select,
+.xp-control input {
+    width: 100%;
+
+    padding:
+        10px;
+
+    border:
+        1px solid #68408a;
+
+    border-radius: 9px;
+
+    outline: none;
+
+    background:
+        #100b18;
+
+    color:
+        #f5f0ff;
+}
+
+.editor-field input:focus,
+.editor-field select:focus,
+.xp-control input:focus {
+    border-color: #a855f7;
+
+    box-shadow:
+        0 0 10px rgba(168, 85, 247, 0.2);
+}
+
+.editor-field select option {
+    background: #100b18;
+
+    color: #f5f0ff;
+}
+
+
+/* =================================
+   BOTÕES
+================================= */
+
+.save-button,
+.remove-image-button,
+.master-button,
+.reset-button,
+.confirm-element-button {
+    width: 100%;
+
+    padding: 11px;
+
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease,
+        opacity 0.2s ease;
+}
+
+.save-button {
+    margin-top: 2px;
+
+    border:
+        1px solid #7c3aed;
+
+    background:
+        rgba(124, 58, 237, 0.18);
+
+    color: #e9d5ff;
+
+    font-weight: bold;
+}
+
+.save-button:hover {
+    background:
+        rgba(124, 58, 237, 0.3);
+}
+
+.remove-image-button {
+    margin-top: 7px;
+
+    border:
+        1px solid #4a4053;
+
+    background:
+        #17121d;
+
+    color: #8f839d;
+
+    font-size: 11px;
+}
+
+.remove-image-button:hover {
+    border-color: #6f3aa8;
+
+    color: #c9bdd5;
+}
+
+.save-button:active,
+.remove-image-button:active,
+.master-button:active,
+.reset-button:active,
+.confirm-element-button:active,
+.combat-use-button:active {
+    transform: scale(0.98);
+}
+
+
+/* =================================
+   MODO MESTRE
+================================= */
+
+.master-button {
+    margin-top: 14px;
+
+    border:
+        1px solid #68408a;
+
+    background:
+        #1b1424;
+
+    color: #d8c7e8;
+
+    font-weight: bold;
+}
+
+.master-button:hover {
+    border-color: #8b5cf6;
+
+    background:
+        #241633;
+}
+
+.master-controls {
+    display: none;
+
+    margin-top: 12px;
+
+    padding: 15px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.25);
+
+    background:
+        rgba(0, 0, 0, 0.25);
+
+    animation:
+        masterOpen 0.25s ease;
+}
+
+.master-controls.active {
+    display: block;
+}
+
+@keyframes masterOpen {
+
+    from {
+        opacity: 0;
+
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+
+        transform: translateY(0);
+    }
+
+}
+
+.master-controls h3 {
+    margin:
+        0 0 14px;
+
+    color: #c084fc;
+
+    font-size: 12px;
+
+    letter-spacing: 1px;
+}
+
+.control {
+    margin-bottom: 13px;
+}
+
+.control label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: #8f839d;
+
+    font-size: 9px;
+}
+
+.xp-control {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+}
+
+.xp-control input {
+    flex-basis: 100%;
+}
+
+.xp-control button {
+    flex: 1;
+
+    min-height: 34px;
+
+    border:
+        1px solid #68408a;
+
+    border-radius: 8px;
+
+    background:
+        #1b1424;
+
+    color: #d8c7e8;
+
+    cursor: pointer;
+}
+
+.xp-control button:hover {
+    border-color: #a855f7;
+
+    background:
+        #241633;
+}
+
+.reset-button {
+    margin-top: 4px;
+
+    border:
+        1px solid #67384f;
+
+    background:
+        rgba(127, 29, 29, 0.12);
+
+    color: #d6a8ba;
+
+    font-size: 10px;
+
+    letter-spacing: 0.5px;
+}
+
+.reset-button:hover {
+    border-color: #a84b75;
+
+    background:
+        rgba(127, 29, 29, 0.22);
+}
+
+
+/* =================================
+   CARD 2 — STATUS
+================================= */
+
+#dimension-stats .section-block {
+    margin-bottom: 16px;
+}
 
 .section-block {
     margin-bottom: 18px;
@@ -832,23 +1156,14 @@ button {
 }
 
 .section-block h3 {
-    margin: 0 0 12px;
+    margin:
+        0 0 12px;
 
     color: #b9a9c8;
 
     font-size: 11px;
 
     letter-spacing: 2px;
-}
-
-.empty-state {
-    padding: 20px 10px;
-
-    text-align: center;
-
-    color: #62576c;
-
-    font-size: 11px;
 }
 
 
@@ -866,7 +1181,18 @@ button {
 }
 
 .stat-box {
+    position: relative;
+
+    min-height: 72px;
+
     padding: 12px 8px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
 
     text-align: center;
 
@@ -899,12 +1225,106 @@ button {
     font-size: 18px;
 }
 
+.attribute-plus {
+    position: absolute;
+
+    top: 5px;
+    right: 5px;
+
+    width: 22px;
+    height: 22px;
+
+    padding: 0;
+
+    border:
+        1px solid #68408a;
+
+    border-radius: 50%;
+
+    background:
+        #1b1424;
+
+    color: #d8b4fe;
+
+    cursor: pointer;
+
+    opacity: 0.55;
+
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+.attribute-plus:hover {
+    opacity: 1;
+
+    transform: scale(1.08);
+
+    border-color: #a855f7;
+}
+
 
 /* =================================
-   INVENTÁRIO
+   PONTOS DE ATRIBUTO
 ================================= */
 
-.equipment-grid {
+.attribute-points {
+    text-align: center;
+
+    background:
+        rgba(124, 58, 237, 0.07);
+
+    border-color:
+        rgba(139, 92, 246, 0.3);
+}
+
+.attribute-points h3 {
+    margin-bottom: 8px;
+
+    color: #c084fc;
+}
+
+.attribute-points strong {
+    display: block;
+
+    color: #e9d5ff;
+
+    font-size: 28px;
+}
+
+.attribute-points span {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #75687f;
+
+    font-size: 9px;
+}
+
+
+/* =================================
+   ELEMENTOS
+================================= */
+
+.element-section {
+    overflow: hidden;
+}
+
+.element-instruction {
+    margin:
+        -3px 0 14px;
+
+    color: #75687f;
+
+    font-size: 9px;
+
+    line-height: 1.5;
+
+    text-align: center;
+}
+
+.element-grid {
     display: grid;
 
     grid-template-columns:
@@ -913,10 +1333,12 @@ button {
     gap: 8px;
 }
 
-.equipment-slot {
-    min-height: 105px;
+.element-option {
+    position: relative;
 
-    padding: 12px 6px;
+    min-height: 76px;
+
+    padding: 10px 5px;
 
     display: flex;
 
@@ -927,7 +1349,181 @@ button {
 
     gap: 5px;
 
-    text-align: center;
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    border-radius: 12px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: #b9a9c8;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.25s ease,
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+}
+
+.element-option span {
+    font-size: 22px;
+
+    line-height: 1;
+}
+
+.element-option strong {
+    font-size: 10px;
+
+    font-weight: normal;
+}
+
+.element-option:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(168, 85, 247, 0.45);
+
+    background:
+        rgba(124, 58, 237, 0.08);
+}
+
+.element-option.selected {
+    border-color: #a855f7;
+
+    background:
+        rgba(124, 58, 237, 0.16);
+
+    box-shadow:
+        0 0 18px rgba(139, 92, 246, 0.22);
+}
+
+.element-option.confirmed {
+    border-color: #c084fc;
+
+    box-shadow:
+        0 0 25px rgba(168, 85, 247, 0.35);
+
+    animation:
+        elementConfirmed 0.7s ease;
+}
+
+.element-option.locked {
+    opacity: 0.3;
+
+    cursor: not-allowed;
+}
+
+@keyframes elementConfirmed {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+.confirm-element-button {
+    margin-top: 12px;
+
+    border:
+        1px solid #68408a;
+
+    background:
+        rgba(124, 58, 237, 0.12);
+
+    color: #d8c7e8;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+}
+
+.confirm-element-button:not(:disabled):hover {
+    border-color: #a855f7;
+
+    background:
+        rgba(124, 58, 237, 0.24);
+}
+
+.confirm-element-button:disabled {
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
+
+/* =================================
+   EFEITOS ELEMENTAIS
+================================= */
+
+.element-effect {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 9999;
+
+    pointer-events: none;
+
+    opacity: 0;
+}
+
+.element-effect.active {
+    animation:
+        elementalFlash 0.8s ease;
+}
+
+@keyframes elementalFlash {
+
+    0% {
+        opacity: 0;
+    }
+
+    25% {
+        opacity: 0.18;
+    }
+
+    100% {
+        opacity: 0;
+    }
+
+}
+
+
+/* =================================
+   CARD 3 — COMBATE
+================================= */
+
+.combat-resources {
+    display: grid;
+
+    grid-template-columns:
+        1fr 1fr;
+
+    gap: 8px;
+
+    margin-bottom: 16px;
+}
+
+.combat-resource {
+    padding: 13px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
 
     border-radius: 12px;
 
@@ -938,19 +1534,321 @@ button {
         1px solid rgba(255, 255, 255, 0.06);
 }
 
-.equipment-slot span {
-    font-size: 20px;
+.combat-resource span {
+    color: #8f839d;
+
+    font-size: 10px;
 }
 
-.equipment-slot small {
+.combat-resource strong {
+    color: #e9d5ff;
+
+    font-size: 18px;
+}
+
+.combat-action {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 12px;
+}
+
+.combat-action h3 {
+    margin-bottom: 7px;
+}
+
+.combat-action p {
+    margin: 0;
+
+    color: #75687f;
+
+    font-size: 9px;
+
+    line-height: 1.5;
+}
+
+.combat-use-button {
+    flex-shrink: 0;
+
+    min-width: 65px;
+
+    padding: 9px 10px;
+
+    border:
+        1px solid #68408a;
+
+    border-radius: 8px;
+
+    background:
+        #1b1424;
+
+    color: #d8c7e8;
+
+    font-size: 9px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.combat-use-button:hover {
+    border-color: #a855f7;
+
+    background:
+        #241633;
+}
+
+.combat-use-button:disabled {
+    opacity: 0.35;
+
+    cursor: not-allowed;
+}
+
+.ability-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+}
+
+.ability-card {
+    padding: 11px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    border-radius: 11px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ability-card > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 4px;
+}
+
+.ability-card strong {
+    color: #d8c7e8;
+
+    font-size: 12px;
+}
+
+.ability-card small {
     color: #75687f;
 
     font-size: 8px;
+}
+
+.combat-log {
+    max-height: 190px;
+
+    overflow-y: auto;
+}
+
+.combat-log p {
+    margin: 0 0 7px;
+
+    padding: 8px;
+
+    border-radius: 8px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: #8f839d;
+
+    font-size: 9px;
+}
+
+.combat-log p:last-child {
+    margin-bottom: 0;
+}
+
+
+/* =================================
+   CARD 4 — INVENTÁRIO
+================================= */
+
+.inventory-capacity {
+    margin-bottom: 16px;
+
+    padding: 14px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    border-radius: 12px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.25);
+
+    background:
+        rgba(124, 58, 237, 0.06);
+}
+
+.inventory-capacity span {
+    color: #75687f;
+
+    font-size: 9px;
 
     letter-spacing: 1px;
 }
 
-.equipment-slot strong {
+.inventory-capacity strong {
+    color: #d8b4fe;
+
+    font-size: 13px;
+}
+
+
+/* =================================
+   EQUIPAMENTOS
+================================= */
+
+.equipment-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+.equipment-row {
+    min-height: 55px;
+
+    padding: 9px 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+}
+
+.equipment-row > span {
+    width: 32px;
+
+    text-align: center;
+
+    font-size: 18px;
+}
+
+.equipment-row > div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.equipment-row small {
+    color: #62576c;
+
+    font-size: 7px;
+
+    letter-spacing: 1px;
+}
+
+.equipment-row strong {
+    color: #b9a9c8;
+
+    font-size: 11px;
+}
+
+
+/* =================================
+   LISTA DE INVENTÁRIO
+================================= */
+
+.inventory-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 6px;
+
+    max-height: 500px;
+
+    overflow-y: auto;
+}
+
+.inventory-item {
+    min-height: 48px;
+
+    padding: 8px 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.06);
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.inventory-item:hover {
+    border-color:
+        rgba(139, 92, 246, 0.35);
+
+    background:
+        rgba(124, 58, 237, 0.07);
+}
+
+.inventory-item-name {
+    color: #c9bdd5;
+
+    font-size: 10px;
+}
+
+.inventory-item-type {
+    color: #62576c;
+
+    font-size: 8px;
+}
+
+.inventory-empty {
+    padding: 22px 10px;
+
+    text-align: center;
+
     color: #62576c;
 
     font-size: 10px;
@@ -958,7 +1856,74 @@ button {
 
 
 /* =================================
-   CELULAR
+   SLOTS
+================================= */
+
+.inventory-slots {
+    display: grid;
+
+    grid-template-columns:
+        repeat(5, 1fr);
+
+    gap: 4px;
+
+    margin-top: 14px;
+
+    max-height: 130px;
+
+    overflow: hidden;
+}
+
+.inventory-slot {
+    height: 22px;
+
+    border-radius: 5px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.04);
+
+    background:
+        rgba(255, 255, 255, 0.018);
+}
+
+
+/* =================================
+   SCROLLBAR
+================================= */
+
+* {
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        #4b3261
+        #100b18;
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background:
+        #100b18;
+}
+
+::-webkit-scrollbar-thumb {
+    background:
+        #4b3261;
+
+    border-radius:
+        10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background:
+        #68408a;
+}
+
+
+/* =================================
+   RESPONSIVIDADE
 ================================= */
 
 @media (max-width: 420px) {
@@ -985,7 +1950,11 @@ button {
     }
 
     .dimension-button span {
-        font-size: 8px;
+        font-size: 15px;
+    }
+
+    .dimension-button strong {
+        font-size: 7px;
     }
 
     #dimension-character {
@@ -1017,11 +1986,21 @@ button {
         font-size: 22px;
     }
 
+    .element-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .inventory-slots {
+        grid-template-columns:
+            repeat(5, 1fr);
+    }
+
 }
 
 
 /* =================================
-   CELULARES MUITO PEQUENOS
+   CELULARES PEQUENOS
 ================================= */
 
 @media (max-width: 340px) {
@@ -1031,7 +2010,11 @@ button {
     }
 
     .dimension-button span {
-        font-size: 7px;
+        font-size: 14px;
+    }
+
+    .dimension-button strong {
+        font-size: 6px;
     }
 
     .character-art {
@@ -1050,6 +2033,10 @@ button {
 
     #dimension-character .crest-symbol {
         font-size: 19px;
+    }
+
+    .combat-action {
+        align-items: flex-start;
     }
 
 }
