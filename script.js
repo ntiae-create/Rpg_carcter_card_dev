@@ -5,7 +5,37 @@
 
 
 /* =========================================================
-   DADOS DAS RAÇAS
+   CONFIGURAÇÕES
+========================================================= */
+
+const STORAGE_KEY = "rpg_character_card";
+
+
+/* =========================================================
+   XP POR NÍVEL
+========================================================= */
+
+const XP_LEVELS = {
+    1: 100,
+    2: 150,
+    3: 225,
+    4: 325,
+    5: 450,
+    6: 600,
+    7: 775,
+    8: 975,
+    9: 1200,
+    10: 1200,
+    11: 1350,
+    12: 1500,
+    13: 1650,
+    14: 1800,
+    15: 1950
+};
+
+
+/* =========================================================
+   RAÇAS
 ========================================================= */
 
 const RACES = {
@@ -14,7 +44,7 @@ const RACES = {
         hp: 25,
         mp: 15,
         est: 30,
-        sanity: 100,
+        sanidade: 100,
         atk: 4,
         atkMgc: 4,
         def: 8,
@@ -27,7 +57,7 @@ const RACES = {
         hp: 23,
         mp: 22,
         est: 25,
-        sanity: 100,
+        sanidade: 100,
         atk: 3,
         atkMgc: 7,
         def: 6,
@@ -40,7 +70,7 @@ const RACES = {
         hp: 22,
         mp: 25,
         est: 25,
-        sanity: 100,
+        sanidade: 100,
         atk: 3,
         atkMgc: 8,
         def: 5,
@@ -53,7 +83,7 @@ const RACES = {
         hp: 30,
         mp: 10,
         est: 35,
-        sanity: 90,
+        sanidade: 90,
         atk: 9,
         atkMgc: 3,
         def: 7,
@@ -66,7 +96,7 @@ const RACES = {
         hp: 35,
         mp: 8,
         est: 40,
-        sanity: 80,
+        sanidade: 80,
         atk: 11,
         atkMgc: 2,
         def: 6,
@@ -86,57 +116,90 @@ const ELEMENTS = {
 
     agua: {
         name: "Água",
-        symbol: "💧",
-        crest: "🐺",
-        guardian: "Guardião do Lobo"
+        symbol: "💧"
     },
 
     luz: {
         name: "Luz",
-        symbol: "✨",
-        crest: "🐯",
-        guardian: "Guardião do Tigre"
+        symbol: "☀️"
     },
 
     terra: {
         name: "Terra",
-        symbol: "🌍",
-        crest: "🐻",
-        guardian: "Guardião do Urso"
+        symbol: "🪨"
     },
 
     trevas: {
         name: "Trevas",
-        symbol: "🌑",
-        crest: "🦊",
-        guardian: "Guardião da Raposa"
+        symbol: "🌑"
     },
 
     vento: {
         name: "Vento",
-        symbol: "🌪️",
-        crest: "🦅",
-        guardian: "Guardião da Águia"
+        symbol: "🌪️"
     },
 
     fogo: {
         name: "Fogo",
-        symbol: "🔥",
-        crest: "🐉",
-        guardian: "Guardião do Dragão"
+        symbol: "🔥"
     },
 
     fisico: {
         name: "Físico",
-        symbol: "🦣",
-        crest: "🦣",
-        guardian: "Guardião do Mamute"
+        symbol: "💪"
     },
 
     magico: {
         name: "Mágico",
+        symbol: "✨"
+    }
+
+};
+
+
+/* =========================================================
+   BRASÕES
+========================================================= */
+
+const CRESTS = {
+
+    agua: {
+        symbol: "🐺",
+        guardian: "Guardião do Lobo"
+    },
+
+    luz: {
+        symbol: "🐯",
+        guardian: "Guardião do Tigre"
+    },
+
+    terra: {
+        symbol: "🐻",
+        guardian: "Guardião do Urso"
+    },
+
+    trevas: {
+        symbol: "🦊",
+        guardian: "Guardião da Raposa"
+    },
+
+    vento: {
+        symbol: "🦅",
+        guardian: "Guardião da Águia"
+    },
+
+    fogo: {
+        symbol: "🐉",
+        guardian: "Guardião do Dragão"
+    },
+
+    fisico: {
+        symbol: "🦣",
+        guardian: "Guardião do Mamute"
+    },
+
+    magico: {
         symbol: "🦉",
-        crest: "🦉",
         guardian: "Guardião da Coruja"
     }
 
@@ -144,47 +207,7 @@ const ELEMENTS = {
 
 
 /* =========================================================
-   XP DO PERSONAGEM
-========================================================= */
-
-const XP_LEVELS = {
-
-    1: 100,
-    2: 150,
-    3: 225,
-    4: 325,
-    5: 450,
-    6: 600,
-    7: 775,
-    8: 975,
-    9: 1200,
-    10: 1200,
-    11: 1350,
-    12: 1500,
-    13: 1650,
-    14: 1800,
-    15: 1950,
-    16: 2100,
-    17: 2250,
-    18: 2400,
-    19: 2550,
-    20: 2700,
-    21: 2850,
-    22: 3000,
-    23: 3150,
-    24: 3300,
-    25: 3450,
-    26: 3600,
-    27: 3750,
-    28: 3900,
-    29: 4050,
-    30: 0
-
-};
-
-
-/* =========================================================
-   XP DOS BRASÕES
+   ESTÁGIOS DO BRASÃO
 ========================================================= */
 
 const CREST_STAGES = [
@@ -238,162 +261,200 @@ const CREST_STAGES = [
 
 
 /* =========================================================
-   ESTADO INICIAL
+   ESTADO PADRÃO
 ========================================================= */
 
-const DEFAULT_CHARACTER = {
+function criarEstadoInicial() {
 
-    name: "Nome do Personagem",
+    const race = RACES["Humano"];
 
-    race: "Humano",
+    return {
 
-    class: "Saber",
+        name: "Personagem",
 
-    element: null,
+        race: "Humano",
 
-    image: "",
+        class: "Saber",
 
-    level: 1,
+        affinity: null,
 
-    xp: 0,
+        level: 1,
 
-    crestXp: 0,
+        xp: 0,
 
-    attributePoints: 3,
+        crestXP: 0,
 
-    stats: {
-        hp: 25,
-        mp: 15,
-        est: 30,
-        sanity: 100,
+        crestMilestones: 0,
 
-        atk: 4,
-        atkMgc: 4,
-        def: 8,
-        res: 8,
-        agi: 8,
-        int: 15
-    },
+        imageURL: "",
 
-    inventoryCapacity: 50,
 
-    inventory: [],
+        resources: {
 
-    equipment: {
-        weapon: "Vazio",
-        armor: "Vazio",
-        accessory: "Vazio",
-        relic: "Vazio"
-    },
+            hp: race.hp,
+            mp: race.mp,
+            est: race.est,
+            sanidade: race.sanidade
 
-    abilities: [
-
-        {
-            name: "[EDITÁVEL]",
-            type: "MP",
-            cost: 0,
-            description: ""
         },
 
-        {
-            name: "[EDITÁVEL]",
-            type: "MP",
-            cost: 0,
-            description: ""
+
+        attributes: {
+
+            atk: race.atk,
+            atkMgc: race.atkMgc,
+            def: race.def,
+            res: race.res,
+            agi: race.agi,
+            int: race.int
+
         },
 
-        {
-            name: "[EDITÁVEL]",
-            type: "EST",
-            cost: 0,
-            description: ""
+
+        attributePoints: 3,
+
+
+        combat: {
+
+            basicAttackName: "Ataque básico",
+
+            abilities: [
+
+                {
+                    name: "",
+                    costType: "mp",
+                    cost: 0,
+                    description: ""
+                },
+
+                {
+                    name: "",
+                    costType: "mp",
+                    cost: 0,
+                    description: ""
+                },
+
+                {
+                    name: "",
+                    costType: "mp",
+                    cost: 0,
+                    description: ""
+                }
+
+            ],
+
+            passive: {
+
+                name: "",
+
+                description: ""
+
+            },
+
+            log: []
+
+        },
+
+
+        inventory: {
+
+            items: [],
+
+            equipment: {
+
+                weapon: "",
+                armor: "",
+                accessory: "",
+                relic: ""
+
+            }
+
         }
 
-    ],
+    };
 
-    passive: {
-        name: "[EDITÁVEL]",
-        description: ""
-    },
-
-    combatLog: []
-
-};
+}
 
 
 /* =========================================================
-   ESTADO ATUAL
+   CARREGAR ESTADO
 ========================================================= */
 
 let character = carregarPersonagem();
 
-let selectedElement = null;
-
-
-/* =========================================================
-   LOCAL STORAGE
-========================================================= */
 
 function carregarPersonagem() {
 
-    const salvo = localStorage.getItem(
-        "rpgCharacterCard"
-    );
+    const saved = localStorage.getItem(STORAGE_KEY);
 
-    if (!salvo) {
+    if (!saved) {
 
-        return structuredClone(DEFAULT_CHARACTER);
+        return criarEstadoInicial();
 
     }
 
     try {
 
-        const dados = JSON.parse(salvo);
+        const data = JSON.parse(saved);
 
-        return {
+        const base = criarEstadoInicial();
 
-            ...structuredClone(DEFAULT_CHARACTER),
+        return mesclarObjetos(base, data);
 
-            ...dados,
+    } catch (error) {
 
-            stats: {
-                ...DEFAULT_CHARACTER.stats,
-                ...(dados.stats || {})
-            },
+        console.error(
+            "Erro ao carregar personagem:",
+            error
+        );
 
-            equipment: {
-                ...DEFAULT_CHARACTER.equipment,
-                ...(dados.equipment || {})
-            },
-
-            abilities:
-                Array.isArray(dados.abilities)
-                    ? dados.abilities
-                    : structuredClone(DEFAULT_CHARACTER.abilities),
-
-            passive:
-                dados.passive || structuredClone(DEFAULT_CHARACTER.passive),
-
-            inventory:
-                Array.isArray(dados.inventory)
-                    ? dados.inventory
-                    : []
-
-        };
-
-    } catch {
-
-        return structuredClone(DEFAULT_CHARACTER);
+        return criarEstadoInicial();
 
     }
 
 }
 
 
+/* =========================================================
+   MERGE
+========================================================= */
+
+function mesclarObjetos(base, extra) {
+
+    for (const key in extra) {
+
+        if (
+            extra[key] &&
+            typeof extra[key] === "object" &&
+            !Array.isArray(extra[key])
+        ) {
+
+            base[key] = mesclarObjetos(
+                base[key] || {},
+                extra[key]
+            );
+
+        } else {
+
+            base[key] = extra[key];
+
+        }
+
+    }
+
+    return base;
+
+}
+
+
+/* =========================================================
+   SALVAR
+========================================================= */
+
 function salvarPersonagem() {
 
     localStorage.setItem(
-        "rpgCharacterCard",
+        STORAGE_KEY,
         JSON.stringify(character)
     );
 
@@ -401,30 +462,27 @@ function salvarPersonagem() {
 
 
 /* =========================================================
-   INICIALIZAÇÃO
+   UTILIDADES
 ========================================================= */
 
-document.addEventListener(
-    "DOMContentLoaded",
-    iniciar
-);
+function get(id) {
+
+    return document.getElementById(id);
+
+}
 
 
-function iniciar() {
+function limitarNumero(valor, minimo = 0) {
 
-    configurarNavegacao();
+    const numero = Number(valor);
 
-    configurarModoMestre();
+    if (Number.isNaN(numero)) {
 
-    configurarEditor();
+        return minimo;
 
-    configurarAtributos();
+    }
 
-    configurarElementos();
-
-    configurarCombate();
-
-    atualizarTudo();
+    return Math.max(minimo, numero);
 
 }
 
@@ -440,10 +498,11 @@ function configurarNavegacao() {
             ".dimension-button"
         );
 
-    const dimensions =
+    const sections =
         document.querySelectorAll(
-            ".card-dimension"
+            "[data-dimension-content]"
         );
+
 
     buttons.forEach(button => {
 
@@ -454,15 +513,17 @@ function configurarNavegacao() {
                 const dimension =
                     button.dataset.dimension;
 
-                buttons.forEach(btn => {
 
-                    btn.classList.remove(
+                buttons.forEach(item => {
+
+                    item.classList.remove(
                         "active"
                     );
 
                 });
 
-                dimensions.forEach(section => {
+
+                sections.forEach(section => {
 
                     section.classList.remove(
                         "active"
@@ -470,14 +531,15 @@ function configurarNavegacao() {
 
                 });
 
-                button.classList.add(
-                    "active"
-                );
+
+                button.classList.add("active");
+
 
                 const target =
                     document.querySelector(
                         `[data-dimension-content="${dimension}"]`
                     );
+
 
                 if (target) {
 
@@ -488,6 +550,7 @@ function configurarNavegacao() {
                 }
 
             }
+
         );
 
     });
@@ -496,254 +559,62 @@ function configurarNavegacao() {
 
 
 /* =========================================================
-   ATUALIZAÇÃO GERAL
+   MODO MESTRE
 ========================================================= */
 
-function atualizarTudo() {
+function configurarModoMestre() {
 
-    atualizarPersonagem();
+    const button =
+        get("master-button");
 
-    atualizarStatus();
+    const controls =
+        get("master-controls");
 
-    atualizarElementos();
 
-    atualizarBrasao();
-
-    atualizarInventario();
-
-    atualizarCombate();
-
-    atualizarAbilities();
-
-}
-
-
-/* =========================================================
-   PERSONAGEM
-========================================================= */
-
-function atualizarPersonagem() {
-
-    const name =
-        document.getElementById(
-            "character-name"
-        );
-
-    const race =
-        document.getElementById(
-            "character-race"
-        );
-
-    const classElement =
-        document.getElementById(
-            "character-class"
-        );
-
-    const level =
-        document.getElementById(
-            "character-level"
-        );
-
-    const affinity =
-        document.getElementById(
-            "character-affinity"
-        );
-
-    const affinitySymbol =
-        document.getElementById(
-            "character-affinity-symbol"
-        );
-
-    const crest =
-        document.getElementById(
-            "crest-symbol"
-        );
-
-    if (name) {
-
-        name.textContent =
-            character.name;
-
-    }
-
-    if (race) {
-
-        race.textContent =
-            character.race;
-
-    }
-
-    if (classElement) {
-
-        classElement.textContent =
-            character.class;
-
-    }
-
-    if (level) {
-
-        level.textContent =
-            character.level;
-
-    }
-
-    if (character.element) {
-
-        const element =
-            ELEMENTS[
-                character.element
-            ];
-
-        if (element) {
-
-            if (affinity) {
-
-                affinity.textContent =
-                    element.name;
-
-            }
-
-            if (affinitySymbol) {
-
-                affinitySymbol.textContent =
-                    element.symbol;
-
-            }
-
-            if (crest) {
-
-                crest.textContent =
-                    element.crest;
-
-            }
-
-        }
-
-    } else {
-
-        if (affinity) {
-
-            affinity.textContent =
-                "Não escolhida";
-
-        }
-
-        if (affinitySymbol) {
-
-            affinitySymbol.textContent =
-                "❔";
-
-        }
-
-        if (crest) {
-
-            crest.textContent =
-                "❔";
-
-        }
-
-    }
-
-
-    atualizarImagem();
-
-    atualizarXP();
-
-}
-
-
-/* =========================================================
-   IMAGEM
-========================================================= */
-
-function atualizarImagem() {
-
-    const container =
-        document.getElementById(
-            "character-art-container"
-        );
-
-    if (!container) return;
-
-
-    if (!character.image) {
-
-        container.innerHTML = `
-
-            <span>
-                IMAGEM
-            </span>
-
-            <small>
-                Nenhuma imagem definida
-            </small>
-
-        `;
+    if (!button || !controls) {
 
         return;
 
     }
 
 
-    container.innerHTML = `
+    button.addEventListener(
+        "click",
+        event => {
 
-        <img
-            src="${escapeAttribute(character.image)}"
-            alt="Imagem do personagem"
-            style="
-                width:100%;
-                height:100%;
-                object-fit:cover;
-                display:block;
-            "
-            onerror="
-                this.style.display='none';
-                this.nextElementSibling.style.display='flex';
-            "
-        >
+            event.stopPropagation();
 
-        <small
-            style="
-                display:none;
-                align-items:center;
-                justify-content:center;
-                height:100%;
-            "
-        >
-            Não foi possível carregar a imagem.
-        </small>
+            controls.classList.toggle(
+                "active"
+            );
 
-    `;
+        }
+    );
 
 }
 
 
+/* =========================================================
+   EDITOR DE PERSONAGEM
+========================================================= */
+
 function configurarEditor() {
 
     const nameInput =
-        document.getElementById(
-            "character-name-input"
-        );
+        get("character-name-input");
 
     const raceSelect =
-        document.getElementById(
-            "character-race-select"
-        );
+        get("character-race-select");
 
     const classSelect =
-        document.getElementById(
-            "character-class-select"
-        );
+        get("character-class-select");
 
-    const imageInput =
-        document.getElementById(
-            "character-image-url"
-        );
 
     if (nameInput) {
 
         nameInput.value =
             character.name;
+
 
         nameInput.addEventListener(
             "input",
@@ -751,11 +622,11 @@ function configurarEditor() {
 
                 character.name =
                     nameInput.value ||
-                    "Nome do Personagem";
+                    "Personagem";
+
+                atualizarInterface();
 
                 salvarPersonagem();
-
-                atualizarPersonagem();
 
             }
         );
@@ -767,6 +638,7 @@ function configurarEditor() {
 
         raceSelect.value =
             character.race;
+
 
         raceSelect.addEventListener(
             "change",
@@ -787,6 +659,7 @@ function configurarEditor() {
         classSelect.value =
             character.class;
 
+
         classSelect.addEventListener(
             "change",
             () => {
@@ -794,9 +667,9 @@ function configurarEditor() {
                 character.class =
                     classSelect.value;
 
-                salvarPersonagem();
+                atualizarInterface();
 
-                atualizarPersonagem();
+                salvarPersonagem();
 
             }
         );
@@ -804,18 +677,21 @@ function configurarEditor() {
     }
 
 
-    if (imageInput) {
+    const imageURL =
+        get("character-image-url");
 
-        imageInput.value =
-            character.image;
+
+    if (imageURL) {
+
+        imageURL.value =
+            character.imageURL || "";
 
     }
 
 
     const applyImage =
-        document.getElementById(
-            "apply-image-url"
-        );
+        get("apply-image-url");
+
 
     if (applyImage) {
 
@@ -823,14 +699,12 @@ function configurarEditor() {
             "click",
             () => {
 
-                character.image =
-                    imageInput
-                        ? imageInput.value.trim()
-                        : "";
-
-                salvarPersonagem();
+                character.imageURL =
+                    imageURL.value.trim();
 
                 atualizarImagem();
+
+                salvarPersonagem();
 
             }
         );
@@ -839,9 +713,8 @@ function configurarEditor() {
 
 
     const removeImage =
-        document.getElementById(
-            "remove-image-button"
-        );
+        get("remove-image-button");
+
 
     if (removeImage) {
 
@@ -849,17 +722,17 @@ function configurarEditor() {
             "click",
             () => {
 
-                character.image = "";
+                character.imageURL = "";
 
-                if (imageInput) {
+                if (imageURL) {
 
-                    imageInput.value = "";
+                    imageURL.value = "";
 
                 }
 
-                salvarPersonagem();
-
                 atualizarImagem();
+
+                salvarPersonagem();
 
             }
         );
@@ -870,412 +743,72 @@ function configurarEditor() {
 
 
 /* =========================================================
-   RAÇA
+   ALTERAR RAÇA
 ========================================================= */
 
-function alterarRaca(race) {
+function alterarRaca(raceName) {
 
-    if (!RACES[race]) return;
+    const race =
+        RACES[raceName];
 
-    const oldStats =
-        character.stats;
 
-    const newBase =
-        RACES[race];
+    if (!race) {
+
+        return;
+
+    }
+
 
     character.race =
-        race;
-
-    character.stats = {
-
-        hp: newBase.hp,
-        mp: newBase.mp,
-        est: newBase.est,
-        sanity: newBase.sanity,
-
-        atk:
-            newBase.atk,
-
-        atkMgc:
-            newBase.atkMgc,
-
-        def:
-            newBase.def,
-
-        res:
-            newBase.res,
-
-        agi:
-            newBase.agi,
-
-        int:
-            newBase.int
-
-    };
+        raceName;
 
 
-    /*
-       Mantém o nível e pontos gastos.
-       A troca de raça no editor serve para
-       configurar a ficha enquanto estamos
-       desenvolvendo o sistema.
-    */
+    character.resources.hp =
+        race.hp;
 
-    character.stats.hp =
-        Math.max(
-            0,
-            Math.min(
-                oldStats.hp,
-                character.stats.hp
-            )
-        );
+    character.resources.mp =
+        race.mp;
+
+    character.resources.est =
+        race.est;
+
+    character.resources.sanidade =
+        race.sanidade;
 
 
-    character.stats.mp =
-        Math.max(
-            0,
-            Math.min(
-                oldStats.mp,
-                character.stats.mp
-            )
-        );
+    character.attributes.atk =
+        race.atk;
+
+    character.attributes.atkMgc =
+        race.atkMgc;
+
+    character.attributes.def =
+        race.def;
+
+    character.attributes.res =
+        race.res;
+
+    character.attributes.agi =
+        race.agi;
+
+    character.attributes.int =
+        race.int;
 
 
-    character.stats.est =
-        Math.max(
-            0,
-            Math.min(
-                oldStats.est,
-                character.stats.est
-            )
-        );
-
+    atualizarInterface();
 
     salvarPersonagem();
 
-    atualizarTudo();
-
 }
 
 
 /* =========================================================
-   XP
+   AFINIDADE ELEMENTAL
 ========================================================= */
 
-function atualizarXP() {
+let elementoSelecionado =
+    character.affinity || null;
 
-    const text =
-        document.getElementById(
-            "character-xp-text"
-        );
-
-    const progress =
-        document.getElementById(
-            "character-xp-progress"
-        );
-
-    if (!text || !progress) return;
-
-
-    if (character.level >= 30) {
-
-        text.textContent =
-            `${character.xp} XP — NÍVEL MÁXIMO`;
-
-        progress.style.width =
-            "100%";
-
-        return;
-
-    }
-
-
-    const needed =
-        XP_LEVELS[
-            character.level
-        ] || 100;
-
-    const percent =
-        Math.min(
-            100,
-            (character.xp / needed) * 100
-        );
-
-
-    text.textContent =
-        `${character.xp} / ${needed} XP`;
-
-    progress.style.width =
-        `${percent}%`;
-
-}
-
-
-function adicionarXP(valor) {
-
-    valor =
-        Number(valor);
-
-    if (!Number.isFinite(valor) ||
-        valor <= 0) {
-
-        return;
-
-    }
-
-
-    character.xp += valor;
-
-    processarLevelUp();
-
-    salvarPersonagem();
-
-    atualizarTudo();
-
-}
-
-
-function removerXP(valor) {
-
-    valor =
-        Number(valor);
-
-    if (!Number.isFinite(valor) ||
-        valor <= 0) {
-
-        return;
-
-    }
-
-
-    character.xp =
-        Math.max(
-            0,
-            character.xp - valor
-        );
-
-    salvarPersonagem();
-
-    atualizarTudo();
-
-}
-
-
-/* =========================================================
-   LEVEL UP
-========================================================= */
-
-function processarLevelUp() {
-
-    while (
-
-        character.level < 30 &&
-
-        character.xp >=
-        XP_LEVELS[character.level]
-
-    ) {
-
-        character.xp -=
-            XP_LEVELS[character.level];
-
-        character.level++;
-
-        /*
-           +3 pontos de atributo
-           a cada nível, incluindo o sistema
-           já iniciado no nível 1.
-        */
-
-        character.attributePoints += 3;
-
-
-        /*
-           +1 SANIDADE por nível.
-        */
-
-        character.stats.sanity += 1;
-
-
-        /*
-           A cada 3 níveis:
-           +5 HP
-           +5 MP
-           +5 EST
-        */
-
-        if (
-            character.level % 3 === 0
-        ) {
-
-            character.stats.hp += 5;
-
-            character.stats.mp += 5;
-
-            character.stats.est += 5;
-
-        }
-
-
-        /*
-           A cada 10 níveis:
-           +50 espaços no inventário.
-        */
-
-        if (
-            character.level % 10 === 0
-        ) {
-
-            character.inventoryCapacity += 50;
-
-        }
-
-    }
-
-
-    if (character.level >= 30) {
-
-        character.level = 30;
-
-        character.xp = 0;
-
-    }
-
-}
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function atualizarStatus() {
-
-    definirTexto(
-        "status-hp",
-        character.stats.hp
-    );
-
-    definirTexto(
-        "status-mp",
-        character.stats.mp
-    );
-
-    definirTexto(
-        "status-est",
-        character.stats.est
-    );
-
-    definirTexto(
-        "status-sanity",
-        character.stats.sanity
-    );
-
-    definirTexto(
-        "status-atk",
-        character.stats.atk
-    );
-
-    definirTexto(
-        "status-atk-mgc",
-        character.stats.atkMgc
-    );
-
-    definirTexto(
-        "status-def",
-        character.stats.def
-    );
-
-    definirTexto(
-        "status-res",
-        character.stats.res
-    );
-
-    definirTexto(
-        "status-agi",
-        character.stats.agi
-    );
-
-    definirTexto(
-        "status-int",
-        character.stats.int
-    );
-
-    definirTexto(
-        "available-attribute-points",
-        character.attributePoints
-    );
-
-}
-
-
-/* =========================================================
-   ATRIBUTOS
-========================================================= */
-
-function configurarAtributos() {
-
-    document
-        .querySelectorAll(
-            ".attribute-plus"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const attribute =
-                        button.dataset.attribute;
-
-                    adicionarAtributo(
-                        attribute
-                    );
-
-                }
-            );
-
-        });
-
-}
-
-
-function adicionarAtributo(attribute) {
-
-    if (
-        character.attributePoints <= 0
-    ) {
-
-        return;
-
-    }
-
-
-    if (
-        !Object.prototype.hasOwnProperty.call(
-            character.stats,
-            attribute
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    character.stats[attribute]++;
-
-    character.attributePoints--;
-
-    salvarPersonagem();
-
-    atualizarStatus();
-
-}
-
-
-/* =========================================================
-   ELEMENTOS
-========================================================= */
 
 function configurarElementos() {
 
@@ -1284,29 +817,8 @@ function configurarElementos() {
             ".element-option"
         );
 
-    const confirmButton =
-        document.getElementById(
-            "confirm-element"
-        );
-
-
-    /*
-       Se já existe uma afinidade salva,
-       ela já está confirmada.
-    */
-
-    if (character.element) {
-
-        selectedElement =
-            character.element;
-
-        bloquearSelecaoElemental();
-
-        atualizarElementos();
-
-        return;
-
-    }
+    const confirm =
+        get("confirm-element");
 
 
     options.forEach(option => {
@@ -1316,15 +828,19 @@ function configurarElementos() {
             () => {
 
                 /*
-                   Não permite alteração
-                   depois da confirmação.
+                   Se já existe afinidade,
+                   ela é permanente.
                 */
 
-                if (character.element) {
+                if (character.affinity) {
 
                     return;
 
                 }
+
+
+                elementoSelecionado =
+                    option.dataset.element;
 
 
                 options.forEach(item => {
@@ -1341,20 +857,12 @@ function configurarElementos() {
                 );
 
 
-                selectedElement =
-                    option.dataset.element;
+                if (confirm) {
 
-
-                if (confirmButton) {
-
-                    confirmButton.disabled =
+                    confirm.disabled =
                         false;
 
                 }
-
-                aplicarPreviaElemento(
-                    selectedElement
-                );
 
             }
         );
@@ -1362,11 +870,44 @@ function configurarElementos() {
     });
 
 
-    if (confirmButton) {
+    if (confirm) {
 
-        confirmButton.addEventListener(
+        confirm.addEventListener(
             "click",
-            confirmarElemento
+            () => {
+
+                if (!elementoSelecionado) {
+
+                    return;
+
+                }
+
+
+                if (character.affinity) {
+
+                    return;
+
+                }
+
+
+                character.affinity =
+                    elementoSelecionado;
+
+
+                salvarPersonagem();
+
+                atualizarInterface();
+
+                aplicarEfeitoElemental();
+
+
+                confirm.textContent =
+                    "AFINIDADE CONFIRMADA";
+
+                confirm.disabled =
+                    true;
+
+            }
         );
 
     }
@@ -1375,333 +916,383 @@ function configurarElementos() {
 
 
 /* =========================================================
-   PRÉ-VISUALIZAÇÃO DO ELEMENTO
+   EFEITO ELEMENTAL
 ========================================================= */
 
-function aplicarPreviaElemento(elementKey) {
-
-    const element =
-        ELEMENTS[elementKey];
-
-    if (!element) return;
-
+function aplicarEfeitoElemental() {
 
     const card =
-        document.getElementById(
-            "character-card"
+        document.querySelector(
+            ".character-card"
         );
 
-    if (!card) return;
 
+    if (!card) {
 
-    card.dataset.previewElement =
-        elementKey;
+        return;
+
+    }
 
 
     /*
-       Efeito visual simples.
-       O CSS pode usar:
-       [data-preview-element="fogo"]
-       etc.
+       Remove efeitos anteriores.
     */
 
-    card.classList.forEach(className => {
-
-        if (
-            className.startsWith(
-                "element-"
-            )
-        ) {
+    Object.keys(ELEMENTS).forEach(
+        element => {
 
             card.classList.remove(
-                className
+                `element-${element}`
             );
 
         }
+    );
 
-    });
+
+    if (!character.affinity) {
+
+        return;
+
+    }
 
 
     card.classList.add(
-        `element-${elementKey}`
+        `element-${character.affinity}`
     );
 
 }
 
 
 /* =========================================================
-   CONFIRMAR ELEMENTO
+   ATRIBUTOS
 ========================================================= */
 
-function confirmarElemento() {
+function configurarAtributos() {
 
-    /*
-       Proteção contra clique sem seleção.
-    */
-
-    if (!selectedElement) {
-
-        return;
-
-    }
-
-
-    /*
-       Proteção contra tentativa de trocar
-       uma afinidade já confirmada.
-    */
-
-    if (character.element) {
-
-        return;
-
-    }
-
-
-    if (
-        !ELEMENTS[selectedElement]
-    ) {
-
-        return;
-
-    }
-
-
-    character.element =
-        selectedElement;
-
-
-    /*
-       A afinidade agora é permanente.
-    */
-
-    salvarPersonagem();
-
-
-    bloquearSelecaoElemental();
-
-    atualizarPersonagem();
-
-    atualizarElementos();
-
-}
-
-
-/* =========================================================
-   BLOQUEAR ELEMENTOS
-========================================================= */
-
-function bloquearSelecaoElemental() {
-
-    const options =
+    const buttons =
         document.querySelectorAll(
-            ".element-option"
-        );
-
-    const confirmButton =
-        document.getElementById(
-            "confirm-element"
+            ".attribute-plus"
         );
 
 
-    options.forEach(option => {
+    buttons.forEach(button => {
 
-        option.disabled = true;
+        button.addEventListener(
+            "click",
+            () => {
 
-        option.classList.remove(
-            "selected"
+                const attribute =
+                    button.dataset.attribute;
+
+
+                if (
+                    character.attributePoints <= 0
+                ) {
+
+                    return;
+
+                }
+
+
+                if (
+                    character.attributes[
+                        attribute
+                    ] === undefined
+                ) {
+
+                    return;
+
+                }
+
+
+                character.attributes[
+                    attribute
+                ]++;
+
+
+                character.attributePoints--;
+
+
+                atualizarInterface();
+
+                salvarPersonagem();
+
+            }
         );
-
-        if (
-            option.dataset.element ===
-            character.element
-        ) {
-
-            option.classList.add(
-                "selected"
-            );
-
-        }
 
     });
 
+}
 
-    if (confirmButton) {
 
-        confirmButton.disabled =
-            true;
+/* =========================================================
+   XP
+========================================================= */
 
-        confirmButton.textContent =
-            "AFINIDADE CONFIRMADA";
+function obterXPNecessario(level) {
+
+    if (level < 10) {
+
+        return XP_LEVELS[level] || 100;
 
     }
+
+
+    return 1200 + (
+        Math.max(0, level - 10) * 150
+    );
 
 }
 
 
 /* =========================================================
-   ATUALIZAR ELEMENTOS
+   ADICIONAR XP
 ========================================================= */
 
-function atualizarElementos() {
+function adicionarXP(valor) {
 
-    const options =
-        document.querySelectorAll(
-            ".element-option"
-        );
+    valor =
+        limitarNumero(valor, 0);
 
 
-    if (character.element) {
+    if (valor <= 0) {
 
-        options.forEach(option => {
+        return;
 
-            option.disabled = true;
+    }
 
-            option.classList.remove(
-                "selected"
+
+    const nivelAntes =
+        character.level;
+
+
+    character.xp += valor;
+
+
+    while (
+        character.level < 30 &&
+        character.xp >=
+        obterXPNecessario(
+            character.level
+        )
+    ) {
+
+        character.xp -=
+            obterXPNecessario(
+                character.level
             );
 
-            if (
-                option.dataset.element ===
-                character.element
-            ) {
 
-                option.classList.add(
-                    "selected"
+        character.level++;
+
+
+        /*
+           Cada nível:
+           +3 pontos de atributo
+           +1 sanidade
+        */
+
+        character.attributePoints += 3;
+
+
+        character.resources.sanidade++;
+
+
+        /*
+           A cada 3 níveis:
+           +5 nos recursos.
+        */
+
+        if (
+            character.level % 3 === 0
+        ) {
+
+            character.resources.hp += 5;
+
+            character.resources.mp += 5;
+
+            character.resources.est += 5;
+
+        }
+
+    }
+
+
+    if (character.level >= 30) {
+
+        character.level = 30;
+
+        character.xp = 0;
+
+    }
+
+
+    atualizarMarcosBrasao(
+        nivelAntes,
+        character.level
+    );
+
+
+    atualizarInterface();
+
+    salvarPersonagem();
+
+}
+
+
+/* =========================================================
+   REMOVER XP
+========================================================= */
+
+function removerXP(valor) {
+
+    valor =
+        limitarNumero(valor, 0);
+
+
+    if (valor <= 0) {
+
+        return;
+
+    }
+
+
+    character.xp -= valor;
+
+
+    while (
+        character.xp < 0 &&
+        character.level > 1
+    ) {
+
+        character.level--;
+
+
+        character.xp +=
+            obterXPNecessario(
+                character.level
+            );
+
+
+        character.attributePoints =
+            Math.max(
+                0,
+                character.attributePoints - 3
+            );
+
+
+        character.resources.sanidade =
+            Math.max(
+                0,
+                character.resources.sanidade - 1
+            );
+
+    }
+
+
+    if (character.level <= 1) {
+
+        character.level = 1;
+
+        character.xp =
+            Math.max(0, character.xp);
+
+    }
+
+
+    atualizarInterface();
+
+    salvarPersonagem();
+
+}
+
+
+/* =========================================================
+   CONTROLES DE XP DO MESTRE
+========================================================= */
+
+function configurarXP() {
+
+    const amount =
+        get("xp-amount");
+
+    const add =
+        get("add-xp");
+
+    const remove =
+        get("remove-xp");
+
+
+    if (add) {
+
+        add.addEventListener(
+            "click",
+            () => {
+
+                adicionarXP(
+                    amount.value
                 );
 
             }
-
-        });
-
-        aplicarPreviaElemento(
-            character.element
         );
 
     }
 
-}
 
+    if (remove) {
 
-/* =========================================================
-   BRASÃO
-========================================================= */
+        remove.addEventListener(
+            "click",
+            () => {
 
-function atualizarBrasao() {
+                removerXP(
+                    amount.value
+                );
 
-    const stageElement =
-        document.getElementById(
-            "crest-stage"
+            }
         );
-
-    const xpElement =
-        document.getElementById(
-            "crest-xp"
-        );
-
-    const progress =
-        document.getElementById(
-            "crest-xp-progress"
-        );
-
-
-    let currentStage =
-        CREST_STAGES[0];
-
-    let nextStage =
-        null;
-
-
-    for (
-        let i = 0;
-        i < CREST_STAGES.length;
-        i++
-    ) {
-
-        if (
-            character.crestXp >=
-            CREST_STAGES[i].xp
-        ) {
-
-            currentStage =
-                CREST_STAGES[i];
-
-        }
 
     }
 
 
-    const currentIndex =
-        CREST_STAGES.indexOf(
-            currentStage
+    const crestAmount =
+        get("crest-xp-amount");
+
+    const addCrest =
+        get("add-crest-xp");
+
+    const removeCrest =
+        get("remove-crest-xp");
+
+
+    if (addCrest) {
+
+        addCrest.addEventListener(
+            "click",
+            () => {
+
+                adicionarXPDoBrasao(
+                    crestAmount.value
+                );
+
+            }
         );
 
-
-    if (
-        currentIndex <
-        CREST_STAGES.length - 1
-    ) {
-
-        nextStage =
-            CREST_STAGES[
-                currentIndex + 1
-            ];
-
     }
 
 
-    if (stageElement) {
+    if (removeCrest) {
 
-        stageElement.textContent =
-            currentStage.name;
+        removeCrest.addEventListener(
+            "click",
+            () => {
 
-    }
+                removerXPDoBrasao(
+                    crestAmount.value
+                );
 
-
-    if (xpElement) {
-
-        xpElement.textContent =
-            character.crestXp;
-
-    }
-
-
-    if (progress) {
-
-        let percent = 100;
-
-
-        if (nextStage) {
-
-            const previousXP =
-                currentStage.xp;
-
-            const nextXP =
-                nextStage.xp;
-
-            percent =
-                (
-                    (
-                        character.crestXp -
-                        previousXP
-                    ) /
-                    (
-                        nextXP -
-                        previousXP
-                    )
-                ) * 100;
-
-        }
-
-
-        progress.style.width =
-            `${Math.max(
-                0,
-                Math.min(
-                    100,
-                    percent
-                )
-            )}%`;
+            }
+        );
 
     }
 
@@ -1715,35 +1306,15 @@ function atualizarBrasao() {
 function adicionarXPDoBrasao(valor) {
 
     valor =
-        Number(valor);
-
-    if (
-        !Number.isFinite(valor) ||
-        valor <= 0
-    ) {
-
-        return;
-
-    }
+        limitarNumero(valor, 0);
 
 
-    const oldXP =
-        character.crestXp;
+    character.crestXP += valor;
 
 
-    character.crestXp +=
-        valor;
-
-
-    atualizarMarcosBrasao(
-        oldXP,
-        character.crestXp
-    );
-
+    atualizarInterface();
 
     salvarPersonagem();
-
-    atualizarBrasao();
 
 }
 
@@ -1751,28 +1322,19 @@ function adicionarXPDoBrasao(valor) {
 function removerXPDoBrasao(valor) {
 
     valor =
-        Number(valor);
-
-    if (
-        !Number.isFinite(valor) ||
-        valor <= 0
-    ) {
-
-        return;
-
-    }
+        limitarNumero(valor, 0);
 
 
-    character.crestXp =
+    character.crestXP =
         Math.max(
             0,
-            character.crestXp - valor
+            character.crestXP - valor
         );
 
 
-    salvarPersonagem();
+    atualizarInterface();
 
-    atualizarBrasao();
+    salvarPersonagem();
 
 }
 
@@ -1782,237 +1344,32 @@ function removerXPDoBrasao(valor) {
 ========================================================= */
 
 function atualizarMarcosBrasao(
-    oldXP,
-    newXP
+    nivelAntes,
+    nivelDepois
 ) {
 
-    /*
-       A cada marco de 5 níveis do
-       personagem, o brasão recebe
-       500 XP.
-
-       Isso é calculado apenas quando
-       o XP atravessa o marco.
-    */
-
-    const oldLevel =
-        calcularNivelPorXPTotal(
-            oldXP
-        );
-
-    const newLevel =
-        calcularNivelPorXPTotal(
-            newXP
-        );
-
-
-    const oldMilestones =
+    const marcoAntes =
         Math.floor(
-            oldLevel / 5
+            nivelAntes / 5
         );
 
-    const newMilestones =
+
+    const marcoDepois =
         Math.floor(
-            newLevel / 5
+            nivelDepois / 5
         );
 
 
     if (
-        newMilestones >
-        oldMilestones
+        marcoDepois > marcoAntes
     ) {
 
-        const gained =
-            (
-                newMilestones -
-                oldMilestones
-            ) * 500;
+        const diferenca =
+            marcoDepois - marcoAntes;
 
 
-        character.crestXp +=
-            gained;
-
-    }
-
-}
-
-
-function calcularNivelPorXPTotal(xp) {
-
-    let level = 1;
-
-    let remainingXP =
-        Number(xp) || 0;
-
-
-    while (
-        level < 30 &&
-        remainingXP >=
-        XP_LEVELS[level]
-    ) {
-
-        remainingXP -=
-            XP_LEVELS[level];
-
-        level++;
-
-    }
-
-
-    return level;
-
-}
-
-
-/* =========================================================
-   MODO MESTRE
-========================================================= */
-
-function configurarModoMestre() {
-
-    const button =
-        document.getElementById(
-            "master-button"
-        );
-
-    const controls =
-        document.getElementById(
-            "master-controls"
-        );
-
-
-    if (button && controls) {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                controls.classList.toggle(
-                    "active"
-                );
-
-            }
-        );
-
-    }
-
-
-    const addXP =
-        document.getElementById(
-            "add-xp"
-        );
-
-    const removeXP =
-        document.getElementById(
-            "remove-xp"
-        );
-
-    const xpInput =
-        document.getElementById(
-            "xp-amount"
-        );
-
-
-    if (addXP) {
-
-        addXP.addEventListener(
-            "click",
-            () => {
-
-                adicionarXP(
-                    xpInput
-                        ? xpInput.value
-                        : 0
-                );
-
-            }
-        );
-
-    }
-
-
-    if (removeXP) {
-
-        removeXP.addEventListener(
-            "click",
-            () => {
-
-                removerXP(
-                    xpInput
-                        ? xpInput.value
-                        : 0
-                );
-
-            }
-        );
-
-    }
-
-
-    const addCrestXP =
-        document.getElementById(
-            "add-crest-xp"
-        );
-
-    const removeCrestXP =
-        document.getElementById(
-            "remove-crest-xp"
-        );
-
-    const crestXPInput =
-        document.getElementById(
-            "crest-xp-amount"
-        );
-
-
-    if (addCrestXP) {
-
-        addCrestXP.addEventListener(
-            "click",
-            () => {
-
-                adicionarXPDoBrasao(
-                    crestXPInput
-                        ? crestXPInput.value
-                        : 0
-                );
-
-            }
-        );
-
-    }
-
-
-    if (removeCrestXP) {
-
-        removeCrestXP.addEventListener(
-            "click",
-            () => {
-
-                removerXPDoBrasao(
-                    crestXPInput
-                        ? crestXPInput.value
-                        : 0
-                );
-
-            }
-        );
-
-    }
-
-
-    const reset =
-        document.getElementById(
-            "reset-character"
-        );
-
-
-    if (reset) {
-
-        reset.addEventListener(
-            "click",
-            resetarPersonagem
-        );
+        character.crestXP +=
+            diferenca * 500;
 
     }
 
@@ -2023,110 +1380,54 @@ function configurarModoMestre() {
    RESET
 ========================================================= */
 
-function resetarPersonagem() {
+function configurarReset() {
 
-    const confirmar =
-        window.confirm(
-            "Deseja realmente resetar o personagem?"
-        );
+    const button =
+        get("reset-character");
 
 
-    if (!confirmar) {
+    if (!button) {
 
         return;
 
     }
 
 
-    character =
-        structuredClone(
-            DEFAULT_CHARACTER
-        );
+    button.addEventListener(
+        "click",
+        () => {
 
-
-    selectedElement =
-        null;
-
-
-    localStorage.removeItem(
-        "rpgCharacterCard"
-    );
-
-
-    const card =
-        document.getElementById(
-            "character-card"
-        );
-
-
-    if (card) {
-
-        delete card.dataset.previewElement;
-
-        card.classList.forEach(className => {
-
-            if (
-                className.startsWith(
-                    "element-"
-                )
-            ) {
-
-                card.classList.remove(
-                    className
+            const confirmar =
+                window.confirm(
+                    "Deseja realmente resetar o personagem?"
                 );
+
+
+            if (!confirmar) {
+
+                return;
 
             }
 
-        });
 
-    }
-
-
-    const confirmButton =
-        document.getElementById(
-            "confirm-element"
-        );
+            character =
+                criarEstadoInicial();
 
 
-    if (confirmButton) {
-
-        confirmButton.disabled =
-            true;
-
-        confirmButton.textContent =
-            "CONFIRMAR AFINIDADE";
-
-    }
+            elementoSelecionado =
+                null;
 
 
-    const imageInput =
-        document.getElementById(
-            "character-image-url"
-        );
+            salvarPersonagem();
 
-    if (imageInput) {
+            atualizarInterface();
 
-        imageInput.value = "";
+            atualizarImagem();
 
-    }
+            configurarEstadoElementos();
 
-
-    document
-        .querySelectorAll(
-            ".element-option"
-        )
-        .forEach(option => {
-
-            option.disabled = false;
-
-            option.classList.remove(
-                "selected"
-            );
-
-        });
-
-
-    atualizarTudo();
+        }
+    );
 
 }
 
@@ -2137,122 +1438,91 @@ function resetarPersonagem() {
 
 function configurarCombate() {
 
-    document
-        .querySelectorAll(
-            ".combat-use-button"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    executarAcao(
-                        button
-                    );
-
-                }
-            );
-
-        });
-
-}
-
-
-/* =========================================================
-   EXECUTAR AÇÃO
-========================================================= */
-
-function executarAcao(button) {
-
-    const action =
-        button.dataset.action;
-
-
-    if (
-        action ===
-        "basic-attack"
-    ) {
-
-        usarAtaqueBasico();
-
-        return;
-
-    }
-
-
-    if (
-        action ===
-        "counterattack"
-    ) {
-
-        usarContraAtaque();
-
-        return;
-
-    }
-
-
     /*
-       Habilidades configuráveis
+       Ataque básico,
+       contra-ataque
+       e habilidades.
     */
 
-    const abilityCard =
-        button.closest(
-            ".ability-card"
+    const buttons =
+        document.querySelectorAll(
+            ".combat-use-button"
         );
 
 
-    if (!abilityCard) return;
+    buttons.forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const action =
+                    button.dataset.action;
 
 
-    const costType =
-        (
-            abilityCard.dataset.costType ||
-            "mp"
-        ).toLowerCase();
+                if (
+                    action ===
+                    "basic-attack"
+                ) {
+
+                    usarAtaqueBasico();
+
+                }
 
 
-    const cost =
-        Number(
-            abilityCard.dataset.cost
-        ) || 0;
+                else if (
+                    action ===
+                    "counterattack"
+                ) {
+
+                    usarContraAtaque();
+
+                }
 
 
-    const nameElement =
-        abilityCard.querySelector(
-            "strong"
+                else if (
+                    action ===
+                    "ability"
+                ) {
+
+                    const index =
+                        Number(
+                            button.dataset
+                                .abilityIndex
+                        );
+
+
+                    usarHabilidade(index);
+
+                }
+
+            }
         );
 
-
-    const name =
-        nameElement
-            ? nameElement.textContent.trim()
-            : "[EDITÁVEL]";
+    });
 
 
-    usarHabilidade(
-        name,
-        costType,
-        cost
-    );
+    configurarEditorDeCombate();
 
 }
 
 
 /* =========================================================
    ATAQUE BÁSICO
-   SEMPRE -1 EST
 ========================================================= */
 
 function usarAtaqueBasico() {
 
+    const custo = 1;
+
+
     if (
-        character.stats.est < 1
+        character.resources.est <
+        custo
     ) {
 
         registrarCombate(
-            "Ataque básico falhou: EST insuficiente."
+            "EST insuficiente para o ataque básico."
         );
 
         return;
@@ -2260,36 +1530,44 @@ function usarAtaqueBasico() {
     }
 
 
-    character.stats.est -= 1;
+    character.resources.est -=
+        custo;
+
+
+    const name =
+        character.combat
+            .basicAttackName ||
+        "Ataque básico";
 
 
     registrarCombate(
-        "⚔️ Ataque básico usado. −1 EST."
+        `${name} usado. −1 EST.`
     );
 
 
+    atualizarInterface();
+
     salvarPersonagem();
-
-    atualizarCombate();
-
-    atualizarStatus();
 
 }
 
 
 /* =========================================================
    CONTRA-ATAQUE
-   SEMPRE -3 EST
 ========================================================= */
 
 function usarContraAtaque() {
 
+    const custo = 3;
+
+
     if (
-        character.stats.est < 3
+        character.resources.est <
+        custo
     ) {
 
         registrarCombate(
-            "Contra-ataque falhou: EST insuficiente."
+            "EST insuficiente para o contra-ataque."
         );
 
         return;
@@ -2297,192 +1575,18 @@ function usarContraAtaque() {
     }
 
 
-    character.stats.est -= 3;
+    character.resources.est -=
+        custo;
 
 
     registrarCombate(
-        "↩️ Contra-ataque usado. −3 EST."
+        "Contra-ataque realizado. −3 EST."
     );
 
+
+    atualizarInterface();
 
     salvarPersonagem();
-
-    atualizarCombate();
-
-    atualizarStatus();
-
-}
-
-
-/* =========================================================
-   HABILIDADE
-========================================================= */
-
-function usarHabilidade(
-    name,
-    costType,
-    cost
-) {
-
-    if (cost <= 0) {
-
-        registrarCombate(
-            `${name} não possui custo definido.`
-        );
-
-        return;
-
-    }
-
-
-    if (
-        costType === "mp"
-    ) {
-
-        if (
-            character.stats.mp < cost
-        ) {
-
-            registrarCombate(
-                `${name} falhou: MP insuficiente.`
-            );
-
-            return;
-
-        }
-
-
-        character.stats.mp -=
-            cost;
-
-
-        registrarCombate(
-            `✨ ${name} usado. −${cost} MP.`
-        );
-
-    }
-
-
-    else if (
-        costType === "est"
-    ) {
-
-        if (
-            character.stats.est < cost
-        ) {
-
-            registrarCombate(
-                `${name} falhou: EST insuficiente.`
-            );
-
-            return;
-
-        }
-
-
-        character.stats.est -=
-            cost;
-
-
-        registrarCombate(
-            `⚡ ${name} usado. −${cost} EST.`
-        );
-
-    }
-
-
-    salvarPersonagem();
-
-    atualizarCombate();
-
-    atualizarStatus();
-
-}
-
-
-/* =========================================================
-   HISTÓRICO
-========================================================= */
-
-function registrarCombate(message) {
-
-    character.combatLog.unshift(
-        message
-    );
-
-
-    if (
-        character.combatLog.length > 20
-    ) {
-
-        character.combatLog =
-            character.combatLog.slice(
-                0,
-                20
-            );
-
-    }
-
-
-    atualizarLogCombate();
-
-}
-
-
-function atualizarLogCombate() {
-
-    const log =
-        document.getElementById(
-            "combat-log"
-        );
-
-
-    if (!log) return;
-
-
-    if (
-        character.combatLog.length === 0
-    ) {
-
-        log.innerHTML = `
-            <p>
-                Nenhuma ação realizada.
-            </p>
-        `;
-
-        return;
-
-    }
-
-
-    log.innerHTML =
-        character.combatLog
-            .map(
-                item =>
-                    `<p>${escapeHTML(item)}</p>`
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   RECURSOS DO COMBATE
-========================================================= */
-
-function atualizarCombate() {
-
-    definirTexto(
-        "combat-mp",
-        character.stats.mp
-    );
-
-    definirTexto(
-        "combat-est",
-        character.stats.est
-    );
-
-    atualizarLogCombate();
 
 }
 
@@ -2491,79 +1595,415 @@ function atualizarCombate() {
    HABILIDADES
 ========================================================= */
 
-function atualizarAbilities() {
+function usarHabilidade(index) {
 
-    const cards =
+    const ability =
+        character.combat
+            .abilities[index];
+
+
+    if (!ability) {
+
+        return;
+
+    }
+
+
+    const name =
+        ability.name.trim();
+
+
+    if (!name) {
+
+        registrarCombate(
+            `Habilidade ${index + 1} ainda não foi configurada.`
+        );
+
+        return;
+
+    }
+
+
+    const cost =
+        limitarNumero(
+            ability.cost,
+            0
+        );
+
+
+    const type =
+        ability.costType;
+
+
+    if (type === "mp") {
+
+        if (
+            character.resources.mp <
+            cost
+        ) {
+
+            registrarCombate(
+                `${name}: MP insuficiente.`
+            );
+
+            return;
+
+        }
+
+
+        character.resources.mp -=
+            cost;
+
+
+        registrarCombate(
+            `${name} usada. −${cost} MP.`
+        );
+
+    }
+
+
+    else if (type === "est") {
+
+        if (
+            character.resources.est <
+            cost
+        ) {
+
+            registrarCombate(
+                `${name}: EST insuficiente.`
+            );
+
+            return;
+
+        }
+
+
+        character.resources.est -=
+            cost;
+
+
+        registrarCombate(
+            `${name} usada. −${cost} EST.`
+        );
+
+    }
+
+
+    atualizarInterface();
+
+    salvarPersonagem();
+
+}
+
+
+/* =========================================================
+   EDITOR DAS HABILIDADES
+========================================================= */
+
+function configurarEditorDeCombate() {
+
+    const basicInput =
+        get("basic-attack-name");
+
+
+    if (basicInput) {
+
+        basicInput.value =
+            character.combat
+                .basicAttackName;
+
+
+        basicInput.addEventListener(
+            "input",
+            () => {
+
+                character.combat
+                    .basicAttackName =
+                    basicInput.value;
+
+                salvarPersonagem();
+
+            }
+        );
+
+    }
+
+
+    const abilityCards =
         document.querySelectorAll(
             ".ability-card"
         );
 
 
-    cards.forEach(
-        (card, index) => {
+    abilityCards.forEach(card => {
 
-            const ability =
-                character.abilities[index];
-
-
-            if (!ability) return;
+        const index =
+            Number(
+                card.dataset.abilityIndex
+            );
 
 
-            const name =
-                card.querySelector(
-                    "strong"
-                );
-
-            const cost =
-                card.querySelector(
-                    "small"
-                );
+        const ability =
+            character.combat
+                .abilities[index];
 
 
-            if (name) {
+        if (!ability) {
 
-                name.textContent =
-                    ability.name ||
-                    "[EDITÁVEL]";
-
-            }
-
-
-            if (cost) {
-
-                const type =
-                    (
-                        ability.type ||
-                        "MP"
-                    ).toUpperCase();
-
-
-                const value =
-                    Number(
-                        ability.cost
-                    ) || 0;
-
-
-                cost.textContent =
-                    `Custo: ${value} ${type}`;
-
-            }
-
-
-            card.dataset.costType =
-                (
-                    ability.type ||
-                    "MP"
-                ).toLowerCase();
-
-
-            card.dataset.cost =
-                Number(
-                    ability.cost
-                ) || 0;
+            return;
 
         }
+
+
+        const nameInput =
+            card.querySelector(
+                ".ability-name-input"
+            );
+
+
+        const costType =
+            card.querySelector(
+                ".ability-cost-type"
+            );
+
+
+        const costInput =
+            card.querySelector(
+                ".ability-cost-input"
+            );
+
+
+        const descriptionInput =
+            card.querySelector(
+                ".ability-description-input"
+            );
+
+
+        if (nameInput) {
+
+            nameInput.value =
+                ability.name;
+
+
+            nameInput.addEventListener(
+                "input",
+                () => {
+
+                    ability.name =
+                        nameInput.value;
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+
+        if (costType) {
+
+            costType.value =
+                ability.costType;
+
+
+            costType.addEventListener(
+                "change",
+                () => {
+
+                    ability.costType =
+                        costType.value;
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+
+        if (costInput) {
+
+            costInput.value =
+                ability.cost;
+
+
+            costInput.addEventListener(
+                "input",
+                () => {
+
+                    ability.cost =
+                        limitarNumero(
+                            costInput.value,
+                            0
+                        );
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+
+        if (descriptionInput) {
+
+            descriptionInput.value =
+                ability.description;
+
+
+            descriptionInput.addEventListener(
+                "input",
+                () => {
+
+                    ability.description =
+                        descriptionInput.value;
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+    });
+
+
+    /*
+       PASSIVA
+    */
+
+    const passiveName =
+        get("passive-name");
+
+    const passiveDescription =
+        get("passive-description");
+
+
+    if (passiveName) {
+
+        passiveName.value =
+            character.combat
+                .passive.name;
+
+
+        passiveName.addEventListener(
+            "input",
+            () => {
+
+                character.combat
+                    .passive.name =
+                    passiveName.value;
+
+                salvarPersonagem();
+
+            }
+        );
+
+    }
+
+
+    if (passiveDescription) {
+
+        passiveDescription.value =
+            character.combat
+                .passive.description;
+
+
+        passiveDescription.addEventListener(
+            "input",
+            () => {
+
+                character.combat
+                    .passive.description =
+                    passiveDescription.value;
+
+                salvarPersonagem();
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOG DE COMBATE
+========================================================= */
+
+function registrarCombate(message) {
+
+    character.combat.log.unshift(
+        message
     );
+
+
+    /*
+       Mantém somente os últimos 20.
+    */
+
+    character.combat.log =
+        character.combat.log.slice(
+            0,
+            20
+        );
+
+
+    atualizarLogCombate();
+
+    salvarPersonagem();
+
+}
+
+
+function atualizarLogCombate() {
+
+    const log =
+        get("combat-log");
+
+
+    if (!log) {
+
+        return;
+
+    }
+
+
+    if (
+        !character.combat.log.length
+    ) {
+
+        log.innerHTML =
+            "<p>Nenhuma ação realizada.</p>";
+
+        return;
+
+    }
+
+
+    log.innerHTML =
+        character.combat.log
+            .map(
+                entry =>
+                    `<p>${escaparHTML(entry)}</p>`
+            )
+            .join("");
+
+}
+
+
+/* =========================================================
+   ESCAPAR HTML
+========================================================= */
+
+function escaparHTML(text) {
+
+    return String(text)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 
 }
 
@@ -2574,123 +2014,622 @@ function atualizarAbilities() {
 
 function atualizarInventario() {
 
-    const capacity =
-        document.getElementById(
-            "inventory-capacity"
-        );
-
-    const list =
-        document.getElementById(
-            "inventory-list"
-        );
-
     const slots =
-        document.getElementById(
-            "inventory-slots"
-        );
+        get("inventory-slots");
+
+    const capacity =
+        get("inventory-capacity");
+
+
+    const bonus =
+        Math.floor(
+            character.level / 10
+        ) * 50;
+
+
+    const maxSlots =
+        50 + bonus;
+
+
+    const used =
+        character.inventory.items.length;
 
 
     if (capacity) {
 
         capacity.textContent =
-            `${character.inventory.length} / ${character.inventoryCapacity}`;
+            `${used} / ${maxSlots}`;
 
     }
 
 
-    if (list) {
+    if (!slots) {
+
+        return;
+
+    }
+
+
+    slots.innerHTML = "";
+
+
+    for (
+        let i = 0;
+        i < maxSlots;
+        i++
+    ) {
+
+        const slot =
+            document.createElement(
+                "div"
+            );
+
+
+        slot.className =
+            "inventory-slot";
+
 
         if (
-            character.inventory.length === 0
+            character.inventory.items[i]
         ) {
 
-            list.innerHTML = `
-                <div class="inventory-empty">
-                    Nenhum item no inventário.
-                </div>
-            `;
+            slot.textContent =
+                character.inventory.items[i];
+
+            slot.classList.add(
+                "occupied"
+            );
 
         } else {
 
-            list.innerHTML =
-                character.inventory
-                    .map(
-                        item =>
-                            `<div class="inventory-item">
-                                ${escapeHTML(item)}
-                            </div>`
-                    )
-                    .join("");
+            slot.textContent =
+                i + 1;
 
         }
 
-    }
 
-
-    if (slots) {
-
-        slots.innerHTML = "";
-
-        for (
-            let i = 0;
-            i < character.inventoryCapacity;
-            i++
-        ) {
-
-            const slot =
-                document.createElement(
-                    "div"
-                );
-
-            slot.className =
-                "inventory-slot";
-
-
-            if (
-                character.inventory[i]
-            ) {
-
-                slot.classList.add(
-                    "occupied"
-                );
-
-            }
-
-
-            slots.appendChild(
-                slot
-            );
-
-        }
+        slots.appendChild(slot);
 
     }
-
-
-    definirTexto(
-        "equipment-weapon",
-        character.equipment.weapon
-    );
-
-    definirTexto(
-        "equipment-armor",
-        character.equipment.armor
-    );
-
-    definirTexto(
-        "equipment-accessory",
-        character.equipment.accessory
-    );
-
-    definirTexto(
-        "equipment-relic",
-        character.equipment.relic
-    );
 
 }
 
 
 /* =========================================================
-   UTILITÁRIOS
+   IMAGEM
+========================================================= */
+
+function atualizarImagem() {
+
+    const container =
+        get(
+            "character-art-container"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    if (
+        character.imageURL
+    ) {
+
+        container.innerHTML = `
+            <img
+                src="${escaparHTML(character.imageURL)}"
+                alt="Imagem do personagem"
+                class="character-image-display"
+                onerror="this.style.display='none'; this.parentElement.classList.add('image-error');"
+            >
+        `;
+
+    } else {
+
+        container.innerHTML = `
+
+            <div class="image-placeholder">
+
+                <span>
+                    IMAGEM DO PERSONAGEM
+                </span>
+
+                <span>
+                    Adicione uma imagem no editor
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+/* =========================================================
+   BRASÃO
+========================================================= */
+
+function obterEstagioBrasao() {
+
+    let stage =
+        CREST_STAGES[0];
+
+
+    for (
+        const current of CREST_STAGES
+    ) {
+
+        if (
+            character.crestXP >=
+            current.xp
+        ) {
+
+            stage = current;
+
+        }
+
+    }
+
+
+    return stage;
+
+}
+
+
+/* =========================================================
+   ATUALIZAR BRASÃO
+========================================================= */
+
+function atualizarBrasao() {
+
+    const stage =
+        obterEstagioBrasao();
+
+
+    const stageElement =
+        get("crest-stage");
+
+
+    const crestXP =
+        get("crest-xp");
+
+
+    const progress =
+        get("crest-xp-progress");
+
+
+    const symbol =
+        get("crest-symbol");
+
+
+    if (stageElement) {
+
+        stageElement.textContent =
+            stage.name;
+
+    }
+
+
+    if (crestXP) {
+
+        crestXP.textContent =
+            `${character.crestXP} XP`;
+
+    }
+
+
+    /*
+       Descobre próximo estágio.
+    */
+
+    let nextStage = null;
+
+
+    for (
+        const current of CREST_STAGES
+    ) {
+
+        if (
+            current.xp >
+            character.crestXP
+        ) {
+
+            nextStage = current;
+
+            break;
+
+        }
+
+    }
+
+
+    if (progress) {
+
+        if (!nextStage) {
+
+            progress.style.width =
+                "100%";
+
+        } else {
+
+            const previousStage =
+                stage.xp;
+
+
+            const total =
+                nextStage.xp -
+                previousStage;
+
+
+            const current =
+                character.crestXP -
+                previousStage;
+
+
+            const percentage =
+                Math.min(
+                    100,
+                    Math.max(
+                        0,
+                        (current / total) *
+                        100
+                    )
+                );
+
+
+            progress.style.width =
+                `${percentage}%`;
+
+        }
+
+    }
+
+
+    if (
+        symbol &&
+        character.affinity &&
+        CRESTS[
+            character.affinity
+        ]
+    ) {
+
+        symbol.textContent =
+            CRESTS[
+                character.affinity
+            ].symbol;
+
+    }
+
+}
+
+
+/* =========================================================
+   INTERFACE PRINCIPAL
+========================================================= */
+
+function atualizarInterface() {
+
+    /*
+       Nome
+    */
+
+    const name =
+        get("character-name");
+
+
+    if (name) {
+
+        name.textContent =
+            character.name;
+
+    }
+
+
+    /*
+       Raça
+    */
+
+    const race =
+        get("character-race");
+
+
+    if (race) {
+
+        race.textContent =
+            character.race;
+
+    }
+
+
+    /*
+       Classe
+    */
+
+    const classElement =
+        get("character-class");
+
+
+    if (classElement) {
+
+        classElement.textContent =
+            character.class;
+
+    }
+
+
+    /*
+       Nível
+    */
+
+    const level =
+        get("character-level");
+
+
+    if (level) {
+
+        level.textContent =
+            `LV. ${character.level}`;
+
+    }
+
+
+    /*
+       Afinidade
+    */
+
+    const affinity =
+        get("character-affinity");
+
+
+    const affinitySymbol =
+        get(
+            "character-affinity-symbol"
+        );
+
+
+    if (character.affinity) {
+
+        const element =
+            ELEMENTS[
+                character.affinity
+            ];
+
+
+        if (affinity) {
+
+            affinity.textContent =
+                element.name;
+
+        }
+
+
+        if (affinitySymbol) {
+
+            affinitySymbol.textContent =
+                element.symbol;
+
+        }
+
+    } else {
+
+        if (affinity) {
+
+            affinity.textContent =
+                "Nenhuma";
+
+        }
+
+
+        if (affinitySymbol) {
+
+            affinitySymbol.textContent =
+                "?";
+
+        }
+
+    }
+
+
+    /*
+       Recursos
+    */
+
+    definirTexto(
+        "stat-hp",
+        character.resources.hp
+    );
+
+    definirTexto(
+        "stat-mp",
+        character.resources.mp
+    );
+
+    definirTexto(
+        "stat-est",
+        character.resources.est
+    );
+
+    definirTexto(
+        "stat-sanidade",
+        character.resources.sanidade
+    );
+
+
+    /*
+       Atributos
+    */
+
+    definirTexto(
+        "stat-atk",
+        character.attributes.atk
+    );
+
+    definirTexto(
+        "stat-atkMgc",
+        character.attributes.atkMgc
+    );
+
+    definirTexto(
+        "stat-def",
+        character.attributes.def
+    );
+
+    definirTexto(
+        "stat-res",
+        character.attributes.res
+    );
+
+    definirTexto(
+        "stat-agi",
+        character.attributes.agi
+    );
+
+    definirTexto(
+        "stat-int",
+        character.attributes.int
+    );
+
+
+    /*
+       Pontos
+    */
+
+    definirTexto(
+        "attribute-points",
+        character.attributePoints
+    );
+
+
+    /*
+       XP
+    */
+
+    const xpText =
+        get("character-xp-text");
+
+
+    const xpProgress =
+        get("character-xp-progress");
+
+
+    const xpNeeded =
+        obterXPNecessario(
+            character.level
+        );
+
+
+    if (xpText) {
+
+        if (
+            character.level >= 30
+        ) {
+
+            xpText.textContent =
+                "NÍVEL MÁXIMO";
+
+        } else {
+
+            xpText.textContent =
+                `${character.xp} / ${xpNeeded}`;
+
+        }
+
+    }
+
+
+    if (xpProgress) {
+
+        const percentage =
+            character.level >= 30
+                ? 100
+                : (
+                    character.xp /
+                    xpNeeded
+                ) * 100;
+
+
+        xpProgress.style.width =
+            `${Math.min(
+                100,
+                percentage
+            )}%`;
+
+    }
+
+
+    /*
+       Brasão
+    */
+
+    atualizarBrasao();
+
+
+    /*
+       Combate
+    */
+
+    definirTexto(
+        "combat-mp",
+        character.resources.mp
+    );
+
+    definirTexto(
+        "combat-est",
+        character.resources.est
+    );
+
+
+    /*
+       Log
+    */
+
+    atualizarLogCombate();
+
+
+    /*
+       Inventário
+    */
+
+    atualizarInventario();
+
+
+    /*
+       Imagem
+    */
+
+    atualizarImagem();
+
+
+    /*
+       Elemento
+    */
+
+    aplicarEfeitoElemental();
+
+
+    /*
+       Inputs do editor
+    */
+
+    sincronizarEditor();
+
+
+    /*
+       Seleção elemental
+    */
+
+    configurarEstadoElementos();
+
+}
+
+
+/* =========================================================
+   TEXTO
 ========================================================= */
 
 function definirTexto(
@@ -2699,7 +2638,8 @@ function definirTexto(
 ) {
 
     const element =
-        document.getElementById(id);
+        get(id);
+
 
     if (element) {
 
@@ -2711,20 +2651,327 @@ function definirTexto(
 }
 
 
-function escapeHTML(value) {
+/* =========================================================
+   SINCRONIZAR EDITOR
+========================================================= */
 
-    return String(value)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+function sincronizarEditor() {
+
+    const name =
+        get("character-name-input");
+
+
+    if (name) {
+
+        if (
+            document.activeElement !==
+            name
+        ) {
+
+            name.value =
+                character.name;
+
+        }
+
+    }
+
+
+    const race =
+        get("character-race-select");
+
+
+    if (race) {
+
+        race.value =
+            character.race;
+
+    }
+
+
+    const classSelect =
+        get("character-class-select");
+
+
+    if (classSelect) {
+
+        classSelect.value =
+            character.class;
+
+    }
+
+
+    const imageURL =
+        get("character-image-url");
+
+
+    if (
+        imageURL &&
+        document.activeElement !==
+        imageURL
+    ) {
+
+        imageURL.value =
+            character.imageURL || "";
+
+    }
+
+
+    /*
+       Ataque básico
+    */
+
+    const basic =
+        get("basic-attack-name");
+
+
+    if (
+        basic &&
+        document.activeElement !==
+        basic
+    ) {
+
+        basic.value =
+            character.combat
+                .basicAttackName;
+
+    }
+
+
+    /*
+       Habilidades
+    */
+
+    const cards =
+        document.querySelectorAll(
+            ".ability-card"
+        );
+
+
+    cards.forEach(card => {
+
+        const index =
+            Number(
+                card.dataset.abilityIndex
+            );
+
+
+        const ability =
+            character.combat
+                .abilities[index];
+
+
+        if (!ability) {
+
+            return;
+
+        }
+
+
+        const name =
+            card.querySelector(
+                ".ability-name-input"
+            );
+
+
+        const type =
+            card.querySelector(
+                ".ability-cost-type"
+            );
+
+
+        const cost =
+            card.querySelector(
+                ".ability-cost-input"
+            );
+
+
+        const description =
+            card.querySelector(
+                ".ability-description-input"
+            );
+
+
+        if (
+            name &&
+            document.activeElement !==
+            name
+        ) {
+
+            name.value =
+                ability.name;
+
+        }
+
+
+        if (type) {
+
+            type.value =
+                ability.costType;
+
+        }
+
+
+        if (
+            cost &&
+            document.activeElement !==
+            cost
+        ) {
+
+            cost.value =
+                ability.cost;
+
+        }
+
+
+        if (
+            description &&
+            document.activeElement !==
+            description
+        ) {
+
+            description.value =
+                ability.description;
+
+        }
+
+    });
+
+
+    /*
+       Passiva
+    */
+
+    const passiveName =
+        get("passive-name");
+
+
+    const passiveDescription =
+        get("passive-description");
+
+
+    if (
+        passiveName &&
+        document.activeElement !==
+        passiveName
+    ) {
+
+        passiveName.value =
+            character.combat
+                .passive.name;
+
+    }
+
+
+    if (
+        passiveDescription &&
+        document.activeElement !==
+        passiveDescription
+    ) {
+
+        passiveDescription.value =
+            character.combat
+                .passive.description;
+
+    }
 
 }
 
 
-function escapeAttribute(value) {
+/* =========================================================
+   ESTADO DOS ELEMENTOS
+========================================================= */
 
-    return escapeHTML(value);
+function configurarEstadoElementos() {
+
+    const options =
+        document.querySelectorAll(
+            ".element-option"
+        );
+
+
+    const confirm =
+        get("confirm-element");
+
+
+    options.forEach(option => {
+
+        option.classList.remove(
+            "selected"
+        );
+
+
+        if (
+            character.affinity &&
+            option.dataset.element ===
+            character.affinity
+        ) {
+
+            option.classList.add(
+                "selected"
+            );
+
+        }
+
+    });
+
+
+    if (confirm) {
+
+        if (character.affinity) {
+
+            confirm.disabled =
+                true;
+
+            confirm.textContent =
+                "AFINIDADE CONFIRMADA";
+
+        } else {
+
+            confirm.disabled =
+                !elementoSelecionado;
+
+            confirm.textContent =
+                "CONFIRMAR AFINIDADE";
+
+        }
+
+    }
 
 }
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+function iniciar() {
+
+    configurarNavegacao();
+
+    configurarModoMestre();
+
+    configurarEditor();
+
+    configurarElementos();
+
+    configurarAtributos();
+
+    configurarXP();
+
+    configurarReset();
+
+    configurarCombate();
+
+    atualizarInterface();
+
+}
+
+
+/* =========================================================
+   INICIAR
+========================================================= */
+
+document.addEventListener(
+    "DOMContentLoaded",
+    iniciar
+);
