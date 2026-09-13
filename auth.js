@@ -5,54 +5,245 @@
 (function () {
     "use strict";
 
+    // ==========================================
+    // ESTADO DA AUTENTICAÇÃO
+    // ==========================================
+
+    window.rpgAuth = {
+        user: null,
+        session: null,
+        campaign: null,
+        campaigns: [],
+        isMaster: false
+    };
+
+
+    // ==========================================
+    // MENSAGEM DE LOGIN
+    // ==========================================
+
     function mostrarMensagem(texto, sucesso = false) {
-        const mensagem = document.getElementById("auth-message");
+
+        const mensagem =
+            document.getElementById("auth-message");
 
         if (!mensagem) return;
 
         mensagem.textContent = texto;
-        mensagem.style.color = sucesso ? "#86efac" : "#fca5a5";
+
+        mensagem.style.color =
+            sucesso
+                ? "#86efac"
+                : "#fca5a5";
     }
 
-    async function entrarComEmailSenha(email, senha) {
+
+    // ==========================================
+    // CARREGAR CAMPANHAS DO USUÁRIO
+    // ==========================================
+
+    async function carregarCampanhas(user) {
 
         if (!window.supabaseClient) {
-            mostrarMensagem("Supabase não está disponível.");
+            console.error(
+                "Supabase Client não encontrado."
+            );
+
             return false;
         }
+
+        if (!user) {
+            return false;
+        }
+
+        try {
+
+            const { data, error } =
+                await window.supabaseClient
+                    .from("campaigns")
+                    .select(
+                        "id, name, master_id, created_at"
+                    )
+                    .eq("master_id", user.id);
+
+            if (error) {
+
+                console.error(
+                    "Erro ao carregar campanhas:",
+                    error
+                );
+
+                return false;
+            }
+
+
+            window.rpgAuth.campaigns =
+                data || [];
+
+
+            window.rpgAuth.isMaster =
+                window.rpgAuth.campaigns.length > 0;
+
+
+            // ==================================
+            // CAMPANHA PRINCIPAL
+            // ==================================
+
+            if (window.rpgAuth.campaigns.length > 0) {
+
+                window.rpgAuth.campaign =
+                    window.rpgAuth.campaigns[0];
+
+            } else {
+
+                window.rpgAuth.campaign = null;
+            }
+
+
+            console.log(
+                "Campanhas do usuário:",
+                window.rpgAuth.campaigns
+            );
+
+
+            console.log(
+                "Campanha selecionada:",
+                window.rpgAuth.campaign
+            );
+
+
+            console.log(
+                "Usuário é Mestre:",
+                window.rpgAuth.isMaster
+            );
+
+
+            return true;
+
+        } catch (error) {
+
+            console.error(
+                "Falha ao carregar campanhas:",
+                error
+            );
+
+            return false;
+        }
+    }
+
+
+    // ==========================================
+    // ATUALIZAR ESTADO DA SESSÃO
+    // ==========================================
+
+    async function atualizarEstadoSessao(session) {
+
+        window.rpgAuth.session =
+            session || null;
+
+        window.rpgAuth.user =
+            session?.user || null;
+
+
+        if (!session?.user) {
+
+            window.rpgAuth.campaign = null;
+            window.rpgAuth.campaigns = [];
+            window.rpgAuth.isMaster = false;
+
+            return;
+        }
+
+
+        await carregarCampanhas(
+            session.user
+        );
+    }
+
+
+    // ==========================================
+    // LOGIN
+    // ==========================================
+
+    async function entrarComEmailSenha(
+        email,
+        senha
+    ) {
+
+        if (!window.supabaseClient) {
+
+            mostrarMensagem(
+                "Supabase não está disponível."
+            );
+
+            return false;
+        }
+
 
         if (!email || !senha) {
-            mostrarMensagem("Preencha e-mail e senha.");
+
+            mostrarMensagem(
+                "Preencha e-mail e senha."
+            );
+
             return false;
         }
 
-        mostrarMensagem("Entrando...");
+
+        mostrarMensagem(
+            "Entrando..."
+        );
+
 
         const { data, error } =
-            await window.supabaseClient.auth.signInWithPassword({
-                email: email.trim(),
-                password: senha
-            });
+            await window.supabaseClient.auth
+                .signInWithPassword({
+
+                    email: email.trim(),
+
+                    password: senha
+
+                });
+
 
         if (error) {
-            console.error("Erro de autenticação:", error);
+
+            console.error(
+                "Erro de autenticação:",
+                error
+            );
+
             mostrarMensagem(
                 "Não foi possível entrar. Verifique e-mail e senha."
             );
+
             return false;
         }
 
-        console.log("Usuário autenticado:", data.user);
+
+        console.log(
+            "Usuário autenticado:",
+            data.user
+        );
+
+
+        await atualizarEstadoSessao(
+            data.session
+        );
+
 
         mostrarMensagem(
             "Login realizado com sucesso!",
             true
         );
 
+
         return true;
     }
 
-    window.entrarComEmailSenha = entrarComEmailSenha;
+
+    window.entrarComEmailSenha =
+        entrarComEmailSenha;
 
 
     // ==========================================
@@ -61,13 +252,22 @@
 
     function criarPainelLogin() {
 
-        if (document.getElementById("auth-login-panel")) {
+        if (
+            document.getElementById(
+                "auth-login-panel"
+            )
+        ) {
             return;
         }
 
-        const painel = document.createElement("div");
 
-        painel.id = "auth-login-panel";
+        const painel =
+            document.createElement("div");
+
+
+        painel.id =
+            "auth-login-panel";
+
 
         painel.innerHTML = `
 
@@ -168,51 +368,74 @@
             </div>
         `;
 
-        Object.assign(painel.style, {
-            position: "fixed",
-            inset: "0",
-            zIndex: "99999",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            padding: "20px",
-            background: "rgba(5, 4, 9, 0.94)",
-            fontFamily: "Arial, sans-serif"
-        });
 
-        document.body.appendChild(painel);
+        Object.assign(
+            painel.style,
+            {
+                position: "fixed",
+                inset: "0",
+                zIndex: "99999",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "20px",
+                background: "rgba(5, 4, 9, 0.94)",
+                fontFamily: "Arial, sans-serif"
+            }
+        );
+
+
+        document.body.appendChild(
+            painel
+        );
 
 
         const botao =
-            document.getElementById("auth-login-button");
+            document.getElementById(
+                "auth-login-button"
+            );
+
 
         const email =
-            document.getElementById("auth-email");
+            document.getElementById(
+                "auth-email"
+            );
+
 
         const senha =
-            document.getElementById("auth-password");
+            document.getElementById(
+                "auth-password"
+            );
 
 
-        botao.addEventListener("click", async function () {
+        botao.addEventListener(
+            "click",
+            async function () {
 
-            const sucesso =
-                await entrarComEmailSenha(
-                    email.value,
-                    senha.value
-                );
+                const sucesso =
+                    await entrarComEmailSenha(
+                        email.value,
+                        senha.value
+                    );
 
-            if (sucesso) {
-                painel.remove();
+
+                if (sucesso) {
+
+                    painel.remove();
+                }
+
             }
-
-        });
+        );
 
 
         senha.addEventListener(
             "keydown",
             function (event) {
 
-                if (event.key === "Enter") {
+                if (
+                    event.key === "Enter"
+                ) {
+
                     botao.click();
                 }
 
@@ -240,8 +463,22 @@
         }
 
 
-        const { data } =
-            await window.supabaseClient.auth.getSession();
+        const { data, error } =
+            await window.supabaseClient.auth
+                .getSession();
+
+
+        if (error) {
+
+            console.error(
+                "Erro ao recuperar sessão:",
+                error
+            );
+
+            criarPainelLogin();
+
+            return;
+        }
 
 
         if (data.session) {
@@ -249,6 +486,12 @@
             console.log(
                 "Sessão existente encontrada."
             );
+
+
+            await atualizarEstadoSessao(
+                data.session
+            );
+
 
             return;
         }
@@ -258,7 +501,39 @@
     }
 
 
-    if (document.readyState === "loading") {
+    // ==========================================
+    // OBSERVAR ALTERAÇÕES DE AUTENTICAÇÃO
+    // ==========================================
+
+    window.supabaseClient?.auth
+        .onAuthStateChange(
+            async function (
+                event,
+                session
+            ) {
+
+                console.log(
+                    "Evento de autenticação:",
+                    event
+                );
+
+
+                await atualizarEstadoSessao(
+                    session
+                );
+
+            }
+        );
+
+
+    // ==========================================
+    // INICIAR QUANDO O DOM ESTIVER PRONTO
+    // ==========================================
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
 
         document.addEventListener(
             "DOMContentLoaded",
