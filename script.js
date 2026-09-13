@@ -1,8 +1,15 @@
 /* =========================================================
    RPG CHARACTER CARD
-   MÓDULO: SISTEMA PRINCIPAL
+   MÓDULO: SISTEMA PRINCIPAL / ORQUESTRADOR
 ========================================================= */
+
+
+/* =========================================================
+   CONFIGURAÇÃO
+========================================================= */
+
 const STORAGE_KEY = "rpg_character_card";
+
 
 /* =========================================================
    ELEMENTOS
@@ -162,7 +169,9 @@ const CREST_STAGES = [
 
 function criarEstadoInicial() {
 
-    const race = CharacterModule.RACES["Humano"];
+    const race =
+        CharacterModule.RACES["Humano"];
+
 
     return {
 
@@ -188,8 +197,11 @@ function criarEstadoInicial() {
         resources: {
 
             hp: race.hp,
+
             mp: race.mp,
+
             est: race.est,
+
             sanidade: race.sanidade
 
         },
@@ -198,10 +210,15 @@ function criarEstadoInicial() {
         attributes: {
 
             atk: race.atk,
+
             atkMgc: race.atkMgc,
+
             def: race.def,
+
             res: race.res,
+
             agi: race.agi,
+
             int: race.int
 
         },
@@ -259,8 +276,11 @@ function criarEstadoInicial() {
             equipment: {
 
                 weapon: "",
+
                 armor: "",
+
                 accessory: "",
+
                 relic: ""
 
             }
@@ -276,12 +296,17 @@ function criarEstadoInicial() {
    CARREGAR ESTADO
 ========================================================= */
 
-let character = carregarPersonagem();
+let character =
+    carregarPersonagem();
 
 
 function carregarPersonagem() {
 
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved =
+        localStorage.getItem(
+            STORAGE_KEY
+        );
+
 
     if (!saved) {
 
@@ -289,20 +314,31 @@ function carregarPersonagem() {
 
     }
 
+
     try {
 
-        const data = JSON.parse(saved);
+        const data =
+            JSON.parse(saved);
 
-        const base = criarEstadoInicial();
 
-        return mesclarObjetos(base, data);
+        const base =
+            criarEstadoInicial();
 
-    } catch (error) {
+
+        return mesclarObjetos(
+            base,
+            data
+        );
+
+    }
+
+    catch (error) {
 
         console.error(
             "Erro ao carregar personagem:",
             error
         );
+
 
         return criarEstadoInicial();
 
@@ -315,9 +351,14 @@ function carregarPersonagem() {
    MERGE
 ========================================================= */
 
-function mesclarObjetos(base, extra) {
+function mesclarObjetos(
+    base,
+    extra
+) {
 
-    for (const key in extra) {
+    for (
+        const key in extra
+    ) {
 
         if (
             extra[key] &&
@@ -325,18 +366,23 @@ function mesclarObjetos(base, extra) {
             !Array.isArray(extra[key])
         ) {
 
-            base[key] = mesclarObjetos(
-                base[key] || {},
-                extra[key]
-            );
+            base[key] =
+                mesclarObjetos(
+                    base[key] || {},
+                    extra[key]
+                );
 
-        } else {
+        }
 
-            base[key] = extra[key];
+        else {
+
+            base[key] =
+                extra[key];
 
         }
 
     }
+
 
     return base;
 
@@ -368,17 +414,28 @@ function get(id) {
 }
 
 
-function limitarNumero(valor, minimo = 0) {
+function limitarNumero(
+    valor,
+    minimo = 0
+) {
 
-    const numero = Number(valor);
+    const numero =
+        Number(valor);
 
-    if (Number.isNaN(numero)) {
+
+    if (
+        Number.isNaN(numero)
+    ) {
 
         return minimo;
 
     }
 
-    return Math.max(minimo, numero);
+
+    return Math.max(
+        minimo,
+        numero
+    );
 
 }
 
@@ -394,6 +451,7 @@ function configurarNavegacao() {
             ".dimension-button"
         );
 
+
     const sections =
         document.querySelectorAll(
             "[data-dimension-content]"
@@ -402,9 +460,26 @@ function configurarNavegacao() {
 
     buttons.forEach(button => {
 
+        if (
+            button.dataset.navigationConfigured ===
+            "true"
+        ) {
+
+            return;
+
+        }
+
+
+        button.dataset.navigationConfigured =
+            "true";
+
+
         button.addEventListener(
             "click",
-            () => {
+            event => {
+
+                event.stopPropagation();
+
 
                 const dimension =
                     button.dataset.dimension;
@@ -428,7 +503,9 @@ function configurarNavegacao() {
                 });
 
 
-                button.classList.add("active");
+                button.classList.add(
+                    "active"
+                );
 
 
                 const target =
@@ -446,7 +523,6 @@ function configurarNavegacao() {
                 }
 
             }
-
         );
 
     });
@@ -463,15 +539,33 @@ function configurarModoMestre() {
     const button =
         get("master-button");
 
+
     const controls =
         get("master-controls");
 
 
-    if (!button || !controls) {
+    if (
+        !button ||
+        !controls
+    ) {
 
         return;
 
     }
+
+
+    if (
+        button.dataset.masterConfigured ===
+        "true"
+    ) {
+
+        return;
+
+    }
+
+
+    button.dataset.masterConfigured =
+        "true";
 
 
     button.addEventListener(
@@ -479,6 +573,7 @@ function configurarModoMestre() {
         event => {
 
             event.stopPropagation();
+
 
             controls.classList.toggle(
                 "active"
@@ -491,263 +586,23 @@ function configurarModoMestre() {
 
 
 /* =========================================================
-   EDITOR DE PERSONAGEM
+   XP DO PERSONAGEM
 ========================================================= */
-
-
-      
-
-/* =========================================================
-   ALTERAR RAÇA
-========================================================= */
-
-
-
-/* =========================================================
-   AFINIDADE ELEMENTAL
-========================================================= */
-
-let elementoSelecionado =
-    character.affinity || null;
-
-
-function configurarElementos() {
-
-    const options =
-        document.querySelectorAll(
-            ".element-option"
-        );
-
-    const confirm =
-        get("confirm-element");
-
-
-    options.forEach(option => {
-
-        option.addEventListener(
-            "click",
-            () => {
-
-                /*
-                   Se já existe afinidade,
-                   ela é permanente.
-                */
-
-                if (character.affinity) {
-
-                    return;
-
-                }
-
-
-                elementoSelecionado =
-                    option.dataset.element;
-
-
-                options.forEach(item => {
-
-                    item.classList.remove(
-                        "selected"
-                    );
-
-                });
-
-
-                option.classList.add(
-                    "selected"
-                );
-
-
-                if (confirm) {
-
-                    confirm.disabled =
-                        false;
-
-                }
-
-            }
-        );
-
-    });
-
-
-    if (confirm) {
-
-        confirm.addEventListener(
-            "click",
-            () => {
-
-                if (!elementoSelecionado) {
-
-                    return;
-
-                }
-
-
-                if (character.affinity) {
-
-                    return;
-
-                }
-
-
-                character.affinity =
-                    elementoSelecionado;
-
-
-                salvarPersonagem();
-
-                atualizarInterface();
-
-                aplicarEfeitoElemental();
-
-
-                confirm.textContent =
-                    "AFINIDADE CONFIRMADA";
-
-                confirm.disabled =
-                    true;
-
-            }
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   EFEITO ELEMENTAL
-========================================================= */
-
-function aplicarEfeitoElemental() {
-
-    const card =
-        document.querySelector(
-            ".character-card"
-        );
-
-
-    if (!card) {
-
-        return;
-
-    }
-
-
-    /*
-       Remove efeitos anteriores.
-    */
-
-    Object.keys(ELEMENTS).forEach(
-        element => {
-
-            card.classList.remove(
-                `element-${element}`
-            );
-
-        }
-    );
-
-
-    if (!character.affinity) {
-
-        return;
-
-    }
-
-
-    card.classList.add(
-        `element-${character.affinity}`
-    );
-
-}
-
-
-/* =========================================================
-   ATRIBUTOS
-========================================================= */
-
-function configurarAtributos() {
-
-    const buttons =
-        document.querySelectorAll(
-            ".attribute-plus"
-        );
-
-
-    buttons.forEach(button => {
-
-        button.addEventListener(
-            "click",
-            () => {
-
-                const attribute =
-                    button.dataset.attribute;
-
-
-                if (
-                    character.attributePoints <= 0
-                ) {
-
-                    return;
-
-                }
-
-
-                if (
-                    character.attributes[
-                        attribute
-                    ] === undefined
-                ) {
-
-                    return;
-
-                }
-
-
-                character.attributes[
-                    attribute
-                ]++;
-
-
-                character.attributePoints--;
-
-
-                atualizarInterface();
-
-                salvarPersonagem();
-
-            }
-        );
-
-    });
-
-}
-
-
-/* =========================================================
-  ADICIONAR XP
-========================================================= */
-
-
 
 function adicionarXP(valor) {
 
-    CharacterModule.adicionarXP(valor);
+    CharacterModule.adicionarXP(
+        valor
+    );
 
 }
 
 
-
-
-/* =========================================================
-   REMOVER XP
-========================================================= */
-
 function removerXP(valor) {
 
-    CharacterModule.removerXP(valor);
+    CharacterModule.removerXP(
+        valor
+    );
 
 }
 
@@ -761,8 +616,10 @@ function configurarXP() {
     const amount =
         get("xp-amount");
 
+
     const add =
         get("add-xp");
+
 
     const remove =
         get("remove-xp");
@@ -770,32 +627,64 @@ function configurarXP() {
 
     if (add) {
 
-        add.addEventListener(
-            "click",
-            () => {
+        if (
+            add.dataset.xpConfigured !==
+            "true"
+        ) {
 
-                adicionarXP(
-                    amount.value
-                );
+            add.dataset.xpConfigured =
+                "true";
 
-            }
-        );
+
+            add.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+
+                    adicionarXP(
+                        amount
+                            ? amount.value
+                            : 0
+                    );
+
+                }
+            );
+
+        }
 
     }
 
 
     if (remove) {
 
-        remove.addEventListener(
-            "click",
-            () => {
+        if (
+            remove.dataset.xpConfigured !==
+            "true"
+        ) {
 
-                removerXP(
-                    amount.value
-                );
+            remove.dataset.xpConfigured =
+                "true";
 
-            }
-        );
+
+            remove.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+
+                    removerXP(
+                        amount
+                            ? amount.value
+                            : 0
+                    );
+
+                }
+            );
+
+        }
 
     }
 
@@ -803,8 +692,10 @@ function configurarXP() {
     const crestAmount =
         get("crest-xp-amount");
 
+
     const addCrest =
         get("add-crest-xp");
+
 
     const removeCrest =
         get("remove-crest-xp");
@@ -812,32 +703,64 @@ function configurarXP() {
 
     if (addCrest) {
 
-        addCrest.addEventListener(
-            "click",
-            () => {
+        if (
+            addCrest.dataset.crestXPConfigured !==
+            "true"
+        ) {
 
-                adicionarXPDoBrasao(
-                    crestAmount.value
-                );
+            addCrest.dataset.crestXPConfigured =
+                "true";
 
-            }
-        );
+
+            addCrest.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+
+                    adicionarXPDoBrasao(
+                        crestAmount
+                            ? crestAmount.value
+                            : 0
+                    );
+
+                }
+            );
+
+        }
 
     }
 
 
     if (removeCrest) {
 
-        removeCrest.addEventListener(
-            "click",
-            () => {
+        if (
+            removeCrest.dataset.crestXPConfigured !==
+            "true"
+        ) {
 
-                removerXPDoBrasao(
-                    crestAmount.value
-                );
+            removeCrest.dataset.crestXPConfigured =
+                "true";
 
-            }
-        );
+
+            removeCrest.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+
+                    removerXPDoBrasao(
+                        crestAmount
+                            ? crestAmount.value
+                            : 0
+                    );
+
+                }
+            );
+
+        }
 
     }
 
@@ -848,13 +771,19 @@ function configurarXP() {
    XP DO BRASÃO
 ========================================================= */
 
-function adicionarXPDoBrasao(valor) {
+function adicionarXPDoBrasao(
+    valor
+) {
 
     valor =
-        limitarNumero(valor, 0);
+        limitarNumero(
+            valor,
+            0
+        );
 
 
-    character.crestXP += valor;
+    character.crestXP +=
+        valor;
 
 
     atualizarInterface();
@@ -864,10 +793,15 @@ function adicionarXPDoBrasao(valor) {
 }
 
 
-function removerXPDoBrasao(valor) {
+function removerXPDoBrasao(
+    valor
+) {
 
     valor =
-        limitarNumero(valor, 0);
+        limitarNumero(
+            valor,
+            0
+        );
 
 
     character.crestXP =
@@ -906,11 +840,13 @@ function atualizarMarcosBrasao(
 
 
     if (
-        marcoDepois > marcoAntes
+        marcoDepois >
+        marcoAntes
     ) {
 
         const diferenca =
-            marcoDepois - marcoAntes;
+            marcoDepois -
+            marcoAntes;
 
 
         character.crestXP +=
@@ -938,9 +874,26 @@ function configurarReset() {
     }
 
 
+    if (
+        button.dataset.resetConfigured ===
+        "true"
+    ) {
+
+        return;
+
+    }
+
+
+    button.dataset.resetConfigured =
+        "true";
+
+
     button.addEventListener(
         "click",
-        () => {
+        event => {
+
+            event.stopPropagation();
+
 
             const confirmar =
                 window.confirm(
@@ -959,17 +912,15 @@ function configurarReset() {
                 criarEstadoInicial();
 
 
-            elementoSelecionado =
-                null;
-
-
             salvarPersonagem();
+
 
             atualizarInterface();
 
-            atualizarImagem();
 
-            configurarEstadoElementos();
+            StatusModule.iniciar();
+
+            CharacterModule.atualizarImagem();
 
         }
     );
@@ -983,12 +934,6 @@ function configurarReset() {
 
 function configurarCombate() {
 
-    /*
-       Ataque básico,
-       contra-ataque
-       e habilidades.
-    */
-
     const buttons =
         document.querySelectorAll(
             ".combat-use-button"
@@ -997,9 +942,26 @@ function configurarCombate() {
 
     buttons.forEach(button => {
 
+        if (
+            button.dataset.combatConfigured ===
+            "true"
+        ) {
+
+            return;
+
+        }
+
+
+        button.dataset.combatConfigured =
+            "true";
+
+
         button.addEventListener(
             "click",
-            () => {
+            event => {
+
+                event.stopPropagation();
+
 
                 const action =
                     button.dataset.action;
@@ -1037,7 +999,9 @@ function configurarCombate() {
                         );
 
 
-                    usarHabilidade(index);
+                    usarHabilidade(
+                        index
+                    );
 
                 }
 
@@ -1069,6 +1033,7 @@ function usarAtaqueBasico() {
         registrarCombate(
             "EST insuficiente para o ataque básico."
         );
+
 
         return;
 
@@ -1115,6 +1080,7 @@ function usarContraAtaque() {
             "EST insuficiente para o contra-ataque."
         );
 
+
         return;
 
     }
@@ -1140,7 +1106,9 @@ function usarContraAtaque() {
    HABILIDADES
 ========================================================= */
 
-function usarHabilidade(index) {
+function usarHabilidade(
+    index
+) {
 
     const ability =
         character.combat
@@ -1155,7 +1123,9 @@ function usarHabilidade(index) {
 
 
     const name =
-        ability.name.trim();
+        String(
+            ability.name || ""
+        ).trim();
 
 
     if (!name) {
@@ -1163,6 +1133,7 @@ function usarHabilidade(index) {
         registrarCombate(
             `Habilidade ${index + 1} ainda não foi configurada.`
         );
+
 
         return;
 
@@ -1180,7 +1151,9 @@ function usarHabilidade(index) {
         ability.costType;
 
 
-    if (type === "mp") {
+    if (
+        type === "mp"
+    ) {
 
         if (
             character.resources.mp <
@@ -1190,6 +1163,7 @@ function usarHabilidade(index) {
             registrarCombate(
                 `${name}: MP insuficiente.`
             );
+
 
             return;
 
@@ -1207,7 +1181,9 @@ function usarHabilidade(index) {
     }
 
 
-    else if (type === "est") {
+    else if (
+        type === "est"
+    ) {
 
         if (
             character.resources.est <
@@ -1217,6 +1193,7 @@ function usarHabilidade(index) {
             registrarCombate(
                 `${name}: EST insuficiente.`
             );
+
 
             return;
 
@@ -1253,23 +1230,30 @@ function configurarEditorDeCombate() {
 
     if (basicInput) {
 
-        basicInput.value =
-            character.combat
-                .basicAttackName;
+        if (
+            basicInput.dataset.combatEditorConfigured !==
+            "true"
+        ) {
+
+            basicInput.dataset.combatEditorConfigured =
+                "true";
 
 
-        basicInput.addEventListener(
-            "input",
-            () => {
+            basicInput.addEventListener(
+                "input",
+                () => {
 
-                character.combat
-                    .basicAttackName =
-                    basicInput.value;
+                    character.combat
+                        .basicAttackName =
+                        basicInput.value;
 
-                salvarPersonagem();
 
-            }
-        );
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
 
     }
 
@@ -1326,99 +1310,132 @@ function configurarEditorDeCombate() {
 
         if (nameInput) {
 
-            nameInput.value =
-                ability.name;
+            if (
+                nameInput.dataset.combatEditorConfigured !==
+                "true"
+            ) {
+
+                nameInput.dataset.combatEditorConfigured =
+                    "true";
 
 
-            nameInput.addEventListener(
-                "input",
-                () => {
+                nameInput.addEventListener(
+                    "input",
+                    () => {
 
-                    ability.name =
-                        nameInput.value;
+                        ability.name =
+                            nameInput.value;
 
-                    salvarPersonagem();
 
-                }
-            );
+                        salvarPersonagem();
+
+                    }
+                );
+
+            }
 
         }
 
 
         if (costType) {
 
-            costType.value =
-                ability.costType;
+            if (
+                costType.dataset.combatEditorConfigured !==
+                "true"
+            ) {
+
+                costType.dataset.combatEditorConfigured =
+                    "true";
 
 
-            costType.addEventListener(
-                "change",
-                () => {
+                costType.addEventListener(
+                    "change",
+                    () => {
 
-                    ability.costType =
-                        costType.value;
+                        ability.costType =
+                            costType.value;
 
-                    salvarPersonagem();
 
-                }
-            );
+                        salvarPersonagem();
+
+                    }
+                );
+
+            }
 
         }
 
 
         if (costInput) {
 
-            costInput.value =
-                ability.cost;
+            if (
+                costInput.dataset.combatEditorConfigured !==
+                "true"
+            ) {
+
+                costInput.dataset.combatEditorConfigured =
+                    "true";
 
 
-            costInput.addEventListener(
-                "input",
-                () => {
+                costInput.addEventListener(
+                    "input",
+                    () => {
 
-                    ability.cost =
-                        limitarNumero(
-                            costInput.value,
-                            0
-                        );
+                        ability.cost =
+                            limitarNumero(
+                                costInput.value,
+                                0
+                            );
 
-                    salvarPersonagem();
 
-                }
-            );
+                        salvarPersonagem();
+
+                    }
+                );
+
+            }
 
         }
 
 
         if (descriptionInput) {
 
-            descriptionInput.value =
-                ability.description;
+            if (
+                descriptionInput.dataset.combatEditorConfigured !==
+                "true"
+            ) {
+
+                descriptionInput.dataset.combatEditorConfigured =
+                    "true";
 
 
-            descriptionInput.addEventListener(
-                "input",
-                () => {
+                descriptionInput.addEventListener(
+                    "input",
+                    () => {
 
-                    ability.description =
-                        descriptionInput.value;
+                        ability.description =
+                            descriptionInput.value;
 
-                    salvarPersonagem();
 
-                }
-            );
+                        salvarPersonagem();
+
+                    }
+                );
+
+            }
 
         }
 
     });
 
 
-    /*
+    /* =====================================================
        PASSIVA
-    */
+    ===================================================== */
 
     const passiveName =
         get("passive-name");
+
 
     const passiveDescription =
         get("passive-description");
@@ -1426,46 +1443,60 @@ function configurarEditorDeCombate() {
 
     if (passiveName) {
 
-        passiveName.value =
-            character.combat
-                .passive.name;
+        if (
+            passiveName.dataset.combatEditorConfigured !==
+            "true"
+        ) {
+
+            passiveName.dataset.combatEditorConfigured =
+                "true";
 
 
-        passiveName.addEventListener(
-            "input",
-            () => {
+            passiveName.addEventListener(
+                "input",
+                () => {
 
-                character.combat
-                    .passive.name =
-                    passiveName.value;
+                    character.combat
+                        .passive.name =
+                        passiveName.value;
 
-                salvarPersonagem();
 
-            }
-        );
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
 
     }
 
 
     if (passiveDescription) {
 
-        passiveDescription.value =
-            character.combat
-                .passive.description;
+        if (
+            passiveDescription.dataset.combatEditorConfigured !==
+            "true"
+        ) {
+
+            passiveDescription.dataset.combatEditorConfigured =
+                "true";
 
 
-        passiveDescription.addEventListener(
-            "input",
-            () => {
+            passiveDescription.addEventListener(
+                "input",
+                () => {
 
-                character.combat
-                    .passive.description =
-                    passiveDescription.value;
+                    character.combat
+                        .passive.description =
+                        passiveDescription.value;
 
-                salvarPersonagem();
 
-            }
-        );
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
 
     }
 
@@ -1476,16 +1507,14 @@ function configurarEditorDeCombate() {
    LOG DE COMBATE
 ========================================================= */
 
-function registrarCombate(message) {
+function registrarCombate(
+    message
+) {
 
     character.combat.log.unshift(
         message
     );
 
-
-    /*
-       Mantém somente os últimos 20.
-    */
 
     character.combat.log =
         character.combat.log.slice(
@@ -1521,6 +1550,7 @@ function atualizarLogCombate() {
         log.innerHTML =
             "<p>Nenhuma ação realizada.</p>";
 
+
         return;
 
     }
@@ -1541,14 +1571,31 @@ function atualizarLogCombate() {
    ESCAPAR HTML
 ========================================================= */
 
-function escaparHTML(text) {
+function escaparHTML(
+    text
+) {
 
     return String(text)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
 
 }
 
@@ -1561,6 +1608,7 @@ function atualizarInventario() {
 
     const slots =
         get("inventory-slots");
+
 
     const capacity =
         get("inventory-capacity");
@@ -1621,11 +1669,14 @@ function atualizarInventario() {
             slot.textContent =
                 character.inventory.items[i];
 
+
             slot.classList.add(
                 "occupied"
             );
 
-        } else {
+        }
+
+        else {
 
             slot.textContent =
                 i + 1;
@@ -1633,16 +1684,13 @@ function atualizarInventario() {
         }
 
 
-        slots.appendChild(slot);
+        slots.appendChild(
+            slot
+        );
 
     }
 
 }
-
-
-/* =========================================================
-   IMAGEM
-========================================================= */
 
 
 /* =========================================================
@@ -1718,10 +1766,6 @@ function atualizarBrasao() {
     }
 
 
-    /*
-       Descobre próximo estágio.
-    */
-
     let nextStage = null;
 
 
@@ -1734,7 +1778,9 @@ function atualizarBrasao() {
             character.crestXP
         ) {
 
-            nextStage = current;
+            nextStage =
+                current;
+
 
             break;
 
@@ -1750,7 +1796,9 @@ function atualizarBrasao() {
             progress.style.width =
                 "100%";
 
-        } else {
+        }
+
+        else {
 
             const previousStage =
                 stage.xp;
@@ -1771,8 +1819,10 @@ function atualizarBrasao() {
                     100,
                     Math.max(
                         0,
-                        (current / total) *
-                        100
+                        (
+                            current /
+                            total
+                        ) * 100
                     )
                 );
 
@@ -1804,414 +1854,10 @@ function atualizarBrasao() {
 
 
 /* =========================================================
-   INTERFACE PRINCIPAL
+   SINCRONIZAR EDITOR DE COMBATE
 ========================================================= */
 
-function atualizarInterface() {
-
-    /*
-       Nome
-    */
-
-    const name =
-        get("character-name");
-
-
-    if (name) {
-
-        name.textContent =
-            character.name;
-
-    }
-
-
-    /*
-       Raça
-    */
-
-    const race =
-        get("character-race");
-
-
-    if (race) {
-
-        race.textContent =
-            character.race;
-
-    }
-
-
-    /*
-       Classe
-    */
-
-    const classElement =
-        get("character-class");
-
-
-    if (classElement) {
-
-        classElement.textContent =
-            character.class;
-
-    }
-
-
-    /*
-       Nível
-    */
-
-    const level =
-        get("character-level");
-
-
-    if (level) {
-
-        level.textContent =
-            `LV. ${character.level}`;
-
-    }
-
-
-    /*
-       Afinidade
-    */
-
-    const affinity =
-        get("character-affinity");
-
-
-    const affinitySymbol =
-        get(
-            "character-affinity-symbol"
-        );
-
-
-    if (character.affinity) {
-
-        const element =
-            ELEMENTS[
-                character.affinity
-            ];
-
-
-        if (affinity) {
-
-            affinity.textContent =
-                element.name;
-
-        }
-
-
-        if (affinitySymbol) {
-
-            affinitySymbol.textContent =
-                element.symbol;
-
-        }
-
-    } else {
-
-        if (affinity) {
-
-            affinity.textContent =
-                "Nenhuma";
-
-        }
-
-
-        if (affinitySymbol) {
-
-            affinitySymbol.textContent =
-                "?";
-
-        }
-
-    }
-
-
-    /*
-       Recursos
-    */
-
-    definirTexto(
-        "stat-hp",
-        character.resources.hp
-    );
-
-    definirTexto(
-        "stat-mp",
-        character.resources.mp
-    );
-
-    definirTexto(
-        "stat-est",
-        character.resources.est
-    );
-
-    definirTexto(
-        "stat-sanidade",
-        character.resources.sanidade
-    );
-
-
-    /*
-       Atributos
-    */
-
-    definirTexto(
-        "stat-atk",
-        character.attributes.atk
-    );
-
-    definirTexto(
-        "stat-atkMgc",
-        character.attributes.atkMgc
-    );
-
-    definirTexto(
-        "stat-def",
-        character.attributes.def
-    );
-
-    definirTexto(
-        "stat-res",
-        character.attributes.res
-    );
-
-    definirTexto(
-        "stat-agi",
-        character.attributes.agi
-    );
-
-    definirTexto(
-        "stat-int",
-        character.attributes.int
-    );
-
-
-    /*
-       Pontos
-    */
-
-    definirTexto(
-        "attribute-points",
-        character.attributePoints
-    );
-
-
-    /*
-       XP
-    */
-
-    const xpText =
-        get("character-xp-text");
-
-
-    const xpProgress =
-        get("character-xp-progress");
-
-
-    const xpNeeded =
-        CharacterModule.obterXPNecessario(
-            character.level
-        );
-
-
-    if (xpText) {
-
-        if (
-            character.level >= 30
-        ) {
-
-            xpText.textContent =
-                "NÍVEL MÁXIMO";
-
-        } else {
-
-            xpText.textContent =
-                `${character.xp} / ${xpNeeded}`;
-
-        }
-
-    }
-
-
-    if (xpProgress) {
-
-        const percentage =
-            character.level >= 30
-                ? 100
-                : (
-                    character.xp /
-                    xpNeeded
-                ) * 100;
-
-
-        xpProgress.style.width =
-            `${Math.min(
-                100,
-                percentage
-            )}%`;
-
-    }
-
-
-    /*
-       Brasão
-    */
-
-    atualizarBrasao();
-
-
-    /*
-       Combate
-    */
-
-    definirTexto(
-        "combat-mp",
-        character.resources.mp
-    );
-
-    definirTexto(
-        "combat-est",
-        character.resources.est
-    );
-
-
-    /*
-       Log
-    */
-
-    atualizarLogCombate();
-
-
-    /*
-       Inventário
-    */
-
-    atualizarInventario();
-
-
-    /*
-       Imagem
-    */
-
-    CharacterModule.atualizarImagem();
-
-    /*
-       Elemento
-    */
-
-    aplicarEfeitoElemental();
-
-
-    /*
-       Inputs do editor
-    */
-
-    CharacterModule.sincronizarEditor();
-
-    /*
-       Seleção elemental
-    */
-
-    configurarEstadoElementos();
-
-}
-
-
-/* =========================================================
-   TEXTO
-========================================================= */
-
-function definirTexto(
-    id,
-    value
-) {
-
-    const element =
-        get(id);
-
-
-    if (element) {
-
-        element.textContent =
-            value;
-
-    }
-
-}
-
-
-/* =========================================================
-   SINCRONIZAR EDITOR
-========================================================= */
-
-function sincronizarEditor() {
-
-    const name =
-        get("character-name-input");
-
-
-    if (name) {
-
-        if (
-            document.activeElement !==
-            name
-        ) {
-
-            name.value =
-                character.name;
-
-        }
-
-    }
-
-
-    const race =
-        get("character-race-select");
-
-
-    if (race) {
-
-        race.value =
-            character.race;
-
-    }
-
-
-    const classSelect =
-        get("character-class-select");
-
-
-    if (classSelect) {
-
-        classSelect.value =
-            character.class;
-
-    }
-
-
-    const imageURL =
-        get("character-image-url");
-
-
-    if (
-        imageURL &&
-        document.activeElement !==
-        imageURL
-    ) {
-
-        imageURL.value =
-            character.imageURL || "";
-
-    }
-
-
-    /*
-       Ataque básico
-    */
+function sincronizarEditorDeCombate() {
 
     const basic =
         get("basic-attack-name");
@@ -2229,10 +1875,6 @@ function sincronizarEditor() {
 
     }
 
-
-    /*
-       Habilidades
-    */
 
     const cards =
         document.querySelectorAll(
@@ -2330,10 +1972,6 @@ function sincronizarEditor() {
     });
 
 
-    /*
-       Passiva
-    */
-
     const passiveName =
         get("passive-name");
 
@@ -2371,62 +2009,211 @@ function sincronizarEditor() {
 
 
 /* =========================================================
-   ESTADO DOS ELEMENTOS
+   INTERFACE PRINCIPAL
 ========================================================= */
 
-function configurarEstadoElementos() {
+function atualizarInterface() {
 
-    const options =
-        document.querySelectorAll(
-            ".element-option"
+    /* =====================================================
+       PERSONAGEM
+    ===================================================== */
+
+    const name =
+        get("character-name");
+
+
+    if (name) {
+
+        name.textContent =
+            character.name;
+
+    }
+
+
+    const race =
+        get("character-race");
+
+
+    if (race) {
+
+        race.textContent =
+            character.race;
+
+    }
+
+
+    const classElement =
+        get("character-class");
+
+
+    if (classElement) {
+
+        classElement.textContent =
+            character.class;
+
+    }
+
+
+    const level =
+        get("character-level");
+
+
+    if (level) {
+
+        level.textContent =
+            `LV. ${character.level}`;
+
+    }
+
+
+    /* =====================================================
+       XP DO PERSONAGEM
+    ===================================================== */
+
+    const xpText =
+        get("character-xp-text");
+
+
+    const xpProgress =
+        get("character-xp-progress");
+
+
+    const xpNeeded =
+        CharacterModule.obterXPNecessario(
+            character.level
         );
 
 
-    const confirm =
-        get("confirm-element");
-
-
-    options.forEach(option => {
-
-        option.classList.remove(
-            "selected"
-        );
-
+    if (xpText) {
 
         if (
-            character.affinity &&
-            option.dataset.element ===
-            character.affinity
+            character.level >= 30
         ) {
 
-            option.classList.add(
-                "selected"
-            );
+            xpText.textContent =
+                "NÍVEL MÁXIMO";
 
         }
 
-    });
+        else {
 
-
-    if (confirm) {
-
-        if (character.affinity) {
-
-            confirm.disabled =
-                true;
-
-            confirm.textContent =
-                "AFINIDADE CONFIRMADA";
-
-        } else {
-
-            confirm.disabled =
-                !elementoSelecionado;
-
-            confirm.textContent =
-                "CONFIRMAR AFINIDADE";
+            xpText.textContent =
+                `${character.xp} / ${xpNeeded}`;
 
         }
+
+    }
+
+
+    if (xpProgress) {
+
+        const percentage =
+            character.level >= 30
+                ? 100
+                : (
+                    character.xp /
+                    xpNeeded
+                ) * 100;
+
+
+        xpProgress.style.width =
+            `${Math.min(
+                100,
+                percentage
+            )}%`;
+
+    }
+
+
+    /* =====================================================
+       BRASÃO
+    ===================================================== */
+
+    atualizarBrasao();
+
+
+    /* =====================================================
+       STATUS
+    ===================================================== */
+
+    StatusModule.atualizarStatus();
+
+
+    /* =====================================================
+       COMBATE
+    ===================================================== */
+
+    definirTexto(
+        "combat-mp",
+        character.resources.mp
+    );
+
+
+    definirTexto(
+        "combat-est",
+        character.resources.est
+    );
+
+
+    atualizarLogCombate();
+
+    sincronizarEditorDeCombate();
+
+
+    /* =====================================================
+       INVENTÁRIO
+    ===================================================== */
+
+    atualizarInventario();
+
+
+    /* =====================================================
+       IMAGEM
+    ===================================================== */
+
+    CharacterModule.atualizarImagem();
+
+
+    /* =====================================================
+       EDITOR DO PERSONAGEM
+    ===================================================== */
+
+    CharacterModule.sincronizarEditor();
+
+
+    /* =====================================================
+       EFEITO ELEMENTAL
+    ===================================================== */
+
+    StatusModule.aplicarEfeitoElemental();
+
+
+    /* =====================================================
+       ESTADO VISUAL DOS ELEMENTOS
+    ===================================================== */
+
+    StatusModule.configurarEstadoElementos();
+
+}
+
+
+/* =========================================================
+   TEXTO
+========================================================= */
+
+function definirTexto(
+    id,
+    value
+) {
+
+    const element =
+        get(id);
+
+
+    if (element) {
+
+        element.textContent =
+            value;
 
     }
 
@@ -2439,21 +2226,40 @@ function configurarEstadoElementos() {
 
 function iniciar() {
 
+    /*
+       Ordem importante:
+
+       1. Navegação
+       2. Modo Mestre
+       3. Editor do personagem
+       4. Status
+       5. XP
+       6. Reset
+       7. Combate
+       8. Interface
+    */
+
+
     configurarNavegacao();
+
 
     configurarModoMestre();
 
+
     CharacterModule.configurarEditor();
 
-    configurarElementos();
 
-    configurarAtributos();
+    StatusModule.iniciar();
+
 
     configurarXP();
 
+
     configurarReset();
 
+
     configurarCombate();
+
 
     atualizarInterface();
 
