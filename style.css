@@ -1,20 +1,16 @@
 /* =========================================================
    RPG CHARACTER CARD
-   ESTILO — FICHA / CARD DE RPG
+   ESTILO CARD / FICHA DE RPG
 ========================================================= */
 
 * {
     box-sizing: border-box;
 }
 
-html {
-    min-height: 100%;
-    background: #05030a;
-}
-
+html,
 body {
     margin: 0;
-    min-height: 100vh;
+    min-height: 100%;
 
     font-family: Arial, sans-serif;
 
@@ -22,12 +18,15 @@ body {
 
     background:
         radial-gradient(
-            circle at 50% 0%,
-            #32145a 0%,
-            #150b25 30%,
-            #08050d 70%,
-            #040308 100%
+            circle at top,
+            #321454 0%,
+            #130a20 38%,
+            #06040a 100%
         );
+}
+
+body {
+    min-height: 100vh;
 }
 
 button,
@@ -48,11 +47,11 @@ button {
 
 .app {
     width: 100%;
-    max-width: 560px;
+    max-width: 540px;
 
     margin: 0 auto;
 
-    padding: 22px 12px 45px;
+    padding: 20px 12px 40px;
 }
 
 
@@ -63,7 +62,7 @@ button {
 .app-header {
     text-align: center;
 
-    margin-bottom: 18px;
+    margin-bottom: 16px;
 }
 
 .app-header h1 {
@@ -73,50 +72,16 @@ button {
 
     letter-spacing: 3px;
 
-    color: #f8f3ff;
-
     text-shadow:
-        0 0 18px rgba(168, 85, 247, 0.35);
+        0 0 20px rgba(168, 85, 247, 0.4);
 }
 
 .app-header p {
     margin: 7px 0 0;
 
-    color: #9688a8;
+    color: #91849d;
 
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   CARD PRINCIPAL
-========================================================= */
-
-.character-card {
-    position: relative;
-
-    width: 100%;
-
-    min-height: 700px;
-
-    overflow: hidden;
-
-    border-radius: 24px;
-
-    border: 1px solid #713bb0;
-
-    background:
-        linear-gradient(
-            145deg,
-            #181020 0%,
-            #0e0916 48%,
-            #09060e 100%
-        );
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.5),
-        0 0 35px rgba(124, 58, 237, 0.16),
-        inset 0 0 45px rgba(124, 58, 237, 0.035);
+    font-size: 11px;
 }
 
 
@@ -124,65 +89,50 @@ button {
    NAVEGAÇÃO
 ========================================================= */
 
-.card-navigation {
+.dimension-nav {
     display: grid;
 
     grid-template-columns: repeat(4, 1fr);
 
-    gap: 5px;
+    gap: 6px;
 
-    padding: 8px;
+    padding: 7px;
+
+    margin-bottom: 10px;
+
+    border:
+        1px solid rgba(168, 85, 247, 0.25);
+
+    border-radius: 17px;
 
     background:
-        rgba(5, 3, 10, 0.75);
+        rgba(8, 5, 13, 0.9);
 
-    border-bottom:
-        1px solid rgba(255, 255, 255, 0.07);
+    box-shadow:
+        0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .dimension-button {
-    min-height: 58px;
+    min-height: 48px;
 
-    padding: 7px 4px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 5px;
+    padding: 7px 3px;
 
     border: 1px solid transparent;
 
-    border-radius: 13px;
+    border-radius: 11px;
 
     background: transparent;
 
-    color: #766a83;
+    color: #776b83;
+
+    font-size: 9px;
+
+    font-weight: bold;
 
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease,
-        transform 0.15s ease;
-}
-
-.dimension-button span {
-    font-size: 20px;
-
-    line-height: 1;
-}
-
-.dimension-button strong {
-    font-size: 8px;
-
-    font-weight: bold;
-
-    letter-spacing: 1px;
+        0.2s ease;
 }
 
 .dimension-button:hover {
@@ -192,51 +142,79 @@ button {
         rgba(124, 58, 237, 0.08);
 }
 
-.dimension-button:active {
-    transform: scale(0.95);
-}
-
 .dimension-button.active {
-    color: #f0ddff;
+    color: #f2e7ff;
+
+    border-color:
+        rgba(168, 85, 247, 0.55);
 
     background:
         linear-gradient(
             145deg,
-            rgba(124, 58, 237, 0.25),
-            rgba(88, 28, 135, 0.12)
+            rgba(124, 58, 237, 0.28),
+            rgba(88, 28, 135, 0.13)
         );
 
-    border-color:
-        rgba(168, 85, 247, 0.65);
+    box-shadow:
+        0 0 15px rgba(124, 58, 237, 0.18);
+}
+
+
+/* =========================================================
+   CARD PRINCIPAL
+========================================================= */
+
+.character-card {
+    width: 100%;
+
+    position: relative;
+
+    overflow: hidden;
+
+    border-radius: 25px;
+
+    border:
+        1px solid #713bb0;
+
+    background:
+        linear-gradient(
+            145deg,
+            #19111f,
+            #0d0813 55%,
+            #08050c
+        );
 
     box-shadow:
-        0 0 16px rgba(124, 58, 237, 0.18),
-        inset 0 0 12px rgba(168, 85, 247, 0.05);
+        0 25px 70px rgba(0, 0, 0, 0.5),
+        0 0 35px rgba(124, 58, 237, 0.13),
+        inset 0 0 50px rgba(124, 58, 237, 0.035);
 }
 
 
 /* =========================================================
    DIMENSÕES
+   IMPORTANTE:
+   O HTML usa .dimension
 ========================================================= */
 
-.card-dimension {
+.dimension {
     display: none;
 
-    padding: 20px;
+    width: 100%;
 
     animation:
-        dimensionOpen 0.25s ease;
+        dimensionIn 0.25s ease;
 }
 
-.card-dimension.active {
+.dimension.active {
     display: block;
 }
 
-@keyframes dimensionOpen {
+@keyframes dimensionIn {
 
     from {
         opacity: 0;
-        transform: translateY(8px);
+        transform: translateY(7px);
     }
 
     to {
@@ -247,136 +225,71 @@ button {
 
 
 /* =========================================================
-   TÍTULOS DAS DIMENSÕES
+   CARD — PERSONAGEM
 ========================================================= */
 
-.dimension-title {
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-bottom: 20px;
-}
-
-.dimension-number {
-    width: 40px;
-    height: 40px;
-
-    flex-shrink: 0;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 12px;
-
-    border: 1px solid #7442a8;
-
-    background:
-        rgba(124, 58, 237, 0.12);
-
-    color: #c084fc;
-
-    font-size: 11px;
-
-    font-weight: bold;
-}
-
-.dimension-title h2 {
-    margin: 0;
-
-    font-size: 22px;
-
-    letter-spacing: 1px;
-}
-
-.dimension-title p {
-    margin: 4px 0 0;
-
-    color: #776b84;
-
-    font-size: 10px;
+.character-dimension {
+    padding-bottom: 22px;
 }
 
 
 /* =========================================================
-   CARD 1 — PERSONAGEM
+   CABEÇALHO DO CARD
 ========================================================= */
 
-#dimension-character {
-    padding:
-        0 16px 25px;
+.card-front {
+    width: 100%;
 }
 
+.card-header {
+    min-height: 78px;
 
-/* ---------------------------------------------------------
-   CABEÇALHO DA FICHA
---------------------------------------------------------- */
-
-#dimension-character .dimension-header {
     display: grid;
 
     grid-template-columns:
-        1fr 76px 1fr;
+        1fr 70px 1fr;
 
     align-items: center;
 
-    min-height: 88px;
-
-    padding: 10px 3px;
+    padding: 9px 17px;
 
     border-bottom:
         1px solid rgba(255, 255, 255, 0.06);
+
+    background:
+        rgba(0, 0, 0, 0.16);
 }
 
-#dimension-character .rarity {
-    display: flex;
 
-    flex-direction: column;
+/* =========================================================
+   RARIDADE
+========================================================= */
 
-    gap: 4px;
-
+.rarity {
     color: #d8b4fe;
 
-    font-size: 12px;
+    font-size: 10px;
 
     font-weight: bold;
 
     letter-spacing: 2px;
 }
 
-#dimension-character .rarity small {
-    color: #75687f;
 
-    font-size: 8px;
-
-    letter-spacing: 1px;
-
-    font-weight: normal;
-}
-
-
-/* ---------------------------------------------------------
+/* =========================================================
    BRASÃO
---------------------------------------------------------- */
+========================================================= */
 
-#dimension-character .affinity-crest {
-    width: 62px;
-    height: 62px;
+.character-crest {
+    width: 56px;
+    height: 56px;
 
     margin: auto;
 
     display: flex;
 
-    flex-direction: column;
-
     align-items: center;
     justify-content: center;
-
-    gap: 2px;
 
     border-radius: 50%;
 
@@ -386,83 +299,52 @@ button {
     background:
         radial-gradient(
             circle,
-            #38205d 0%,
-            #130c1d 70%
+            #422469,
+            #120a1c 72%
         );
 
     box-shadow:
-        0 0 20px rgba(139, 92, 246, 0.45),
-        inset 0 0 12px rgba(216, 180, 254, 0.08);
+        0 0 22px rgba(168, 85, 247, 0.45),
+        inset 0 0 14px rgba(255, 255, 255, 0.05);
 
     transition:
-        transform 0.3s ease,
-        box-shadow 0.3s ease;
+        0.3s ease;
 }
 
-#dimension-character .affinity-crest:hover {
-    transform: scale(1.06);
+.character-crest:hover {
+    transform: scale(1.07);
 }
 
-#dimension-character .crest-symbol {
+#crest-symbol {
     font-size: 25px;
-
-    line-height: 1;
-}
-
-#dimension-character .affinity-crest small {
-    font-size: 6px;
-
-    letter-spacing: 1px;
-
-    color: #91859c;
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    NÍVEL
---------------------------------------------------------- */
+========================================================= */
 
-#dimension-character .character-level {
-    display: flex;
+.level {
+    text-align: right;
 
-    flex-direction: column;
+    color: #eadcff;
 
-    align-items: flex-end;
+    font-size: 20px;
 
-    gap: 4px;
-}
-
-#dimension-character .character-level small {
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
-}
-
-#dimension-character .character-level strong {
-    color: #eadbfa;
-
-    font-size: 25px;
-
-    line-height: 1;
+    font-weight: bold;
 }
 
 
-/* ---------------------------------------------------------
-   ÁREA DA ARTE
---------------------------------------------------------- */
+/* =========================================================
+   IMAGEM
+========================================================= */
 
-.character-content {
-    padding-top: 17px;
-}
-
-.character-art {
+.character-image {
     position: relative;
 
-    width: 100%;
+    height: 360px;
 
-    height: 350px;
+    margin: 15px;
 
     overflow: hidden;
 
@@ -471,7 +353,7 @@ button {
     align-items: center;
     justify-content: center;
 
-    border-radius: 18px;
+    border-radius: 19px;
 
     border:
         1px solid rgba(168, 85, 247, 0.42);
@@ -479,37 +361,35 @@ button {
     background:
         radial-gradient(
             circle at center,
-            #3b2163 0%,
-            #1b1028 42%,
-            #09060e 100%
+            #412466 0%,
+            #1c1029 43%,
+            #08050d 100%
         );
 
     box-shadow:
-        inset 0 0 45px rgba(124, 58, 237, 0.15),
-        0 8px 25px rgba(0, 0, 0, 0.25);
+        inset 0 0 55px rgba(124, 58, 237, 0.16),
+        0 10px 25px rgba(0, 0, 0, 0.3);
 }
 
-.character-art::before {
+.character-image::before {
     content: "";
 
     position: absolute;
 
-    width: 230px;
-    height: 230px;
+    width: 240px;
+    height: 240px;
 
     border-radius: 50%;
 
     background:
         radial-gradient(
             circle,
-            rgba(192, 132, 252, 0.16),
+            rgba(192, 132, 252, 0.13),
             transparent 70%
         );
-
-    pointer-events: none;
 }
 
-.character-art img {
+.character-image img {
     position: relative;
 
     z-index: 2;
@@ -518,11 +398,9 @@ button {
     height: 100%;
 
     object-fit: cover;
-
-    display: block;
 }
 
-.art-placeholder {
+.image-placeholder {
     position: relative;
 
     z-index: 1;
@@ -533,46 +411,46 @@ button {
 
     align-items: center;
 
-    gap: 8px;
+    gap: 9px;
 
     text-align: center;
 
-    color: #81758f;
-}
+    color: #80738d;
 
-.art-placeholder span {
-    color: #b9a9c8;
+    font-size: 10px;
 
-    font-size: 12px;
-
-    letter-spacing: 2px;
-}
-
-.art-placeholder small {
-    color: #62576c;
-
-    font-size: 9px;
+    letter-spacing: 1px;
 }
 
 
-/* ---------------------------------------------------------
-   INFORMAÇÕES DO PERSONAGEM
---------------------------------------------------------- */
+/* =========================================================
+   INFORMAÇÕES
+========================================================= */
 
-.character-information {
+.character-info {
     padding:
-        18px 2px 0;
+        0 17px;
 }
 
-.character-information h2 {
-    margin: 0 0 13px;
+.character-info h2 {
+    margin:
+        0 0 14px;
 
-    font-size: 25px;
+    font-size: 26px;
 
     letter-spacing: 0.5px;
 }
 
-.character-identity {
+.title {
+    display: none;
+}
+
+
+/* =========================================================
+   IDENTIDADE
+========================================================= */
+
+.identity {
     display: grid;
 
     grid-template-columns:
@@ -581,98 +459,56 @@ button {
     gap: 8px;
 }
 
-.identity-item {
+.identity > div {
+    min-height: 61px;
+
     padding:
-        11px 12px;
+        10px 11px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
 
     border-radius: 12px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.065);
 
     background:
         linear-gradient(
             145deg,
             rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.018)
+            rgba(255, 255, 255, 0.015)
         );
-
-    border:
-        1px solid rgba(255, 255, 255, 0.065);
 }
 
-.identity-item small {
+.identity span {
     display: block;
+
+    color: #75687f;
+
+    font-size: 8px;
+
+    letter-spacing: 1px;
 
     margin-bottom: 5px;
-
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
 }
 
-.identity-item strong {
-    color: #ddd1e8;
+.identity strong {
+    color: #ded2e8;
 
-    font-size: 13px;
-}
-
-
-/* ---------------------------------------------------------
-   AFINIDADE
---------------------------------------------------------- */
-
-.character-affinity {
-    margin-top: 8px;
-
-    padding:
-        11px 12px;
-
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(139, 92, 246, 0.24);
-
-    background:
-        rgba(124, 58, 237, 0.06);
-}
-
-.character-affinity > small {
-    display: block;
-
-    margin-bottom: 6px;
-
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
-}
-
-.affinity-display {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-}
-
-.affinity-display span {
-    font-size: 19px;
-}
-
-.affinity-display strong {
-    color: #d8b4fe;
-
-    font-size: 13px;
+    font-size: 12px;
 }
 
 
 /* =========================================================
-   BARRAS DE XP
+   XP
 ========================================================= */
 
-.character-xp {
-    margin-top: 17px;
+.xp-section {
+    margin-top: 14px;
 
     padding: 13px;
 
@@ -682,18 +518,18 @@ button {
         1px solid rgba(111, 58, 168, 0.5);
 
     background:
-        rgba(124, 58, 237, 0.055);
+        rgba(124, 58, 237, 0.05);
 }
 
-.xp-header {
+.xp-info {
     display: flex;
 
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
 
     margin-bottom: 7px;
 
-    color: #84788f;
+    color: #887c94;
 
     font-size: 9px;
 
@@ -701,15 +537,13 @@ button {
 }
 
 #character-xp-text {
-    color: #c9bdd5;
-
-    font-size: 10px;
+    color: #cdbed8;
 
     letter-spacing: 0;
 }
 
 .xp-bar,
-.crest-xp-bar {
+.badge-xp-bar {
     width: 100%;
 
     overflow: hidden;
@@ -723,15 +557,15 @@ button {
     height: 8px;
 }
 
-.crest-xp-bar {
+.badge-xp-bar {
     height: 7px;
 }
 
 .xp-progress,
-.crest-xp-progress {
-    height: 100%;
-
+.badge-xp-progress {
     width: 0%;
+
+    height: 100%;
 
     border-radius: 20px;
 
@@ -751,35 +585,35 @@ button {
         0 0 10px rgba(168, 85, 247, 0.4);
 }
 
-.crest-xp-progress {
+.badge-xp-progress {
     background:
         linear-gradient(
             90deg,
             #581c87,
-            #a855f7
+            #c084fc
         );
 }
 
 
 /* =========================================================
-   STATUS DO BRASÃO
+   XP BRASÃO
 ========================================================= */
 
-.crest-status {
+.badge-xp-section {
     margin-top: 9px;
 
     padding: 12px 13px;
 
     border-radius: 13px;
 
-    background:
-        rgba(0, 0, 0, 0.2);
-
     border:
         1px solid rgba(104, 64, 138, 0.45);
+
+    background:
+        rgba(0, 0, 0, 0.17);
 }
 
-.crest-status-header {
+.badge-xp-header {
     display: flex;
 
     align-items: center;
@@ -788,15 +622,7 @@ button {
     margin-bottom: 7px;
 }
 
-.crest-status-header span {
-    color: #75687f;
-
-    font-size: 8px;
-
-    letter-spacing: 1px;
-}
-
-.crest-status-header strong {
+.badge-xp-header strong {
     color: #c084fc;
 
     font-size: 9px;
@@ -804,16 +630,8 @@ button {
     letter-spacing: 1px;
 }
 
-.crest-status-info {
-    display: flex;
-
-    justify-content: center;
-
-    gap: 5px;
-
-    margin-top: 7px;
-
-    color: #75687f;
+.badge-xp-header span {
+    color: #91849d;
 
     font-size: 9px;
 }
@@ -824,7 +642,8 @@ button {
 ========================================================= */
 
 .character-editor {
-    margin-top: 20px;
+    margin:
+        17px;
 
     padding: 17px;
 
@@ -836,17 +655,14 @@ button {
     background:
         linear-gradient(
             145deg,
-            rgba(124, 58, 237, 0.075),
-            rgba(0, 0, 0, 0.16)
+            rgba(124, 58, 237, 0.08),
+            rgba(0, 0, 0, 0.2)
         );
-
-    box-shadow:
-        inset 0 0 25px rgba(124, 58, 237, 0.025);
 }
 
 .character-editor h3 {
     margin:
-        0 0 18px;
+        0 0 16px;
 
     color: #c084fc;
 
@@ -862,29 +678,28 @@ button {
 
     gap: 6px;
 
-    margin-bottom: 13px;
+    margin-bottom: 12px;
 }
 
 .editor-field label {
-    color: #8f839d;
+    color: #82758e;
 
-    font-size: 9px;
+    font-size: 8px;
 
     letter-spacing: 1px;
 }
 
 .editor-field input,
-.editor-field select,
-.editor-field textarea {
+.editor-field select {
     width: 100%;
 
     padding:
-        11px 12px;
-
-    border-radius: 10px;
+        10px 11px;
 
     border:
         1px solid #68408a;
+
+    border-radius: 9px;
 
     outline: none;
 
@@ -893,65 +708,49 @@ button {
 
     color: #f5f0ff;
 
-    font-size: 13px;
-
-    transition:
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.editor-field input::placeholder,
-.editor-field textarea::placeholder {
-    color: #655b6e;
+    font-size: 12px;
 }
 
 .editor-field input:focus,
-.editor-field select:focus,
-.editor-field textarea:focus {
+.editor-field select:focus {
     border-color: #a855f7;
 
     box-shadow:
-        0 0 12px rgba(168, 85, 247, 0.16);
+        0 0 10px rgba(168, 85, 247, 0.15);
 }
 
 
 /* =========================================================
-   BOTÕES
+   BOTÕES DO EDITOR
 ========================================================= */
 
-.image-actions {
+.editor-buttons {
     display: grid;
 
     grid-template-columns: 1fr 1fr;
 
     gap: 8px;
-
-    margin-top: 5px;
 }
 
-.image-actions button,
-#apply-image-url,
-#remove-image-button {
-    min-height: 38px;
-
-    padding: 8px 12px;
-
-    border-radius: 9px;
+.editor-buttons button {
+    min-height: 37px;
 
     border:
         1px solid #68408a;
+
+    border-radius: 9px;
 
     background:
         #1b1424;
 
     color: #d8c7e8;
 
+    font-size: 10px;
+
     cursor: pointer;
 }
 
-.image-actions button:hover,
-#apply-image-url:hover,
-#remove-image-button:hover {
+.editor-buttons button:hover {
     border-color: #a855f7;
 
     background:
@@ -966,104 +765,81 @@ button {
 .master-button {
     width: 100%;
 
-    margin-top: 15px;
+    margin-top: 13px;
 
-    padding: 13px;
+    padding: 12px;
 
     border:
         1px solid #70419a;
 
-    border-radius: 12px;
+    border-radius: 11px;
 
     background:
         linear-gradient(
             145deg,
-            #1d1428,
-            #120b1a
+            #21142d,
+            #120b19
         );
 
     color: #d8c7e8;
 
-    font-size: 12px;
+    font-size: 11px;
 
     font-weight: bold;
 
     letter-spacing: 1px;
 
     cursor: pointer;
-
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease,
-        transform 0.2s ease;
 }
 
 .master-button:hover {
     border-color: #a855f7;
 
     background:
-        #251535;
-
-    transform: translateY(-1px);
+        #29183a;
 }
 
 .master-controls {
     display: none;
 
-    margin-top: 13px;
+    margin-top: 12px;
 
-    padding: 15px;
+    padding: 14px;
 
     border-radius: 14px;
 
-    background:
-        rgba(0, 0, 0, 0.3);
-
     border:
         1px solid rgba(168, 85, 247, 0.25);
+
+    background:
+        rgba(0, 0, 0, 0.28);
 }
 
 .master-controls.active {
     display: block;
-
-    animation:
-        masterOpen 0.25s ease;
-}
-
-@keyframes masterOpen {
-
-    from {
-        opacity: 0;
-        transform: translateY(-7px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }
 
 .master-controls h3 {
     margin:
-        0 0 15px;
+        0 0 13px;
 
     color: #c084fc;
 
-    font-size: 13px;
-
-    letter-spacing: 1px;
+    font-size: 12px;
 }
 
 .control {
+    margin-bottom: 10px;
+
+    padding: 8px;
+
     display: flex;
 
+    flex-wrap: wrap;
+
+    gap: 7px;
+
     align-items: center;
-
-    gap: 8px;
-
-    margin-bottom: 9px;
-
-    padding: 7px;
 
     border-radius: 9px;
 
@@ -1072,16 +848,39 @@ button {
 }
 
 .control label {
+    width: 100%;
+
+    color: #a99db7;
+
+    font-size: 9px;
+
+    letter-spacing: 1px;
+}
+
+.control input {
     flex: 1;
 
-    color: #b9a9c8;
+    min-width: 80px;
 
-    font-size: 11px;
+    padding: 9px;
+
+    border:
+        1px solid #68408a;
+
+    border-radius: 8px;
+
+    background:
+        #0e0915;
+
+    color: white;
+
+    outline: none;
 }
 
 .control button {
-    width: 36px;
-    height: 31px;
+    min-width: 75px;
+
+    padding: 9px;
 
     border:
         1px solid #68408a;
@@ -1091,98 +890,81 @@ button {
     background:
         #1b1424;
 
-    color: #fff;
+    color: #ddd;
 
     cursor: pointer;
 }
 
-.control button:hover {
-    border-color: #a855f7;
-
-    background:
-        #29183a;
-}
-
-.xp-control {
-    flex-wrap: wrap;
-}
-
-.xp-control input {
+#reset-character {
     width: 100%;
 
     padding: 10px;
 
-    border-radius: 8px;
-
     border:
-        1px solid #68408a;
+        1px solid #6b2f45;
+
+    border-radius: 9px;
 
     background:
-        #0e0915;
+        rgba(100, 20, 40, 0.18);
 
-    color: #fff;
+    color: #dbaebe;
 
-    outline: none;
-}
-
-.xp-control button {
-    flex: 1;
-
-    width: auto;
-
-    font-size: 10px;
+    cursor: pointer;
 }
 
 
 /* =========================================================
-   CARD 2 — STATUS
+   STATUS
 ========================================================= */
 
-#dimension-status {
-    background:
-        linear-gradient(
-            180deg,
-            rgba(124, 58, 237, 0.025),
-            transparent 30%
-        );
+.status-dimension,
+.combat-dimension,
+.inventory-dimension {
+    padding: 20px;
+}
+
+.status-section > h2,
+.combat-dimension > h2,
+.inventory-dimension > h2 {
+    margin:
+        0 0 18px;
+
+    font-size: 24px;
+
+    letter-spacing: 1px;
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    TÍTULOS INTERNOS
---------------------------------------------------------- */
+========================================================= */
 
-#dimension-status h2,
-#dimension-status h3 {
-    color: #f1eaff;
-}
-
-#dimension-status > h2 {
+.stats-title {
     margin:
-        0 0 20px;
+        18px 0 11px;
 
-    font-size: 25px;
+    color: #b9a9c8;
 
-    letter-spacing: 1px;
+    font-size: 11px;
+
+    letter-spacing: 2px;
 }
 
-#dimension-status > h3 {
+.element-description {
     margin:
-        20px 0 12px;
+        -4px 0 12px;
 
-    font-size: 15px;
+    color: #75687f;
 
-    letter-spacing: 1px;
-
-    color: #c9bdd5;
+    font-size: 9px;
 }
 
 
-/* ---------------------------------------------------------
-   RECURSOS
---------------------------------------------------------- */
+/* =========================================================
+   STATUS / ATRIBUTOS
+========================================================= */
 
-.resources,
 .stats-grid {
     display: grid;
 
@@ -1192,70 +974,71 @@ button {
     gap: 9px;
 }
 
-.resource,
 .stat {
     position: relative;
 
-    min-height: 74px;
+    min-height: 85px;
 
-    padding: 13px;
+    padding: 12px;
 
     display: flex;
 
     flex-direction: column;
 
+    align-items: center;
     justify-content: center;
 
-    border-radius: 14px;
+    text-align: center;
+
+    border-radius: 15px;
 
     border:
-        1px solid rgba(255, 255, 255, 0.065);
+        1px solid rgba(255, 255, 255, 0.07);
 
     background:
         linear-gradient(
             145deg,
             rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.018)
+            rgba(255, 255, 255, 0.015)
         );
 
-    box-shadow:
-        inset 0 0 15px rgba(255, 255, 255, 0.01);
+    transition:
+        0.2s ease;
 }
 
-.resource strong,
+.stat:hover {
+    border-color:
+        rgba(168, 85, 247, 0.3);
+
+    transform: translateY(-1px);
+}
+
+.stat span {
+    font-size: 22px;
+
+    margin-bottom: 5px;
+}
+
 .stat strong {
-    color: #f0e8f8;
+    color: #eee5f5;
 
-    font-size: 18px;
+    font-size: 19px;
 }
 
-.resource small,
 .stat small {
     margin-top: 4px;
 
     color: #75687f;
 
-    font-size: 9px;
+    font-size: 8px;
 
     letter-spacing: 1px;
 }
 
 
-/* ---------------------------------------------------------
-   ATRIBUTOS
---------------------------------------------------------- */
-
-.stat {
-    align-items: center;
-
-    text-align: center;
-}
-
-.stat span {
-    font-size: 21px;
-
-    margin-bottom: 5px;
-}
+/* =========================================================
+   BOTÃO +
+========================================================= */
 
 .attribute-plus {
     position: absolute;
@@ -1265,6 +1048,8 @@ button {
 
     width: 23px;
     height: 23px;
+
+    padding: 0;
 
     border:
         1px solid #68408a;
@@ -1276,54 +1061,41 @@ button {
 
     color: #d8b4fe;
 
-    font-size: 15px;
-
-    line-height: 18px;
-
     cursor: pointer;
 
-    opacity: 0.55;
-
-    transition:
-        opacity 0.2s ease,
-        transform 0.2s ease;
+    opacity: 0.6;
 }
 
 .attribute-plus:hover {
     opacity: 1;
 
-    transform: scale(1.08);
-
     border-color: #a855f7;
+
+    transform: scale(1.07);
 }
 
 
-/* ---------------------------------------------------------
-   PONTOS
---------------------------------------------------------- */
+/* =========================================================
+   PONTOS DE ATRIBUTO
+========================================================= */
 
 .attribute-points {
     margin:
-        14px -20px 20px;
+        16px -20px;
 
     padding:
-        13px 20px;
+        15px 20px;
 
     text-align: center;
 
     border-top:
-        1px solid rgba(168, 85, 247, 0.18);
+        1px solid rgba(168, 85, 247, 0.2);
 
     border-bottom:
-        1px solid rgba(168, 85, 247, 0.18);
+        1px solid rgba(168, 85, 247, 0.2);
 
     background:
-        linear-gradient(
-            90deg,
-            rgba(124, 58, 237, 0.08),
-            rgba(124, 58, 237, 0.16),
-            rgba(124, 58, 237, 0.08)
-        );
+        rgba(124, 58, 237, 0.08);
 }
 
 .attribute-points h3 {
@@ -1332,7 +1104,7 @@ button {
 
     color: #c084fc;
 
-    font-size: 12px;
+    font-size: 10px;
 
     letter-spacing: 2px;
 }
@@ -1342,18 +1114,18 @@ button {
 
     color: #f0ddff;
 
-    font-size: 29px;
+    font-size: 28px;
 }
 
 .attribute-points span {
     color: #75687f;
 
-    font-size: 9px;
+    font-size: 8px;
 }
 
 
 /* =========================================================
-   AFINIDADES ELEMENTAIS
+   ELEMENTOS — CARDS
 ========================================================= */
 
 .element-grid {
@@ -1363,14 +1135,12 @@ button {
         repeat(2, 1fr);
 
     gap: 9px;
-
-    margin-top: 12px;
 }
 
 .element-option {
-    min-height: 105px;
+    min-height: 100px;
 
-    padding: 14px 8px;
+    padding: 13px 7px;
 
     display: flex;
 
@@ -1381,39 +1151,24 @@ button {
 
     gap: 8px;
 
-    border-radius: 16px;
-
     border:
         1px solid rgba(255, 255, 255, 0.08);
+
+    border-radius: 15px;
 
     background:
         linear-gradient(
             145deg,
             rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.018)
+            rgba(255, 255, 255, 0.015)
         );
 
-    color: #c2b5cc;
+    color: #bcaec7;
 
     cursor: pointer;
 
     transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        background 0.2s ease,
-        box-shadow 0.2s ease;
-}
-
-.element-option span {
-    font-size: 30px;
-
-    line-height: 1;
-}
-
-.element-option strong {
-    font-size: 11px;
-
-    letter-spacing: 1px;
+        0.2s ease;
 }
 
 .element-option:hover {
@@ -1421,49 +1176,56 @@ button {
 
     border-color:
         rgba(168, 85, 247, 0.45);
-
-    background:
-        rgba(124, 58, 237, 0.09);
 }
 
 .element-option.selected {
     border-color:
         #a855f7;
 
+    color: #f0ddff;
+
     background:
         linear-gradient(
             145deg,
-            rgba(124, 58, 237, 0.25),
-            rgba(168, 85, 247, 0.08)
+            rgba(124, 58, 237, 0.28),
+            rgba(124, 58, 237, 0.08)
         );
 
     box-shadow:
-        0 0 20px rgba(124, 58, 237, 0.2),
-        inset 0 0 15px rgba(168, 85, 247, 0.06);
-
-    color: #f0ddff;
+        0 0 18px rgba(124, 58, 237, 0.2);
 }
+
+.element-option span {
+    font-size: 28px;
+}
+
+.element-option small {
+    font-size: 9px;
+
+    letter-spacing: 1px;
+}
+
+
+/* =========================================================
+   CONFIRMAR ELEMENTO
+========================================================= */
 
 #confirm-element {
     width: 100%;
 
-    margin-top: 11px;
+    margin-top: 10px;
 
     padding: 12px;
 
     border:
-        1px solid #7b49a7;
+        1px solid #70419a;
 
     border-radius: 11px;
 
     background:
-        linear-gradient(
-            145deg,
-            #271538,
-            #180e24
-        );
+        #1b1424;
 
-    color: #dfcced;
+    color: #d8c7e8;
 
     font-weight: bold;
 
@@ -1473,8 +1235,8 @@ button {
 #confirm-element:not(:disabled):hover {
     border-color: #c084fc;
 
-    box-shadow:
-        0 0 15px rgba(168, 85, 247, 0.18);
+    background:
+        #29183a;
 }
 
 #confirm-element:disabled {
@@ -1484,14 +1246,14 @@ button {
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    BRASÕES
---------------------------------------------------------- */
+========================================================= */
 
 .badges {
     margin-top: 22px;
 
-    padding-top: 18px;
+    padding-top: 17px;
 
     border-top:
         1px solid rgba(255, 255, 255, 0.06);
@@ -1499,11 +1261,11 @@ button {
 
 .badges h3 {
     margin:
-        0 0 12px;
+        0 0 11px;
 
     color: #b9a9c8;
 
-    font-size: 13px;
+    font-size: 11px;
 
     letter-spacing: 2px;
 }
@@ -1518,8 +1280,7 @@ button {
 }
 
 .badge {
-    width: 100%;
-    height: 58px;
+    height: 55px;
 
     display: flex;
 
@@ -1532,16 +1293,9 @@ button {
         1px solid #68408a;
 
     background:
-        linear-gradient(
-            145deg,
-            #1d1527,
-            #100b16
-        );
+        #17101f;
 
-    font-size: 23px;
-
-    box-shadow:
-        inset 0 0 12px rgba(124, 58, 237, 0.04);
+    font-size: 22px;
 }
 
 .badge.locked {
@@ -1552,40 +1306,17 @@ button {
 
 
 /* =========================================================
-   CARD 3 — COMBATE
+   COMBATE
 ========================================================= */
 
-#dimension-combat {
-    background:
-        linear-gradient(
-            180deg,
-            rgba(124, 58, 237, 0.025),
-            transparent 35%
-        );
-}
-
-#dimension-combat > h2 {
+.combat-dimension > p {
     margin:
-        0 0 5px;
-
-    font-size: 25px;
-
-    letter-spacing: 1px;
-}
-
-#dimension-combat > p {
-    margin:
-        0 0 18px;
+        -10px 0 18px;
 
     color: #75687f;
 
-    font-size: 11px;
+    font-size: 10px;
 }
-
-
-/* ---------------------------------------------------------
-   RECURSOS DE COMBATE
---------------------------------------------------------- */
 
 .combat-resources {
     display: grid;
@@ -1594,11 +1325,13 @@ button {
 
     gap: 9px;
 
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .combat-resource {
     padding: 14px;
+
+    text-align: center;
 
     border-radius: 14px;
 
@@ -1607,14 +1340,12 @@ button {
 
     background:
         rgba(124, 58, 237, 0.06);
-
-    text-align: center;
 }
 
 .combat-resource strong {
-    font-size: 18px;
+    color: #eee5f5;
 
-    color: #e8d9f5;
+    font-size: 20px;
 }
 
 .combat-resource small {
@@ -1624,20 +1355,20 @@ button {
 
     color: #75687f;
 
-    font-size: 9px;
+    font-size: 8px;
 
     letter-spacing: 1px;
 }
 
 
-/* ---------------------------------------------------------
-   AÇÕES FIXAS
---------------------------------------------------------- */
+/* =========================================================
+   AÇÕES DE COMBATE
+========================================================= */
 
 .combat-action {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 
-    padding: 16px;
+    padding: 15px;
 
     border-radius: 16px;
 
@@ -1654,50 +1385,41 @@ button {
 
 .combat-action h3 {
     margin:
-        0 0 9px;
+        0 0 7px;
 
-    color: #f0e8f8;
+    color: #eee5f5;
 
-    font-size: 16px;
-
-    letter-spacing: 0.5px;
+    font-size: 15px;
 }
 
 .combat-action p {
     margin:
-        5px 0 12px;
+        0 0 11px;
 
-    color: #a99db7;
+    color: #8f839d;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .combat-use-button {
     padding:
-        10px 15px;
+        9px 14px;
 
     border:
         1px solid #70419a;
 
-    border-radius: 10px;
+    border-radius: 9px;
 
     background:
         #1b1424;
 
     color: #d8c7e8;
 
-    font-size: 10px;
+    font-size: 9px;
 
     font-weight: bold;
 
-    letter-spacing: 0.5px;
-
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.15s ease;
 }
 
 .combat-use-button:hover {
@@ -1707,35 +1429,27 @@ button {
         #29183a;
 }
 
-.combat-use-button:active {
-    transform: scale(0.96);
-}
-
 
 /* =========================================================
    HABILIDADES
 ========================================================= */
 
-#dimension-combat h3 {
-    color: #d8c7e8;
-}
-
 .abilities-section {
-    margin-top: 22px;
+    margin-top: 20px;
 }
 
 .abilities-section > h3 {
     margin:
-        0 0 12px;
+        0 0 11px;
 
-    font-size: 15px;
+    color: #b9a9c8;
 
-    letter-spacing: 1px;
+    font-size: 12px;
+
+    letter-spacing: 2px;
 }
 
 .ability-card {
-    position: relative;
-
     margin-bottom: 10px;
 
     padding: 15px;
@@ -1743,42 +1457,14 @@ button {
     border-radius: 16px;
 
     border:
-        1px solid rgba(168, 85, 247, 0.17);
+        1px solid rgba(168, 85, 247, 0.2);
 
     background:
         linear-gradient(
             145deg,
             #19121f,
-            #0f0a15
+            #0e0914
         );
-
-    box-shadow:
-        inset 0 0 20px rgba(124, 58, 237, 0.025);
-}
-
-.ability-card:hover {
-    border-color:
-        rgba(168, 85, 247, 0.35);
-}
-
-.ability-card-header {
-    display: flex;
-
-    align-items: center;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    margin-bottom: 10px;
-}
-
-.ability-card h4 {
-    margin: 0;
-
-    color: #eee5f5;
-
-    font-size: 14px;
 }
 
 .ability-card input,
@@ -1786,7 +1472,10 @@ button {
 .ability-card textarea {
     width: 100%;
 
-    padding: 9px 10px;
+    padding:
+        9px 10px;
+
+    margin-bottom: 8px;
 
     border:
         1px solid #68408a;
@@ -1800,11 +1489,11 @@ button {
 
     outline: none;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .ability-card textarea {
-    min-height: 65px;
+    min-height: 60px;
 
     resize: vertical;
 }
@@ -1813,22 +1502,6 @@ button {
 .ability-card select:focus,
 .ability-card textarea:focus {
     border-color: #a855f7;
-
-    box-shadow:
-        0 0 9px rgba(168, 85, 247, 0.13);
-}
-
-.ability-card .ability-name-input {
-    margin-bottom: 8px;
-}
-
-.ability-card .ability-cost-type,
-.ability-card .ability-cost-input {
-    margin-bottom: 8px;
-}
-
-.ability-card .combat-use-button {
-    margin-top: 9px;
 }
 
 
@@ -1837,9 +1510,9 @@ button {
 ========================================================= */
 
 .passive-card {
-    margin-top: 22px;
+    margin-top: 20px;
 
-    padding: 17px;
+    padding: 16px;
 
     border-radius: 17px;
 
@@ -1849,8 +1522,8 @@ button {
     background:
         linear-gradient(
             145deg,
-            rgba(124, 58, 237, 0.11),
-            rgba(0, 0, 0, 0.16)
+            rgba(124, 58, 237, 0.1),
+            rgba(0, 0, 0, 0.18)
         );
 }
 
@@ -1860,9 +1533,9 @@ button {
 
     color: #c084fc;
 
-    font-size: 14px;
+    font-size: 12px;
 
-    letter-spacing: 1px;
+    letter-spacing: 2px;
 }
 
 .passive-card input,
@@ -1882,10 +1555,12 @@ button {
     color: #f5f0ff;
 
     outline: none;
+
+    font-size: 10px;
 }
 
 .passive-card textarea {
-    min-height: 75px;
+    min-height: 70px;
 
     margin-top: 8px;
 
@@ -1894,60 +1569,45 @@ button {
 
 
 /* =========================================================
-   REGISTRO DE COMBATE
+   LOG DE COMBATE
 ========================================================= */
 
 #combat-log {
-    max-height: 180px;
+    min-height: 50px;
+
+    max-height: 160px;
 
     overflow-y: auto;
 
-    margin-top: 12px;
+    margin-top: 15px;
 
-    padding: 12px;
+    padding: 11px;
 
-    border-radius: 13px;
-
-    background:
-        rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
 
     border:
         1px solid rgba(255, 255, 255, 0.05);
 
-    color: #8f839d;
+    background:
+        rgba(0, 0, 0, 0.28);
 
-    font-size: 10px;
+    color: #81758d;
+
+    font-size: 9px;
 
     line-height: 1.6;
 }
 
 
 /* =========================================================
-   CARD 4 — INVENTÁRIO
+   INVENTÁRIO
 ========================================================= */
 
-#dimension-inventory {
-    background:
-        linear-gradient(
-            180deg,
-            rgba(124, 58, 237, 0.025),
-            transparent 35%
-        );
+.inventory-dimension > p {
+    color: #75687f;
+
+    font-size: 10px;
 }
-
-#dimension-inventory > h2 {
-    margin:
-        0 0 20px;
-
-    font-size: 25px;
-
-    letter-spacing: 1px;
-}
-
-
-/* ---------------------------------------------------------
-   CAPACIDADE
---------------------------------------------------------- */
 
 .inventory-capacity {
     display: flex;
@@ -1955,18 +1615,17 @@ button {
     align-items: center;
     justify-content: space-between;
 
-    padding:
-        15px 16px;
+    padding: 14px 15px;
 
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 
-    border-radius: 15px;
+    border-radius: 14px;
 
     border:
-        1px solid rgba(168, 85, 247, 0.28);
+        1px solid rgba(168, 85, 247, 0.25);
 
     background:
-        rgba(124, 58, 237, 0.07);
+        rgba(124, 58, 237, 0.06);
 }
 
 .inventory-capacity span {
@@ -1974,7 +1633,7 @@ button {
 
     font-size: 9px;
 
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 }
 
 #inventory-capacity {
@@ -1986,20 +1645,9 @@ button {
 }
 
 
-/* ---------------------------------------------------------
+/* =========================================================
    EQUIPAMENTOS
---------------------------------------------------------- */
-
-#dimension-inventory h3 {
-    margin:
-        20px 0 12px;
-
-    color: #c9bdd5;
-
-    font-size: 14px;
-
-    letter-spacing: 1px;
-}
+========================================================= */
 
 .equipment-list {
     display: grid;
@@ -2013,7 +1661,7 @@ button {
 .equipment-item {
     min-height: 70px;
 
-    padding: 11px;
+    padding: 12px;
 
     display: flex;
 
@@ -2021,13 +1669,17 @@ button {
 
     justify-content: center;
 
-    border-radius: 13px;
+    border-radius: 14px;
 
     border:
-        1px solid rgba(255, 255, 255, 0.06);
+        1px solid rgba(255, 255, 255, 0.07);
 
     background:
-        rgba(255, 255, 255, 0.035);
+        linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.04),
+            rgba(255, 255, 255, 0.015)
+        );
 }
 
 .equipment-item small {
@@ -2043,16 +1695,16 @@ button {
 
     color: #d8c7e8;
 
-    font-size: 11px;
+    font-size: 10px;
 }
 
 
 /* =========================================================
-   SLOTS DO INVENTÁRIO
+   SLOTS
 ========================================================= */
 
 #inventory-list {
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 #inventory-slots {
@@ -2062,12 +1714,10 @@ button {
         repeat(5, 1fr);
 
     gap: 7px;
-
-    padding-top: 3px;
 }
 
 .inventory-slot {
-    min-height: 43px;
+    min-height: 44px;
 
     display: flex;
 
@@ -2077,127 +1727,88 @@ button {
     border-radius: 9px;
 
     border:
-        1px solid rgba(255, 255, 255, 0.07);
+        1px solid rgba(255, 255, 255, 0.065);
 
     background:
         linear-gradient(
             145deg,
             #15101b,
-            #0d0912
+            #0c0811
         );
 
     color: #62576c;
 
-    font-size: 10px;
-
-    transition:
-        border-color 0.2s ease,
-        background 0.2s ease;
+    font-size: 9px;
 }
 
 .inventory-slot:hover {
     border-color:
         rgba(168, 85, 247, 0.35);
-
-    background:
-        #191020;
 }
 
 
 /* =========================================================
-   BOTÕES GENÉRICOS
-========================================================= */
-
-button:not(.dimension-button):not(.element-option):not(.attribute-plus) {
-    -webkit-appearance: none;
-}
-
-
-/* =========================================================
-   SCROLLBAR
-========================================================= */
-
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: #0b0710;
-}
-
-::-webkit-scrollbar-thumb {
-    border-radius: 10px;
-
-    background: #3c2451;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #68408a;
-}
-
-
-/* =========================================================
-   EFEITOS DE AFINIDADE
+   EFEITOS ELEMENTAIS
 ========================================================= */
 
 .character-card.element-agua {
     box-shadow:
-        0 0 35px rgba(56, 189, 248, 0.18),
-        inset 0 0 40px rgba(56, 189, 248, 0.04);
+        0 0 45px rgba(56, 189, 248, 0.22),
+        inset 0 0 45px rgba(56, 189, 248, 0.04);
 }
 
 .character-card.element-fogo {
     box-shadow:
-        0 0 35px rgba(249, 115, 22, 0.18),
-        inset 0 0 40px rgba(249, 115, 22, 0.04);
+        0 0 45px rgba(249, 115, 22, 0.22),
+        inset 0 0 45px rgba(249, 115, 22, 0.04);
 }
 
 .character-card.element-terra {
     box-shadow:
-        0 0 35px rgba(120, 113, 108, 0.18),
-        inset 0 0 40px rgba(120, 113, 108, 0.04);
+        0 0 45px rgba(120, 113, 108, 0.2),
+        inset 0 0 45px rgba(120, 113, 108, 0.04);
 }
 
 .character-card.element-vento {
     box-shadow:
-        0 0 35px rgba(125, 211, 252, 0.18),
-        inset 0 0 40px rgba(125, 211, 252, 0.04);
+        0 0 45px rgba(125, 211, 252, 0.2),
+        inset 0 0 45px rgba(125, 211, 252, 0.04);
 }
 
 .character-card.element-luz {
     box-shadow:
-        0 0 40px rgba(253, 224, 71, 0.18),
-        inset 0 0 40px rgba(253, 224, 71, 0.04);
+        0 0 45px rgba(253, 224, 71, 0.22),
+        inset 0 0 45px rgba(253, 224, 71, 0.04);
 }
 
 .character-card.element-trevas {
     box-shadow:
-        0 0 40px rgba(88, 28, 135, 0.28),
-        inset 0 0 40px rgba(30, 10, 50, 0.1);
+        0 0 50px rgba(109, 40, 217, 0.3),
+        inset 0 0 50px rgba(88, 28, 135, 0.06);
 }
 
 .character-card.element-fisico {
     box-shadow:
-        0 0 35px rgba(251, 191, 36, 0.16),
-        inset 0 0 40px rgba(251, 191, 36, 0.035);
+        0 0 45px rgba(251, 191, 36, 0.18),
+        inset 0 0 45px rgba(251, 191, 36, 0.035);
 }
 
 .character-card.element-magico {
     box-shadow:
-        0 0 40px rgba(217, 70, 239, 0.2),
-        inset 0 0 40px rgba(217, 70, 239, 0.05);
+        0 0 50px rgba(217, 70, 239, 0.24),
+        inset 0 0 50px rgba(217, 70, 239, 0.05);
 }
 
 
 /* =========================================================
-   RESPONSIVIDADE
+   RESPONSIVO
 ========================================================= */
 
 @media (max-width: 420px) {
 
     .app {
         padding:
-            15px 8px 35px;
+            14px 7px 30px;
     }
 
     .app-header h1 {
@@ -2206,70 +1817,67 @@ button:not(.dimension-button):not(.element-option):not(.attribute-plus) {
         letter-spacing: 2px;
     }
 
-    .character-card {
-        border-radius: 20px;
-    }
+    .dimension-nav {
+        gap: 3px;
 
-    .card-navigation {
-        padding: 6px;
+        padding: 5px;
+
+        border-radius: 15px;
     }
 
     .dimension-button {
-        min-height: 53px;
+        min-height: 44px;
+
+        font-size: 8px;
     }
 
-    .dimension-button strong {
-        font-size: 7px;
+    .character-card {
+        border-radius: 21px;
     }
 
-    .card-dimension {
-        padding: 17px;
-    }
-
-    #dimension-character {
-        padding:
-            0 13px 20px;
-    }
-
-    #dimension-character .dimension-header {
+    .card-header {
         grid-template-columns:
-            1fr 68px 1fr;
+            1fr 62px 1fr;
+
+        padding:
+            8px 13px;
     }
 
-    #dimension-character .affinity-crest {
-        width: 57px;
-        height: 57px;
+    .character-crest {
+        width: 51px;
+        height: 51px;
     }
 
-    #dimension-character .character-level strong {
+    #crest-symbol {
         font-size: 22px;
     }
 
-    .character-art {
-        height: 330px;
+    .character-image {
+        height: 320px;
+
+        margin: 12px;
     }
 
-    .character-information h2 {
-        font-size: 22px;
+    .character-info {
+        padding:
+            0 13px;
+    }
+
+    .identity {
+        gap: 7px;
+    }
+
+    .status-dimension,
+    .combat-dimension,
+    .inventory-dimension {
+        padding: 16px;
     }
 
     .element-option {
-        min-height: 94px;
-    }
-
-    .element-option span {
-        font-size: 27px;
-    }
-
-    .badge-list {
-        grid-template-columns:
-            repeat(4, 1fr);
+        min-height: 92px;
     }
 
     #inventory-slots {
-        grid-template-columns:
-            repeat(5, 1fr);
-
         gap: 5px;
     }
 
@@ -2280,37 +1888,25 @@ button:not(.dimension-button):not(.element-option):not(.attribute-plus) {
 
 
 /* =========================================================
-   CELULARES MUITO PEQUENOS
+   CELULARES PEQUENOS
 ========================================================= */
 
 @media (max-width: 340px) {
 
-    .card-navigation {
-        gap: 2px;
+    .dimension-button {
+        font-size: 7px;
     }
 
-    .dimension-button span {
-        font-size: 17px;
+    .character-image {
+        height: 285px;
     }
 
-    .dimension-button strong {
-        font-size: 6px;
+    .identity {
+        grid-template-columns: 1fr;
     }
 
-    .character-art {
-        height: 290px;
-    }
-
-    .character-identity,
-    .resources,
     .stats-grid {
-        grid-template-columns:
-            1fr;
-    }
-
-    .element-grid {
-        grid-template-columns:
-            1fr 1fr;
+        grid-template-columns: 1fr 1fr;
     }
 
     #inventory-slots {
