@@ -1109,6 +1109,224 @@ function atualizarBrasao() {
 
 
 /* =========================================================
+   TESTE DE LEITURA DO SUPABASE
+========================================================= */
+
+/*
+   Esta função NÃO altera o personagem.
+
+   Ela apenas verifica se o personagem da campanha
+   pode ser encontrado no banco.
+
+   Será removida/substituída quando começarmos
+   a sincronização definitiva.
+*/
+
+async function testarLeituraPersonagemSupabase() {
+
+    if (
+        !window.supabaseClient
+    ) {
+
+        console.warn(
+            "Supabase ainda não está disponível."
+        );
+
+        return;
+
+    }
+
+
+    /*
+       Espera a autenticação terminar de
+       identificar usuário e campanha.
+    */
+
+    if (
+        !window.rpgAuth ||
+        !window.rpgAuth.user ||
+        !window.rpgAuth.campaign
+    ) {
+
+        return;
+
+    }
+
+
+    try {
+
+        const {
+            data,
+            error
+        } =
+            await window.supabaseClient
+                .from("characters")
+                .select(
+                    "id, name, race, class, affinity, level, xp, crest_xp, attribute_points, sanity, hp, mp, est"
+                )
+                .eq(
+                    "campaign_id",
+                    window.rpgAuth.campaign.id
+                )
+                .eq(
+                    "user_id",
+                    window.rpgAuth.user.id
+                )
+                .maybeSingle();
+
+
+        if (error) {
+
+            console.error(
+                "Erro ao ler personagem do Supabase:",
+                error
+            );
+
+            mostrarResultadoSupabase(
+                "❌ Erro ao ler o personagem no Supabase.",
+                false
+            );
+
+            return;
+
+        }
+
+
+        if (!data) {
+
+            console.warn(
+                "Nenhum personagem encontrado para este usuário."
+            );
+
+            mostrarResultadoSupabase(
+                "⚠️ Nenhum personagem encontrado no Supabase.",
+                false
+            );
+
+            return;
+
+        }
+
+
+        console.log(
+            "✅ Personagem encontrado no Supabase:",
+            data
+        );
+
+
+        mostrarResultadoSupabase(
+            `✅ Supabase encontrou: ${data.name} — LV. ${data.level}`,
+            true
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Falha ao ler personagem do Supabase:",
+            error
+        );
+
+
+        mostrarResultadoSupabase(
+            "❌ Falha na leitura do personagem.",
+            false
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   RESULTADO VISUAL DO TESTE
+========================================================= */
+
+function mostrarResultadoSupabase(
+    texto,
+    sucesso
+) {
+
+    const existente =
+        get("supabase-test-result");
+
+
+    if (existente) {
+
+        existente.textContent =
+            texto;
+
+        existente.style.color =
+            sucesso
+                ? "#86efac"
+                : "#fca5a5";
+
+        return;
+
+    }
+
+
+    const mensagem =
+        document.createElement(
+            "div"
+        );
+
+
+    mensagem.id =
+        "supabase-test-result";
+
+
+    mensagem.textContent =
+        texto;
+
+
+    Object.assign(
+        mensagem.style,
+        {
+            position: "fixed",
+            top: "12px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: "9998",
+            width: "min(92vw, 500px)",
+            padding: "10px 14px",
+            borderRadius: "12px",
+            background: "rgba(11, 9, 16, 0.96)",
+            border: "1px solid #6f3aa8",
+            boxShadow: "0 0 20px rgba(124, 58, 237, 0.25)",
+            textAlign: "center",
+            fontFamily: "Arial, sans-serif",
+            fontSize: "12px",
+            color: sucesso
+                ? "#86efac"
+                : "#fca5a5"
+        }
+    );
+
+
+    document.body.appendChild(
+        mensagem
+    );
+
+
+    /*
+       O aviso desaparece sozinho depois
+       de alguns segundos.
+    */
+
+    setTimeout(
+        () => {
+
+            mensagem.remove();
+
+        },
+        5000
+    );
+
+}
+
+
+/* =========================================================
    INTERFACE PRINCIPAL
 ========================================================= */
 
@@ -1380,6 +1598,62 @@ function iniciar() {
 
 
     atualizarInterface();
+
+
+    /*
+       O auth.js pode ainda estar terminando
+       de carregar a sessão/campanha.
+
+       Por isso verificamos algumas vezes.
+       Isso NÃO modifica o personagem.
+    */
+
+    let tentativas = 0;
+
+
+    const verificarSupabase =
+        setInterval(
+            () => {
+
+                tentativas++;
+
+
+                if (
+                    window.rpgAuth &&
+                    window.rpgAuth.user &&
+                    window.rpgAuth.campaign
+                ) {
+
+                    clearInterval(
+                        verificarSupabase
+                    );
+
+
+                    testarLeituraPersonagemSupabase();
+
+                    return;
+
+                }
+
+
+                if (
+                    tentativas >= 20
+                ) {
+
+                    clearInterval(
+                        verificarSupabase
+                    );
+
+
+                    console.warn(
+                        "Não foi possível identificar usuário/campanha para o teste do Supabase."
+                    );
+
+                }
+
+            },
+            250
+        );
 
 }
 
