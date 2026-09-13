@@ -1,11 +1,11 @@
 /* =========================================================
    RPG CHARACTER CARD
    CARD.CSS
-   IDENTIDADE VISUAL DOS CARDS POR AFINIDADE
+   IDENTIDADE VISUAL — PERGAMINHO QUEIMADO
 
-   A cor principal continua responsável pela aura.
-   As cores secundárias entram principalmente em bordas,
-   reflexos e pequenos detalhes.
+   A estrutura dos efeitos elementais foi preservada.
+   A moldura arredondada foi substituída por um pergaminho
+   antigo, com bordas escuras e cantos queimados.
 ========================================================= */
 
 
@@ -17,7 +17,71 @@
     position: relative;
     overflow: hidden;
     isolation: isolate;
-    border-radius: 22px;
+
+    /*
+       Remove completamente o visual de cartão moderno.
+       O formato agora é de uma folha/pergaminho.
+    */
+    border-radius: 0;
+
+    /*
+       Base do pergaminho.
+       As várias camadas simulam:
+       - papel envelhecido
+       - manchas
+       - bordas queimadas
+       - cantos escurecidos
+    */
+    background:
+        radial-gradient(
+            ellipse at 0% 0%,
+            rgba(20, 10, 5, 0.92) 0%,
+            rgba(20, 10, 5, 0.55) 5%,
+            transparent 13%
+        ),
+        radial-gradient(
+            ellipse at 100% 0%,
+            rgba(20, 10, 5, 0.92) 0%,
+            rgba(20, 10, 5, 0.55) 5%,
+            transparent 13%
+        ),
+        radial-gradient(
+            ellipse at 0% 100%,
+            rgba(20, 10, 5, 0.92) 0%,
+            rgba(20, 10, 5, 0.55) 5%,
+            transparent 13%
+        ),
+        radial-gradient(
+            ellipse at 100% 100%,
+            rgba(20, 10, 5, 0.92) 0%,
+            rgba(20, 10, 5, 0.55) 5%,
+            transparent 13%
+        ),
+        radial-gradient(
+            ellipse at center,
+            rgba(173, 125, 67, 0.13),
+            transparent 70%
+        ),
+        linear-gradient(
+            135deg,
+            #26180f 0%,
+            #392515 22%,
+            #2c1c11 50%,
+            #3b2717 78%,
+            #21130c 100%
+        );
+
+    /*
+       Borda fina + sombra interna pesada.
+       Dá a sensação de papel queimado sem arredondar.
+    */
+    border: 1px solid rgba(95, 58, 31, 0.95);
+
+    box-shadow:
+        inset 0 0 4px rgba(0, 0, 0, 0.95),
+        inset 0 0 18px rgba(24, 12, 5, 0.85),
+        inset 0 0 45px rgba(0, 0, 0, 0.42),
+        0 10px 25px rgba(0, 0, 0, 0.45);
 
     --secondary-a: #6f3aa8;
     --secondary-b: #c084fc;
@@ -30,17 +94,35 @@
 }
 
 
-/*
-   Fundo elemental.
-   Continua atrás de todo o conteúdo.
-*/
+/* =========================================================
+   BORDA INTERNA DO PERGAMINHO
+========================================================= */
+
+.dimension {
+    /*
+       Pequena textura de papel através de múltiplas sombras
+       internas. Não interfere no conteúdo.
+    */
+    outline: 1px solid rgba(30, 15, 7, 0.55);
+    outline-offset: -4px;
+}
+
+
+/* =========================================================
+   FUNDO ELEMENTAL
+========================================================= */
 
 .dimension::before {
     content: "";
+
     position: absolute;
+
     inset: 0;
+
     z-index: -2;
+
     pointer-events: none;
+
     opacity: 0;
 
     transition:
@@ -49,26 +131,31 @@
 }
 
 
-/*
-   Aura elemental.
-   A cor principal continua dominando esta camada.
-*/
+/* =========================================================
+   AURA ELEMENTAL
+========================================================= */
 
 .dimension::after {
     content: "";
+
     position: absolute;
 
     width: 150%;
     height: 150%;
+
     left: -25%;
     top: -25%;
 
     z-index: -1;
+
     pointer-events: none;
+
     opacity: 0;
+
     border-radius: 50%;
 
-    transition: opacity 0.6s ease;
+    transition:
+        opacity 0.6s ease;
 
     animation:
         affinityPulse 4s ease-in-out infinite;
@@ -77,9 +164,6 @@
 
 /* =========================================================
    DETALHES INTERNOS
-
-   A cor secundária aparece discretamente em títulos,
-   separadores e pequenos destaques.
 ========================================================= */
 
 .dimension .stats-title,
@@ -87,7 +171,9 @@
 .dimension .attribute-points h3,
 .dimension .badge-xp-header strong {
     color: var(--secondary-b, #c084fc);
-    transition: color 0.5s ease;
+
+    transition:
+        color 0.5s ease;
 }
 
 .dimension .attribute-points,
@@ -114,14 +200,17 @@
     .affinity-fisico,
     .affinity-magico
 ) {
-    border-color: rgba(111, 58, 168, 0.7);
+    border-color: rgba(95, 58, 31, 0.95);
+
+    box-shadow:
+        inset 0 0 4px rgba(0, 0, 0, 0.95),
+        inset 0 0 22px rgba(25, 12, 5, 0.8),
+        0 10px 25px rgba(0, 0, 0, 0.45);
 }
 
 
 /* =========================================================
    💧 ÁGUA
-   Principal: azul
-   Secundária: azul profundo + violeta
 ========================================================= */
 
 .dimension.affinity-agua {
@@ -129,13 +218,14 @@
     --secondary-b: #8b5cf6;
     --secondary-soft: rgba(139, 92, 246, 0.10);
 
-    border-color: #60a5fa;
+    border-color: #3b82f6;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.95),
+        inset 0 0 25px rgba(10, 35, 70, 0.65),
         0 0 18px rgba(56, 189, 248, 0.35),
         0 0 45px rgba(14, 165, 233, 0.18),
-        0 0 10px rgba(139, 92, 246, 0.20),
-        inset 0 0 35px rgba(56, 189, 248, 0.08);
+        0 0 10px rgba(139, 92, 246, 0.20);
 }
 
 .dimension.affinity-agua::before {
@@ -168,8 +258,6 @@
 
 /* =========================================================
    ☀️ LUZ
-   Principal: branco luminoso
-   Secundária: prata
 ========================================================= */
 
 .dimension.affinity-luz {
@@ -180,10 +268,11 @@
     border-color: #e2e8f0;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.75),
+        inset 0 0 25px rgba(255, 255, 255, 0.16),
         0 0 20px rgba(250, 204, 21, 0.32),
         0 0 50px rgba(253, 224, 71, 0.16),
-        0 0 12px rgba(226, 232, 240, 0.28),
-        inset 0 0 38px rgba(253, 224, 71, 0.08);
+        0 0 12px rgba(226, 232, 240, 0.28);
 }
 
 .dimension.affinity-luz::before {
@@ -216,8 +305,6 @@
 
 /* =========================================================
    🪨 TERRA
-   Principal: terra/verde profundo
-   Secundária: marrom + carvão
 ========================================================= */
 
 .dimension.affinity-terra {
@@ -225,13 +312,14 @@
     --secondary-b: #292524;
     --secondary-soft: rgba(120, 53, 15, 0.10);
 
-    border-color: #92400e;
+    border-color: #78350f;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.95),
+        inset 0 0 30px rgba(45, 25, 12, 0.72),
         0 0 20px rgba(180, 83, 9, 0.32),
         0 0 45px rgba(41, 37, 36, 0.28),
-        0 0 10px rgba(120, 53, 15, 0.20),
-        inset 0 0 38px rgba(180, 83, 9, 0.08);
+        0 0 10px rgba(120, 53, 15, 0.20);
 }
 
 .dimension.affinity-terra::before {
@@ -264,8 +352,6 @@
 
 /* =========================================================
    🌑 TREVAS
-   Principal: roxo sombrio
-   Secundária: obsidiana + dourado antigo
 ========================================================= */
 
 .dimension.affinity-trevas {
@@ -276,10 +362,11 @@
     border-color: #8b6b20;
 
     box-shadow:
+        inset 0 0 6px rgba(0, 0, 0, 1),
+        inset 0 0 35px rgba(0, 0, 0, 0.82),
         0 0 22px rgba(124, 58, 237, 0.42),
         0 0 55px rgba(76, 29, 149, 0.22),
-        0 0 12px rgba(212, 167, 44, 0.22),
-        inset 0 0 42px rgba(23, 19, 11, 0.30);
+        0 0 12px rgba(212, 167, 44, 0.22);
 }
 
 .dimension.affinity-trevas::before {
@@ -317,8 +404,6 @@
 
 /* =========================================================
    🌪️ VENTO
-   Principal: ciano
-   Secundária: verde esmeralda + azul
 ========================================================= */
 
 .dimension.affinity-vento {
@@ -329,10 +414,11 @@
     border-color: #34d399;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.9),
+        inset 0 0 28px rgba(12, 50, 42, 0.62),
         0 0 20px rgba(103, 232, 249, 0.34),
         0 0 48px rgba(45, 212, 191, 0.18),
-        0 0 12px rgba(16, 185, 129, 0.20),
-        inset 0 0 38px rgba(45, 212, 191, 0.08);
+        0 0 12px rgba(16, 185, 129, 0.20);
 }
 
 .dimension.affinity-vento::before {
@@ -365,8 +451,6 @@
 
 /* =========================================================
    🔥 FOGO
-   Principal: vermelho/laranja
-   Secundária: âmbar + azul elétrico
 ========================================================= */
 
 .dimension.affinity-fogo {
@@ -377,10 +461,11 @@
     border-color: #f59e0b;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.95),
+        inset 0 0 30px rgba(90, 30, 5, 0.65),
         0 0 22px rgba(249, 115, 22, 0.40),
         0 0 55px rgba(239, 68, 68, 0.20),
-        0 0 12px rgba(56, 189, 248, 0.18),
-        inset 0 0 42px rgba(239, 68, 68, 0.10);
+        0 0 12px rgba(56, 189, 248, 0.18);
 }
 
 .dimension.affinity-fogo::before {
@@ -421,8 +506,6 @@
 
 /* =========================================================
    💪 FÍSICO
-   Principal: energia clara
-   Secundária: iridescência/arco-íris metálico
 ========================================================= */
 
 .dimension.affinity-fisico {
@@ -433,10 +516,11 @@
     border-color: #d1d5db;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.85),
+        inset 0 0 28px rgba(80, 80, 90, 0.35),
         0 0 20px rgba(209, 213, 219, 0.28),
         0 0 45px rgba(156, 163, 175, 0.14),
-        0 0 10px rgba(167, 139, 250, 0.18),
-        inset 0 0 38px rgba(156, 163, 175, 0.08);
+        0 0 10px rgba(167, 139, 250, 0.18);
 }
 
 .dimension.affinity-fisico::before {
@@ -467,8 +551,6 @@
 
 /* =========================================================
    ✨ MÁGICO
-   Principal: violeta/azul
-   Secundária: aurora arcana
 ========================================================= */
 
 .dimension.affinity-magico {
@@ -479,11 +561,12 @@
     border-color: #c084fc;
 
     box-shadow:
+        inset 0 0 5px rgba(0, 0, 0, 0.9),
+        inset 0 0 30px rgba(75, 35, 110, 0.55),
         0 0 22px rgba(192, 132, 252, 0.42),
         0 0 55px rgba(168, 85, 247, 0.20),
         0 0 10px rgba(103, 232, 249, 0.20),
-        0 0 14px rgba(240, 171, 252, 0.14),
-        inset 0 0 42px rgba(168, 85, 247, 0.10);
+        0 0 14px rgba(240, 171, 252, 0.14);
 }
 
 .dimension.affinity-magico::before {
