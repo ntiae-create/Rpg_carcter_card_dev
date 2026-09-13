@@ -1,12 +1,12 @@
 /* =========================================================
    RPG CHARACTER CARD
    CARD.CSS
-   IDENTIDADE VISUAL DOS 4 CARDS
+   IDENTIDADE VISUAL DOS CARDS POR AFINIDADE
 ========================================================= */
 
 
 /* =========================================================
-   BASE DOS CARDS
+   BASE
 ========================================================= */
 
 .dimension {
@@ -14,9 +14,9 @@
 
     overflow: hidden;
 
-    border-radius: 22px;
-
     isolation: isolate;
+
+    border-radius: 22px;
 
     transition:
         border-color 0.5s ease,
@@ -26,11 +26,11 @@
 
 
 /*
-   Camada visual de fundo.
-   Fica atrás de todo o conteúdo.
+   Fundo elemental.
 */
 
 .dimension::before {
+
     content: "";
 
     position: absolute;
@@ -41,24 +41,33 @@
 
     pointer-events: none;
 
-    opacity: 0.8;
+    opacity: 0;
 
     transition:
-        background 0.6s ease,
-        opacity 0.6s ease;
+        opacity 0.6s ease,
+        background 0.6s ease;
+
 }
 
 
 /*
-   Aura interna.
+   Aura elemental.
+
+   Ela fica atrás do conteúdo,
+   mas dentro do card.
 */
 
 .dimension::after {
+
     content: "";
 
     position: absolute;
 
-    inset: -30%;
+    width: 150%;
+    height: 150%;
+
+    left: -25%;
+    top: -25%;
 
     z-index: -1;
 
@@ -66,50 +75,19 @@
 
     opacity: 0;
 
+    border-radius: 50%;
+
     transition:
-        opacity 0.6s ease,
-        background 0.6s ease;
+        opacity 0.6s ease;
 
     animation:
-        cardAura 5s ease-in-out infinite;
-}
-
-
-/* =========================================================
-   CONTEÚDO
-========================================================= */
-
-.dimension > * {
-    position: relative;
-
-    z-index: 1;
-}
-
-
-/* =========================================================
-   ANIMAÇÃO BASE
-========================================================= */
-
-@keyframes cardAura {
-
-    0%,
-    100% {
-        transform: scale(1);
-
-        opacity: 0.25;
-    }
-
-    50% {
-        transform: scale(1.05);
-
-        opacity: 0.5;
-    }
+        affinityPulse 4s ease-in-out infinite;
 
 }
 
 
 /* =========================================================
-   SEM AFINIDADE
+   AFINIDADE NÃO DEFINIDA
 ========================================================= */
 
 .dimension:not(
@@ -122,11 +100,10 @@
     .affinity-fisico,
     .affinity-magico
 ) {
-    border-color: #6f3aa8;
 
-    box-shadow:
-        0 0 25px rgba(124, 58, 237, 0.18),
-        inset 0 0 30px rgba(124, 58, 237, 0.04);
+    border-color:
+        rgba(111, 58, 168, 0.7);
+
 }
 
 
@@ -139,22 +116,25 @@
     border-color: #38bdf8;
 
     box-shadow:
-        0 0 25px rgba(56, 189, 248, 0.28),
-        inset 0 0 35px rgba(14, 165, 233, 0.08);
+        0 0 18px rgba(56, 189, 248, 0.35),
+        0 0 45px rgba(14, 165, 233, 0.18),
+        inset 0 0 35px rgba(56, 189, 248, 0.08);
 
 }
 
 .dimension.affinity-agua::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
             circle at 20% 20%,
-            rgba(56, 189, 248, 0.16),
+            rgba(56, 189, 248, 0.18),
             transparent 45%
         ),
         radial-gradient(
             circle at 80% 80%,
-            rgba(14, 165, 233, 0.12),
+            rgba(14, 165, 233, 0.16),
             transparent 50%
         );
 
@@ -167,7 +147,7 @@
     background:
         radial-gradient(
             circle,
-            rgba(56, 189, 248, 0.12),
+            rgba(56, 189, 248, 0.14),
             transparent 65%
         );
 
@@ -183,22 +163,25 @@
     border-color: #fde68a;
 
     box-shadow:
-        0 0 30px rgba(250, 204, 21, 0.3),
-        inset 0 0 35px rgba(253, 224, 71, 0.08);
+        0 0 20px rgba(250, 204, 21, 0.38),
+        0 0 50px rgba(253, 224, 71, 0.18),
+        inset 0 0 38px rgba(253, 224, 71, 0.08);
 
 }
 
 .dimension.affinity-luz::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
             circle at 50% 0%,
-            rgba(253, 224, 71, 0.2),
+            rgba(253, 224, 71, 0.24),
             transparent 50%
         ),
         radial-gradient(
             circle at 50% 100%,
-            rgba(250, 204, 21, 0.08),
+            rgba(250, 204, 21, 0.12),
             transparent 55%
         );
 
@@ -211,7 +194,7 @@
     background:
         radial-gradient(
             circle,
-            rgba(253, 224, 71, 0.14),
+            rgba(253, 224, 71, 0.16),
             transparent 65%
         );
 
@@ -224,25 +207,28 @@
 
 .dimension.affinity-terra {
 
-    border-color: #a16207;
+    border-color: #d97706;
 
     box-shadow:
-        0 0 25px rgba(161, 98, 7, 0.25),
-        inset 0 0 35px rgba(120, 53, 15, 0.08);
+        0 0 20px rgba(180, 83, 9, 0.35),
+        0 0 45px rgba(120, 53, 15, 0.18),
+        inset 0 0 38px rgba(180, 83, 9, 0.08);
 
 }
 
 .dimension.affinity-terra::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
             circle at 20% 80%,
-            rgba(180, 83, 9, 0.16),
+            rgba(180, 83, 9, 0.2),
             transparent 50%
         ),
         radial-gradient(
             circle at 80% 20%,
-            rgba(120, 53, 15, 0.12),
+            rgba(120, 53, 15, 0.16),
             transparent 50%
         );
 
@@ -255,7 +241,7 @@
     background:
         radial-gradient(
             circle,
-            rgba(180, 83, 9, 0.1),
+            rgba(180, 83, 9, 0.12),
             transparent 65%
         );
 
@@ -268,25 +254,28 @@
 
 .dimension.affinity-trevas {
 
-    border-color: #7c3aed;
+    border-color: #8b5cf6;
 
     box-shadow:
-        0 0 30px rgba(124, 58, 237, 0.38),
-        inset 0 0 40px rgba(76, 29, 149, 0.1);
+        0 0 22px rgba(124, 58, 237, 0.45),
+        0 0 55px rgba(76, 29, 149, 0.22),
+        inset 0 0 42px rgba(76, 29, 149, 0.12);
 
 }
 
 .dimension.affinity-trevas::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
             circle at 20% 30%,
-            rgba(124, 58, 237, 0.18),
+            rgba(124, 58, 237, 0.22),
             transparent 45%
         ),
         radial-gradient(
             circle at 80% 70%,
-            rgba(76, 29, 149, 0.16),
+            rgba(76, 29, 149, 0.2),
             transparent 50%
         );
 
@@ -299,7 +288,7 @@
     background:
         radial-gradient(
             circle,
-            rgba(88, 28, 135, 0.14),
+            rgba(88, 28, 135, 0.18),
             transparent 65%
         );
 
@@ -315,23 +304,22 @@
     border-color: #67e8f9;
 
     box-shadow:
-        0 0 28px rgba(103, 232, 249, 0.25),
-        inset 0 0 35px rgba(45, 212, 191, 0.08);
+        0 0 20px rgba(103, 232, 249, 0.35),
+        0 0 48px rgba(45, 212, 191, 0.18),
+        inset 0 0 38px rgba(45, 212, 191, 0.08);
 
 }
 
 .dimension.affinity-vento::before {
 
+    opacity: 1;
+
     background:
-        radial-gradient(
-            circle at 0% 50%,
-            rgba(45, 212, 191, 0.14),
-            transparent 50%
-        ),
-        radial-gradient(
-            circle at 100% 50%,
-            rgba(103, 232, 249, 0.14),
-            transparent 50%
+        linear-gradient(
+            110deg,
+            rgba(45, 212, 191, 0.12),
+            transparent 35%,
+            rgba(103, 232, 249, 0.12)
         );
 
 }
@@ -344,12 +332,13 @@
         linear-gradient(
             90deg,
             transparent,
-            rgba(103, 232, 249, 0.12),
+            rgba(103, 232, 249, 0.16),
             transparent
         );
 
     animation:
-        windAura 3s ease-in-out infinite;
+        windCardEffect 3s ease-in-out infinite;
+
 }
 
 
@@ -362,22 +351,25 @@
     border-color: #fb7185;
 
     box-shadow:
-        0 0 30px rgba(249, 115, 22, 0.32),
-        inset 0 0 40px rgba(239, 68, 68, 0.08);
+        0 0 22px rgba(249, 115, 22, 0.4),
+        0 0 55px rgba(239, 68, 68, 0.2),
+        inset 0 0 42px rgba(239, 68, 68, 0.1);
 
 }
 
 .dimension.affinity-fogo::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
-            circle at 50% 100%,
-            rgba(249, 115, 22, 0.2),
-            transparent 50%
+            ellipse at 50% 100%,
+            rgba(249, 115, 22, 0.24),
+            transparent 55%
         ),
         radial-gradient(
             circle at 30% 70%,
-            rgba(239, 68, 68, 0.12),
+            rgba(239, 68, 68, 0.16),
             transparent 45%
         );
 
@@ -390,12 +382,13 @@
     background:
         radial-gradient(
             ellipse at 50% 100%,
-            rgba(249, 115, 22, 0.15),
+            rgba(249, 115, 22, 0.18),
             transparent 65%
         );
 
     animation:
-        fireAura 2s ease-in-out infinite;
+        fireCardEffect 2.2s ease-in-out infinite;
+
 }
 
 
@@ -408,22 +401,25 @@
     border-color: #d1d5db;
 
     box-shadow:
-        0 0 25px rgba(209, 213, 219, 0.22),
-        inset 0 0 35px rgba(156, 163, 175, 0.07);
+        0 0 20px rgba(209, 213, 219, 0.28),
+        0 0 45px rgba(156, 163, 175, 0.14),
+        inset 0 0 38px rgba(156, 163, 175, 0.08);
 
 }
 
 .dimension.affinity-fisico::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
             circle at 50% 20%,
-            rgba(229, 231, 235, 0.12),
+            rgba(229, 231, 235, 0.16),
             transparent 50%
         ),
         radial-gradient(
             circle at 50% 80%,
-            rgba(107, 114, 128, 0.1),
+            rgba(107, 114, 128, 0.14),
             transparent 55%
         );
 
@@ -436,7 +432,7 @@
     background:
         radial-gradient(
             circle,
-            rgba(229, 231, 235, 0.1),
+            rgba(229, 231, 235, 0.12),
             transparent 65%
         );
 
@@ -452,22 +448,25 @@
     border-color: #c084fc;
 
     box-shadow:
-        0 0 32px rgba(192, 132, 252, 0.34),
-        inset 0 0 40px rgba(168, 85, 247, 0.1);
+        0 0 22px rgba(192, 132, 252, 0.42),
+        0 0 55px rgba(168, 85, 247, 0.2),
+        inset 0 0 42px rgba(168, 85, 247, 0.1);
 
 }
 
 .dimension.affinity-magico::before {
 
+    opacity: 1;
+
     background:
         radial-gradient(
             circle at 20% 20%,
-            rgba(192, 132, 252, 0.18),
+            rgba(192, 132, 252, 0.22),
             transparent 45%
         ),
         radial-gradient(
             circle at 80% 80%,
-            rgba(59, 130, 246, 0.14),
+            rgba(59, 130, 246, 0.18),
             transparent 50%
         );
 
@@ -480,7 +479,7 @@
     background:
         radial-gradient(
             circle,
-            rgba(192, 132, 252, 0.14),
+            rgba(192, 132, 252, 0.17),
             transparent 65%
         );
 
@@ -488,49 +487,83 @@
 
 
 /* =========================================================
-   EFEITO DO VENTO
+   ANIMAÇÃO GERAL
 ========================================================= */
 
-@keyframes windAura {
+@keyframes affinityPulse {
 
-    0% {
+    0%,
+    100% {
+
         transform:
-            translateX(-8%)
-            scaleX(0.95);
+            scale(0.96);
+
     }
 
     50% {
-        transform:
-            translateX(8%)
-            scaleX(1.05);
-    }
 
-    100% {
         transform:
-            translateX(-8%)
-            scaleX(0.95);
+            scale(1.04);
+
     }
 
 }
 
 
 /* =========================================================
-   EFEITO DO FOGO
+   VENTO
 ========================================================= */
 
-@keyframes fireAura {
+@keyframes windCardEffect {
 
-    0%,
-    100% {
+    0% {
+
         transform:
-            translateY(2%)
-            scale(0.98);
+            translateX(-15%)
+            scaleX(0.9);
+
     }
 
     50% {
+
         transform:
-            translateY(-2%)
-            scale(1.04);
+            translateX(15%)
+            scaleX(1.1);
+
+    }
+
+    100% {
+
+        transform:
+            translateX(-15%)
+            scaleX(0.9);
+
+    }
+
+}
+
+
+/* =========================================================
+   FOGO
+========================================================= */
+
+@keyframes fireCardEffect {
+
+    0%,
+    100% {
+
+        transform:
+            translateY(3%)
+            scale(0.96);
+
+    }
+
+    50% {
+
+        transform:
+            translateY(-3%)
+            scale(1.05);
+
     }
 
 }
