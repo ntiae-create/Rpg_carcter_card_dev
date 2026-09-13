@@ -671,6 +671,152 @@ const CharacterModule = (() => {
 
 
     /* =====================================================
+       PREPARAR DADOS PARA O SUPABASE
+       
+       Esta função apenas organiza os dados.
+       Ela NÃO envia nada automaticamente.
+    ===================================================== */
+
+    function obterDadosSupabase() {
+
+        return {
+
+            name:
+                character.name,
+
+            race:
+                character.race,
+
+            class:
+                character.class,
+
+            affinity:
+                character.affinity || null,
+
+            level:
+                character.level,
+
+            xp:
+                character.xp,
+
+            crest_xp:
+                character.crestXP || 0,
+
+            attribute_points:
+                character.attributePoints,
+
+            sanity:
+                character.resources.sanidade,
+
+            hp:
+                character.resources.hp,
+
+            mp:
+                character.resources.mp,
+
+            est:
+                character.resources.est
+
+        };
+
+    }
+
+
+    /* =====================================================
+       CARREGAR DADOS DO SUPABASE
+       
+       Também não é executado automaticamente.
+       Será usado na próxima etapa da integração.
+    ===================================================== */
+
+    async function carregarDoSupabase() {
+
+        if (!window.supabaseClient) {
+
+            console.error(
+                "Supabase Client não encontrado."
+            );
+
+            return null;
+
+        }
+
+
+        if (
+            !window.rpgAuth ||
+            !window.rpgAuth.user ||
+            !window.rpgAuth.campaign
+        ) {
+
+            console.warn(
+                "Usuário ou campanha ainda não disponíveis."
+            );
+
+            return null;
+
+        }
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient
+                    .from("characters")
+                    .select("*")
+                    .eq(
+                        "campaign_id",
+                        window.rpgAuth.campaign.id
+                    )
+                    .eq(
+                        "user_id",
+                        window.rpgAuth.user.id
+                    )
+                    .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "Erro ao carregar personagem do Supabase:",
+                    error
+                );
+
+                return null;
+
+            }
+
+
+            if (!data) {
+
+                console.log(
+                    "Nenhum personagem encontrado no Supabase."
+                );
+
+                return null;
+
+            }
+
+
+            return data;
+
+        } catch (error) {
+
+            console.error(
+                "Falha ao carregar personagem:",
+                error
+            );
+
+            return null;
+
+        }
+
+    }
+
+
+    /* =====================================================
        INFORMAÇÕES
     ===================================================== */
 
@@ -727,22 +873,12 @@ const CharacterModule = (() => {
 
         sincronizarEditor,
 
+        obterDadosSupabase,
+
+        carregarDoSupabase,
+
         getInfo
 
     };
 
 })();
-nameInput.addEventListener(
-    "input",
-    () => {
-
-        character.name =
-            nameInput.value ||
-            "Personagem";
-
-        atualizarInterface();
-
-        salvarPersonagem();
-
-    }
-);
