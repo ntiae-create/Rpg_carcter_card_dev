@@ -1,1 +1,565 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <title>RPG Character Card</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <main class="app">
+
+        <!-- =========================================
+             CARTA DO PERSONAGEM
+             ========================================= -->
+
+        <section class="character-card" id="character-card">
+
+            <!-- =====================================
+                 NAVEGAÇÃO DAS 4 DIMENSÕES
+                 ===================================== -->
+
+            <nav class="card-navigation" aria-label="Dimensões da carta">
+
+                <button class="dimension-button active"
+                        data-dimension="character"
+                        type="button">
+                    <span>①</span>
+                    <span>Personagem</span>
+                </button>
+
+                <button class="dimension-button"
+                        data-dimension="stats"
+                        type="button">
+                    <span>②</span>
+                    <span>Status</span>
+                </button>
+
+                <button class="dimension-button"
+                        data-dimension="abilities"
+                        type="button">
+                    <span>③</span>
+                    <span>Habilidades</span>
+                </button>
+
+                <button class="dimension-button"
+                        data-dimension="inventory"
+                        type="button">
+                    <span>④</span>
+                    <span>Inventário</span>
+                </button>
+
+            </nav>
+
+
+            <!-- =====================================
+                 DIMENSÃO 1 — PERSONAGEM
+                 ===================================== -->
+
+            <section class="card-dimension active"
+                     id="dimension-character"
+                     data-dimension-content="character">
+
+                <header class="dimension-header">
+                    <span class="dimension-number">①</span>
+
+                    <div>
+                        <h1>PERSONAGEM</h1>
+                        <p>Identidade e essência</p>
+                    </div>
+                </header>
+
+
+                <div class="character-content">
+
+                    <div class="character-art">
+                        <div class="art-placeholder">
+                            IMAGEM
+                        </div>
+                    </div>
+
+
+                    <div class="character-information">
+
+                        <div class="rarity">
+                            RARIDADE
+                        </div>
+
+                        <h2 id="character-name">
+                            Nome do Personagem
+                        </h2>
+
+                        <div class="character-identity">
+
+                            <div>
+                                <span>RAÇA</span>
+                                <strong id="character-race">
+                                    Humano
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>CLASSE</span>
+                                <strong id="character-class">
+                                    Saber
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="character-level">
+
+                            <div class="level-information">
+                                <span>NÍVEL</span>
+                                <strong id="character-level">
+                                    1
+                                </strong>
+                            </div>
+
+                            <div class="xp-information">
+                                <span>XP</span>
+                                <strong id="character-xp">
+                                    0 / 100
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div class="affinity">
+
+                            <span>AFINIDADE PRINCIPAL</span>
+
+                            <div class="affinity-crest"
+                                 id="character-affinity">
+                                ✦
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DIMENSÃO 2 — STATUS
+                 ===================================== -->
+
+            <section class="card-dimension"
+                     id="dimension-stats"
+                     data-dimension-content="stats">
+
+                <header class="dimension-header">
+
+                    <span class="dimension-number">②</span>
+
+                    <div>
+                        <h1>STATUS</h1>
+                        <p>Recursos e atributos</p>
+                    </div>
+
+                </header>
+
+
+                <div class="stats-content">
+
+                    <!-- Recursos -->
+
+                    <section class="status-section">
+
+                        <h2>RECURSOS</h2>
+
+                        <div class="resource-grid">
+
+                            <div class="resource-card">
+                                <span>HP</span>
+                                <strong id="stat-hp">25</strong>
+                            </div>
+
+                            <div class="resource-card">
+                                <span>MP</span>
+                                <strong id="stat-mp">15</strong>
+                            </div>
+
+                            <div class="resource-card">
+                                <span>EST</span>
+                                <strong id="stat-est">30</strong>
+                            </div>
+
+                            <div class="resource-card">
+                                <span>SANIDADE</span>
+                                <strong id="stat-sanity">100</strong>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- Atributos de combate -->
+
+                    <section class="status-section">
+
+                        <h2>ATRIBUTOS</h2>
+
+                        <div class="attribute-grid">
+
+                            <div class="attribute-card">
+                                <span>ATK</span>
+                                <strong id="stat-atk">4</strong>
+                            </div>
+
+                            <div class="attribute-card">
+                                <span>ATK MGC</span>
+                                <strong id="stat-magic-atk">4</strong>
+                            </div>
+
+                            <div class="attribute-card">
+                                <span>DEF</span>
+                                <strong id="stat-def">8</strong>
+                            </div>
+
+                            <div class="attribute-card">
+                                <span>RES</span>
+                                <strong id="stat-res">8</strong>
+                            </div>
+
+                            <div class="attribute-card">
+                                <span>AGI</span>
+                                <strong id="stat-agi">8</strong>
+                            </div>
+
+                            <div class="attribute-card">
+                                <span>INT</span>
+                                <strong id="stat-int">15</strong>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- Características -->
+
+                    <section class="status-section">
+
+                        <h2>CARACTERÍSTICAS</h2>
+
+                        <div class="characteristics">
+
+                            <div class="characteristic">
+                                <span>Descrição</span>
+                                <p>
+                                    Características do personagem aparecerão aqui.
+                                </p>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DIMENSÃO 3 — HABILIDADES E PASSIVAS
+                 ===================================== -->
+
+            <section class="card-dimension"
+                     id="dimension-abilities"
+                     data-dimension-content="abilities">
+
+                <header class="dimension-header">
+
+                    <span class="dimension-number">③</span>
+
+                    <div>
+                        <h1>HABILIDADES & PASSIVAS</h1>
+                        <p>Poderes e técnicas do personagem</p>
+                    </div>
+
+                </header>
+
+
+                <div class="abilities-content">
+
+                    <!-- Habilidades -->
+
+                    <section class="ability-section">
+
+                        <div class="section-title">
+
+                            <span>⚔️</span>
+
+                            <div>
+                                <h2>HABILIDADES</h2>
+                                <p>Técnicas ativas do personagem</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="ability-list"
+                             id="active-abilities">
+
+                            <article class="ability-card empty">
+
+                                <div class="ability-icon">
+                                    +
+                                </div>
+
+                                <div>
+                                    <h3>Nenhuma habilidade</h3>
+                                    <p>
+                                        As habilidades ativas serão adicionadas aqui.
+                                    </p>
+                                </div>
+
+                            </article>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- Passivas -->
+
+                    <section class="ability-section">
+
+                        <div class="section-title">
+
+                            <span>✦</span>
+
+                            <div>
+                                <h2>PASSIVAS</h2>
+                                <p>Efeitos permanentes do personagem</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="ability-list"
+                             id="passive-abilities">
+
+                            <article class="ability-card empty">
+
+                                <div class="ability-icon">
+                                    +
+                                </div>
+
+                                <div>
+                                    <h3>Nenhuma passiva</h3>
+                                    <p>
+                                        As passivas serão adicionadas aqui.
+                                    </p>
+                                </div>
+
+                            </article>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- Habilidades especiais -->
+
+                    <section class="ability-section special">
+
+                        <div class="section-title">
+
+                            <span>◆</span>
+
+                            <div>
+                                <h2>ESPECIAIS</h2>
+                                <p>Habilidades únicas e poderes extraordinários</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="ability-list"
+                             id="special-abilities">
+
+                            <article class="ability-card locked">
+
+                                <div class="ability-icon">
+                                    🔒
+                                </div>
+
+                                <div>
+                                    <h3>Bloqueada</h3>
+                                    <p>
+                                        Algumas habilidades poderão exigir
+                                        condições especiais para serem desbloqueadas.
+                                    </p>
+                                </div>
+
+                            </article>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+            </section>
+
+
+            <!-- =====================================
+                 DIMENSÃO 4 — INVENTÁRIO
+                 ===================================== -->
+
+            <section class="card-dimension"
+                     id="dimension-inventory"
+                     data-dimension-content="inventory">
+
+                <header class="dimension-header">
+
+                    <span class="dimension-number">④</span>
+
+                    <div>
+                        <h1>INVENTÁRIO</h1>
+                        <p>Equipamentos e itens</p>
+                    </div>
+
+                </header>
+
+
+                <div class="inventory-content">
+
+                    <!-- Equipamentos -->
+
+                    <section class="inventory-section">
+
+                        <div class="section-title">
+
+                            <span>⚔️</span>
+
+                            <div>
+                                <h2>EQUIPAMENTOS</h2>
+                                <p>Itens atualmente equipados</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="equipment-grid">
+
+                            <div class="equipment-slot">
+                                <span>ARMA</span>
+                                <strong>Vazio</strong>
+                            </div>
+
+                            <div class="equipment-slot">
+                                <span>ARMADURA</span>
+                                <strong>Vazio</strong>
+                            </div>
+
+                            <div class="equipment-slot">
+                                <span>ACESSÓRIO</span>
+                                <strong>Vazio</strong>
+                            </div>
+
+                            <div class="equipment-slot">
+                                <span>RUNA</span>
+                                <strong>Vazio</strong>
+                            </div>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- Itens -->
+
+                    <section class="inventory-section">
+
+                        <div class="section-title">
+
+                            <span>🎒</span>
+
+                            <div>
+                                <h2>ITENS</h2>
+                                <p>Itens carregados pelo personagem</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="item-grid"
+                             id="inventory-items">
+
+                            <article class="inventory-empty">
+
+                                <span>🎒</span>
+
+                                <h3>Inventário vazio</h3>
+
+                                <p>
+                                    Os itens do personagem aparecerão aqui.
+                                </p>
+
+                            </article>
+
+                        </div>
+
+                    </section>
+
+
+                    <!-- Itens especiais -->
+
+                    <section class="inventory-section">
+
+                        <div class="section-title">
+
+                            <span>◆</span>
+
+                            <div>
+                                <h2>ITENS ESPECIAIS</h2>
+                                <p>Objetos únicos e itens de importância narrativa</p>
+                            </div>
+
+                        </div>
+
+
+                        <div class="special-items"
+                             id="special-items">
+
+                            <article class="inventory-empty">
+
+                                <span>◇</span>
+
+                                <h3>Nenhum item especial</h3>
+
+                                <p>
+                                    Itens especiais poderão ser armazenados aqui.
+                                </p>
+
+                            </article>
+
+                        </div>
+
+                    </section>
+
+                </div>
+
+            </section>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
