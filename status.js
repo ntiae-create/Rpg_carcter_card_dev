@@ -311,37 +311,71 @@ const StatusModule = (() => {
 
     function aplicarEfeitoElemental() {
 
+        /*
+           =================================================
+           CARD PRINCIPAL
+           =================================================
+        */
+
         const card =
             document.querySelector(
                 ".character-card"
             );
 
 
-        if (!card) {
+        /*
+           =================================================
+           REMOVE EFEITOS ANTIGOS DO CARD PRINCIPAL
+           =================================================
+        */
 
-            return;
+        if (card) {
+
+            Object.keys(ELEMENTS).forEach(
+                element => {
+
+                    card.classList.remove(
+                        `element-${element}`
+                    );
+
+                }
+            );
 
         }
 
 
         /*
-           Remove todos os efeitos anteriores.
+           =================================================
+           REMOVE AFINIDADES ANTIGAS DOS 4 CARDS
+           =================================================
         */
 
-        Object.keys(ELEMENTS).forEach(
-            element => {
+        const dimensions =
+            document.querySelectorAll(
+                ".dimension"
+            );
 
-                card.classList.remove(
-                    `element-${element}`
-                );
 
-            }
-        );
+        dimensions.forEach(dimension => {
+
+            Object.keys(ELEMENTS).forEach(
+                element => {
+
+                    dimension.classList.remove(
+                        `affinity-${element}`
+                    );
+
+                }
+
+            );
+
+        });
 
 
         /*
-           Se ainda não existe elemento,
-           não aplica nenhum efeito.
+           =================================================
+           SEM AFINIDADE
+           =================================================
         */
 
         if (!character.affinity) {
@@ -352,20 +386,51 @@ const StatusModule = (() => {
 
 
         /*
-           Aplica a classe correspondente.
+           =================================================
+           AFINIDADE VÁLIDA
+           =================================================
         */
 
         if (
-            ELEMENTS[
+            !ELEMENTS[
                 character.affinity
             ]
         ) {
+
+            return;
+
+        }
+
+
+        /*
+           =================================================
+           EFEITO ORIGINAL
+           =================================================
+        */
+
+        if (card) {
 
             card.classList.add(
                 `element-${character.affinity}`
             );
 
         }
+
+
+        /*
+           =================================================
+           NOVO SISTEMA:
+           AFINIDADE DOS 4 CARDS
+           =================================================
+        */
+
+        dimensions.forEach(dimension => {
+
+            dimension.classList.add(
+                `affinity-${character.affinity}`
+            );
+
+        });
 
     }
 
