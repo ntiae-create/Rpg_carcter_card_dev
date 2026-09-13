@@ -24,6 +24,8 @@ const InventoryModule = (() => {
 
         garantirInventario();
 
+        configurarInterface();
+
         configurarEquipamentos();
 
         atualizar();
@@ -40,13 +42,21 @@ const InventoryModule = (() => {
         if (!character.inventory) {
 
             character.inventory = {
+
                 items: [],
+
                 equipment: {
+
                     weapon: "",
+
                     armor: "",
+
                     accessory: "",
+
                     relic: ""
+
                 }
+
             };
 
         }
@@ -68,10 +78,15 @@ const InventoryModule = (() => {
         ) {
 
             character.inventory.equipment = {
+
                 weapon: "",
+
                 armor: "",
+
                 accessory: "",
+
                 relic: ""
+
             };
 
         }
@@ -101,6 +116,271 @@ const InventoryModule = (() => {
                 blocos *
                 EXTRA_SLOTS_PER_LEVEL_BLOCK
             )
+        );
+
+    }
+
+
+    /* =====================================================
+       CONFIGURAR INTERFACE
+    ===================================================== */
+
+    function configurarInterface() {
+
+        configurarBotaoAdicionar();
+
+        configurarFormulario();
+
+    }
+
+
+    /* =====================================================
+       BOTÃO ADICIONAR
+    ===================================================== */
+
+    function configurarBotaoAdicionar() {
+
+        const button =
+            get("inventory-add-button");
+
+
+        if (!button) {
+
+            return;
+
+        }
+
+
+        if (
+            button.dataset
+                .inventoryConfigured ===
+            "true"
+        ) {
+
+            return;
+
+        }
+
+
+        button.dataset
+            .inventoryConfigured =
+            "true";
+
+
+        button.addEventListener(
+            "click",
+            event => {
+
+                event.stopPropagation();
+
+
+                const capacidade =
+                    obterCapacidade();
+
+
+                if (
+                    character.inventory.items
+                        .length >= capacidade
+                ) {
+
+                    return;
+
+                }
+
+
+                abrirFormulario();
+
+            }
+        );
+
+    }
+
+
+    /* =====================================================
+       FORMULÁRIO
+    ===================================================== */
+
+    function configurarFormulario() {
+
+        const form =
+            get("inventory-form");
+
+
+        if (!form) {
+
+            return;
+
+        }
+
+
+        if (
+            form.dataset
+                .inventoryConfigured ===
+            "true"
+        ) {
+
+            return;
+
+        }
+
+
+        form.dataset
+            .inventoryConfigured =
+            "true";
+
+
+        const cancel =
+            get(
+                "inventory-cancel-button"
+            );
+
+
+        const nameInput =
+            get(
+                "inventory-item-name"
+            );
+
+
+        const quantityInput =
+            get(
+                "inventory-item-quantity"
+            );
+
+
+        form.addEventListener(
+            "submit",
+            event => {
+
+                event.preventDefault();
+
+                event.stopPropagation();
+
+
+                const sucesso =
+                    adicionarItem(
+
+                        nameInput
+                            ? nameInput.value
+                            : "",
+
+                        quantityInput
+                            ? quantityInput.value
+                            : 1
+
+                    );
+
+
+                if (sucesso) {
+
+                    fecharFormulario();
+
+                }
+
+            }
+        );
+
+
+        if (cancel) {
+
+            cancel.addEventListener(
+                "click",
+                event => {
+
+                    event.stopPropagation();
+
+                    fecharFormulario();
+
+                }
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       ABRIR FORMULÁRIO
+    ===================================================== */
+
+    function abrirFormulario() {
+
+        const form =
+            get("inventory-form");
+
+
+        if (!form) {
+
+            return;
+
+        }
+
+
+        form.classList.add(
+            "active"
+        );
+
+
+        const nameInput =
+            get(
+                "inventory-item-name"
+            );
+
+
+        const quantityInput =
+            get(
+                "inventory-item-quantity"
+            );
+
+
+        if (nameInput) {
+
+            nameInput.value = "";
+
+        }
+
+
+        if (quantityInput) {
+
+            quantityInput.value = 1;
+
+        }
+
+
+        if (nameInput) {
+
+            setTimeout(
+                () => {
+
+                    nameInput.focus();
+
+                },
+                50
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
+       FECHAR FORMULÁRIO
+    ===================================================== */
+
+    function fecharFormulario() {
+
+        const form =
+            get("inventory-form");
+
+
+        if (!form) {
+
+            return;
+
+        }
+
+
+        form.classList.remove(
+            "active"
         );
 
     }
@@ -216,6 +496,21 @@ const InventoryModule = (() => {
         }
 
 
+        quantidade =
+            Math.floor(
+                quantidade
+            );
+
+
+        if (
+            quantidade < 1
+        ) {
+
+            return false;
+
+        }
+
+
         const capacidade =
             obterCapacidade();
 
@@ -230,16 +525,45 @@ const InventoryModule = (() => {
         }
 
 
-        character.inventory.items.push({
+        /*
+           Se o item já existe,
+           apenas aumenta sua quantidade.
+        */
 
-            name: nome,
+        const itemExistente =
+            character.inventory.items
+                .find(
+                    item =>
+                        String(
+                            item.name
+                        ).toLowerCase() ===
+                        nome.toLowerCase()
+                );
 
-            quantity:
-                Math.floor(
-                    quantidade
-                )
 
-        });
+        if (itemExistente) {
+
+            itemExistente.quantity =
+                (
+                    Number(
+                        itemExistente.quantity
+                    ) || 0
+                ) + quantidade;
+
+        }
+
+        else {
+
+            character.inventory.items
+                .push({
+
+                    name: nome,
+
+                    quantity: quantidade
+
+                });
+
+        }
 
 
         atualizar();
@@ -261,7 +585,12 @@ const InventoryModule = (() => {
         garantirInventario();
 
 
+        index =
+            Number(index);
+
+
         if (
+            !Number.isInteger(index) ||
             index < 0 ||
             index >=
             character.inventory.items
@@ -299,6 +628,10 @@ const InventoryModule = (() => {
         garantirInventario();
 
 
+        index =
+            Number(index);
+
+
         const item =
             character.inventory.items[
                 index
@@ -319,7 +652,21 @@ const InventoryModule = (() => {
         if (
             !Number.isFinite(
                 quantidade
-            ) ||
+            )
+        ) {
+
+            return false;
+
+        }
+
+
+        quantidade =
+            Math.floor(
+                quantidade
+            );
+
+
+        if (
             quantidade <= 0
         ) {
 
@@ -331,9 +678,7 @@ const InventoryModule = (() => {
 
 
         item.quantity =
-            Math.floor(
-                quantidade
-            );
+            quantidade;
 
 
         atualizar();
@@ -342,6 +687,78 @@ const InventoryModule = (() => {
 
 
         return true;
+
+    }
+
+
+    /* =====================================================
+       AUMENTAR QUANTIDADE
+    ===================================================== */
+
+    function aumentarQuantidade(
+        index
+    ) {
+
+        garantirInventario();
+
+
+        const item =
+            character.inventory.items[
+                index
+            ];
+
+
+        if (!item) {
+
+            return;
+
+        }
+
+
+        alterarQuantidade(
+            index,
+            (
+                Number(
+                    item.quantity
+                ) || 0
+            ) + 1
+        );
+
+    }
+
+
+    /* =====================================================
+       DIMINUIR QUANTIDADE
+    ===================================================== */
+
+    function diminuirQuantidade(
+        index
+    ) {
+
+        garantirInventario();
+
+
+        const item =
+            character.inventory.items[
+                index
+            ];
+
+
+        if (!item) {
+
+            return;
+
+        }
+
+
+        alterarQuantidade(
+            index,
+            (
+                Number(
+                    item.quantity
+                ) || 0
+            ) - 1
+        );
 
     }
 
@@ -378,9 +795,58 @@ const InventoryModule = (() => {
         );
 
 
+        atualizarBotaoAdicionar();
+
         atualizarLista();
 
         sincronizarEquipamentos();
+
+    }
+
+
+    /* =====================================================
+       ESTADO DO BOTÃO ADICIONAR
+    ===================================================== */
+
+    function atualizarBotaoAdicionar() {
+
+        const button =
+            get("inventory-add-button");
+
+
+        if (!button) {
+
+            return;
+
+        }
+
+
+        const capacidade =
+            obterCapacidade();
+
+
+        const cheio =
+            character.inventory.items
+                .length >= capacidade;
+
+
+        button.disabled =
+            cheio;
+
+
+        if (cheio) {
+
+            button.textContent =
+                "INVENTÁRIO CHEIO";
+
+        }
+
+        else {
+
+            button.textContent =
+                "+ ADICIONAR ITEM";
+
+        }
 
     }
 
@@ -411,10 +877,17 @@ const InventoryModule = (() => {
         ) {
 
             list.innerHTML = `
+
                 <div class="inventory-empty">
+
                     <span>🎒</span>
-                    <p>Inventário vazio.</p>
+
+                    <p>
+                        Inventário vazio.
+                    </p>
+
                 </div>
+
             `;
 
 
@@ -449,41 +922,119 @@ const InventoryModule = (() => {
 
                             <small>
                                 Quantidade:
-                                ${item.quantity}
+                                <span class="inventory-quantity">
+                                    ${item.quantity}
+                                </span>
                             </small>
 
                         </div>
 
-                        <button
-                            type="button"
-                            class="inventory-remove-button"
-                            data-inventory-index="${index}"
-                        >
-                            REMOVER
-                        </button>
+
+                        <div class="inventory-item-actions">
+
+                            <button
+                                type="button"
+                                class="inventory-quantity-button"
+                                data-action="decrease"
+                            >
+                                −
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="inventory-quantity-button"
+                                data-action="increase"
+                            >
+                                +
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="inventory-remove-button"
+                            >
+                                🗑
+                            </button>
+
+                        </div>
 
                     `;
 
 
-                    const removeButton =
+                    const decrease =
+                        element.querySelector(
+                            '[data-action="decrease"]'
+                        );
+
+
+                    const increase =
+                        element.querySelector(
+                            '[data-action="increase"]'
+                        );
+
+
+                    const remove =
                         element.querySelector(
                             ".inventory-remove-button"
                         );
 
 
-                    removeButton.addEventListener(
-                        "click",
-                        event => {
+                    if (decrease) {
 
-                            event.stopPropagation();
+                        decrease.addEventListener(
+                            "click",
+                            event => {
+
+                                event.stopPropagation();
 
 
-                            removerItem(
-                                index
-                            );
+                                diminuirQuantidade(
+                                    index
+                                );
 
-                        }
-                    );
+                            }
+                        );
+
+                    }
+
+
+                    if (increase) {
+
+                        increase.addEventListener(
+                            "click",
+                            event => {
+
+                                event.stopPropagation();
+
+
+                                aumentarQuantidade(
+                                    index
+                                );
+
+                            }
+                        );
+
+                    }
+
+
+                    if (remove) {
+
+                        remove.addEventListener(
+                            "click",
+                            event => {
+
+                                event.stopPropagation();
+
+
+                                removerItem(
+                                    index
+                                );
+
+                            }
+                        );
+
+                    }
 
 
                     list.appendChild(
@@ -634,7 +1185,15 @@ const InventoryModule = (() => {
 
         removerItem,
 
-        alterarQuantidade
+        alterarQuantidade,
+
+        aumentarQuantidade,
+
+        diminuirQuantidade,
+
+        abrirFormulario,
+
+        fecharFormulario
 
     };
 
