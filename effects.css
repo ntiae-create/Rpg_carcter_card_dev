@@ -1,112 +1,125 @@
 /* =========================================================
    RPG CHARACTER CARD
    EFFECTS.CSS
-   Camada exclusiva para efeitos visuais
+   EFEITOS VISUAIS E ELEMENTAIS
 ========================================================= */
 
 
 /* =========================================================
-   AURA DA ÁREA DO PERSONAGEM
+   AURA BASE
 ========================================================= */
 
 .character-image {
     isolation: isolate;
+    position: relative;
+    overflow: hidden;
 }
+
+
+/* Aura central */
 
 .character-image::after {
     content: "";
+
     position: absolute;
-    inset: 0;
+
+    inset: -20%;
 
     pointer-events: none;
 
+    z-index: 1;
+
     background:
         radial-gradient(
-            circle at 50% 55%,
-            rgba(192, 132, 252, 0.12),
-            transparent 55%
+            circle at center,
+            rgba(192, 132, 252, 0.16),
+            transparent 58%
         );
 
-    opacity: 0.8;
+    opacity: 0.65;
 
-    z-index: 1;
+    transform: scale(0.92);
 
     animation:
         characterAura 4s ease-in-out infinite;
 }
 
+
 @keyframes characterAura {
 
     0%,
     100% {
-        opacity: 0.45;
-        transform: scale(0.98);
+        opacity: 0.35;
+        transform: scale(0.92);
     }
 
     50% {
-        opacity: 0.9;
-        transform: scale(1.02);
+        opacity: 0.85;
+        transform: scale(1.08);
     }
+
 }
 
 
 /* =========================================================
-   IMAGEM DO PERSONAGEM
+   IMAGEM
 ========================================================= */
 
-.character-image img {
+.character-image-display {
+
+    position: relative;
+
+    z-index: 3;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    object-fit: contain;
+
     filter:
         drop-shadow(
-            0 0 12px rgba(192, 132, 252, 0.25)
+            0 0 12px rgba(192, 132, 252, 0.3)
         );
 
     transition:
-        filter 0.4s ease,
-        transform 0.4s ease;
+        filter 0.5s ease,
+        transform 0.5s ease;
+
 }
 
-.character-image img:hover {
+
+.character-image-display:hover {
+
     transform: scale(1.015);
 
-    filter:
-        drop-shadow(
-            0 0 18px rgba(192, 132, 252, 0.4)
-        );
 }
 
 
 /* =========================================================
-   BRILHO NAS BORDAS
-========================================================= */
-
-.character-image {
-    box-shadow:
-        inset 0 0 35px rgba(124, 58, 237, 0.15),
-        0 0 18px rgba(124, 58, 237, 0.08);
-}
-
-
-/* =========================================================
-   EFEITO DE ENERGIA FLUTUANTE
+   ENERGIA CENTRAL
 ========================================================= */
 
 .character-image::before {
+
     animation:
         energyPulse 5s ease-in-out infinite;
+
 }
+
 
 @keyframes energyPulse {
 
     0%,
     100% {
-        transform: scale(0.85);
-        opacity: 0.25;
+        transform: scale(0.82);
+        opacity: 0.22;
     }
 
     50% {
-        transform: scale(1.15);
+        transform: scale(1.16);
         opacity: 0.55;
     }
+
 }
 
 
@@ -115,11 +128,14 @@
 ========================================================= */
 
 .character-crest {
+
     position: relative;
 
     animation:
         crestFloat 4s ease-in-out infinite;
+
 }
+
 
 @keyframes crestFloat {
 
@@ -131,9 +147,12 @@
     50% {
         transform: translateY(-2px);
     }
+
 }
 
+
 .character-crest::after {
+
     content: "";
 
     position: absolute;
@@ -143,13 +162,15 @@
     border-radius: 50%;
 
     border:
-        1px solid rgba(192, 132, 252, 0.18);
+        1px solid rgba(192, 132, 252, 0.2);
 
     pointer-events: none;
 
     animation:
         crestPulse 3s ease-in-out infinite;
+
 }
+
 
 @keyframes crestPulse {
 
@@ -160,9 +181,10 @@
     }
 
     50% {
-        opacity: 0.8;
+        opacity: 0.85;
         transform: scale(1.08);
     }
+
 }
 
 
@@ -171,12 +193,16 @@
 ========================================================= */
 
 .xp-progress {
+
     position: relative;
 
     overflow: hidden;
+
 }
 
+
 .xp-progress::after {
+
     content: "";
 
     position: absolute;
@@ -197,7 +223,9 @@
 
     animation:
         xpShine 3s linear infinite;
+
 }
+
 
 @keyframes xpShine {
 
@@ -208,84 +236,45 @@
     to {
         left: 110%;
     }
+
 }
 
 
 /* =========================================================
-   BOTÃO DE NAVEGAÇÃO
-========================================================= */
-
-.dimension-button.active {
-    position: relative;
-
-    overflow: hidden;
-}
-
-.dimension-button.active::after {
-    content: "";
-
-    position: absolute;
-
-    left: 15%;
-    right: 15%;
-    bottom: 3px;
-
-    height: 1px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(192, 132, 252, 0.8),
-            transparent
-        );
-
-    animation:
-        navigationGlow 2s ease-in-out infinite;
-}
-
-@keyframes navigationGlow {
-
-    0%,
-    100% {
-        opacity: 0.35;
-    }
-
-    50% {
-        opacity: 1;
-    }
-}
-
-
-/* =========================================================
-   ELEMENTO SELECIONADO
+   AFINIDADE SELECIONADA
 ========================================================= */
 
 .element-option.selected {
+
     position: relative;
 
     overflow: hidden;
+
 }
 
+
 .element-option.selected::after {
+
     content: "";
 
     position: absolute;
 
     inset: 0;
 
+    pointer-events: none;
+
     background:
         radial-gradient(
             circle at center,
-            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.1),
             transparent 65%
         );
 
-    pointer-events: none;
-
     animation:
         elementSelection 2.5s ease-in-out infinite;
+
 }
+
 
 @keyframes elementSelection {
 
@@ -295,125 +284,391 @@
     }
 
     50% {
-        opacity: 0.8;
+        opacity: 0.9;
     }
+
 }
 
 
 /* =========================================================
-   CARTAS DE HABILIDADE
+   ÁGUA
 ========================================================= */
 
-.ability-card {
-    position: relative;
-
-    overflow: hidden;
-}
-
-.ability-card::before {
-    content: "";
-
-    position: absolute;
-
-    left: 0;
-    top: 0;
-    bottom: 0;
-
-    width: 2px;
+.character-card.element-agua .character-image::after {
 
     background:
-        linear-gradient(
-            180deg,
-            transparent,
-            #a855f7,
-            transparent
+        radial-gradient(
+            circle at center,
+            rgba(56, 189, 248, 0.38),
+            rgba(14, 116, 144, 0.12) 38%,
+            transparent 70%
         );
 
-    opacity: 0.6;
-}
-
-.ability-card:hover::before {
-    opacity: 1;
-
     animation:
-        abilityGlow 1.2s ease-in-out infinite;
+        waterAura 3.5s ease-in-out infinite;
+
 }
 
-@keyframes abilityGlow {
+
+.character-card.element-agua .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 18px rgba(56, 189, 248, 0.7)
+        );
+
+}
+
+
+@keyframes waterAura {
 
     0%,
     100% {
+        transform: scale(0.9);
         opacity: 0.45;
     }
 
     50% {
+        transform: scale(1.1);
         opacity: 1;
     }
+
 }
 
 
 /* =========================================================
-   PASSIVA
+   FOGO
 ========================================================= */
 
-.passive-card {
-    position: relative;
-
-    overflow: hidden;
-}
-
-.passive-card::before {
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    pointer-events: none;
+.character-card.element-fogo .character-image::after {
 
     background:
         radial-gradient(
-            circle at 0% 50%,
-            rgba(192, 132, 252, 0.08),
-            transparent 45%
+            circle at center,
+            rgba(249, 115, 22, 0.42),
+            rgba(239, 68, 68, 0.12) 42%,
+            transparent 72%
         );
+
+    animation:
+        fireAura 1.8s ease-in-out infinite;
+
+}
+
+
+.character-card.element-fogo .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 20px rgba(249, 115, 22, 0.75)
+        );
+
+}
+
+
+@keyframes fireAura {
+
+    0%,
+    100% {
+        transform: scale(0.94);
+        opacity: 0.55;
+    }
+
+    50% {
+        transform: scale(1.08);
+        opacity: 1;
+    }
+
 }
 
 
 /* =========================================================
-   EFEITO DE USO DE HABILIDADE
-   O JavaScript poderá adicionar .ability-used
+   TERRA
 ========================================================= */
 
-.character-card.ability-used {
+.character-card.element-terra .character-image::after {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(161, 98, 55, 0.38),
+            rgba(120, 113, 108, 0.12) 42%,
+            transparent 72%
+        );
+
     animation:
-        abilityUsed 0.45s ease;
+        earthAura 4s ease-in-out infinite;
+
 }
 
-@keyframes abilityUsed {
 
-    0% {
-        transform: scale(1);
-    }
+.character-card.element-terra .character-image-display {
 
-    35% {
-        transform: scale(1.008);
-    }
+    filter:
+        drop-shadow(
+            0 0 17px rgba(161, 98, 55, 0.65)
+        );
 
+}
+
+
+@keyframes earthAura {
+
+    0%,
     100% {
-        transform: scale(1);
+        transform: scale(0.96);
+        opacity: 0.5;
     }
+
+    50% {
+        transform: scale(1.04);
+        opacity: 0.85;
+    }
+
 }
 
 
 /* =========================================================
-   EFEITO DE ATAQUE
+   VENTO
+========================================================= */
+
+.character-card.element-vento .character-image::after {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(125, 211, 252, 0.34),
+            rgba(186, 230, 253, 0.08) 40%,
+            transparent 72%
+        );
+
+    animation:
+        windAura 2.8s ease-in-out infinite;
+
+}
+
+
+.character-card.element-vento .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 19px rgba(125, 211, 252, 0.7)
+        );
+
+}
+
+
+@keyframes windAura {
+
+    0%,
+    100% {
+        transform: translateX(-2px) scale(0.96);
+        opacity: 0.45;
+    }
+
+    50% {
+        transform: translateX(2px) scale(1.06);
+        opacity: 0.95;
+    }
+
+}
+
+
+/* =========================================================
+   LUZ
+========================================================= */
+
+.character-card.element-luz .character-image::after {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(253, 224, 71, 0.38),
+            rgba(250, 204, 21, 0.1) 42%,
+            transparent 72%
+        );
+
+    animation:
+        lightAura 3s ease-in-out infinite;
+
+}
+
+
+.character-card.element-luz .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 22px rgba(253, 224, 71, 0.75)
+        );
+
+}
+
+
+@keyframes lightAura {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+        opacity: 0.4;
+    }
+
+    50% {
+        transform: scale(1.12);
+        opacity: 1;
+    }
+
+}
+
+
+/* =========================================================
+   TREVAS
+========================================================= */
+
+.character-card.element-trevas .character-image::after {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(109, 40, 217, 0.42),
+            rgba(30, 13, 55, 0.22) 42%,
+            transparent 74%
+        );
+
+    animation:
+        darkAura 4s ease-in-out infinite;
+
+}
+
+
+.character-card.element-trevas .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 22px rgba(109, 40, 217, 0.85)
+        );
+
+}
+
+
+@keyframes darkAura {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 0.95;
+    }
+
+}
+
+
+/* =========================================================
+   FÍSICO
+========================================================= */
+
+.character-card.element-fisico .character-image::after {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(251, 191, 36, 0.32),
+            rgba(180, 120, 20, 0.08) 40%,
+            transparent 72%
+        );
+
+    animation:
+        physicalAura 1.7s ease-in-out infinite;
+
+}
+
+
+.character-card.element-fisico .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 17px rgba(251, 191, 36, 0.65)
+        );
+
+}
+
+
+@keyframes physicalAura {
+
+    0%,
+    100% {
+        transform: scale(0.98);
+        opacity: 0.45;
+    }
+
+    50% {
+        transform: scale(1.05);
+        opacity: 0.85;
+    }
+
+}
+
+
+/* =========================================================
+   MÁGICO
+========================================================= */
+
+.character-card.element-magico .character-image::after {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(217, 70, 239, 0.4),
+            rgba(126, 34, 206, 0.12) 42%,
+            transparent 74%
+        );
+
+    animation:
+        magicAura 3.2s ease-in-out infinite;
+
+}
+
+
+.character-card.element-magico .character-image-display {
+
+    filter:
+        drop-shadow(
+            0 0 22px rgba(217, 70, 239, 0.8)
+        );
+
+}
+
+
+@keyframes magicAura {
+
+    0%,
+    100% {
+        transform: scale(0.9);
+        opacity: 0.45;
+    }
+
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+}
+
+
+/* =========================================================
+   ATAQUE
 ========================================================= */
 
 .character-card.attack-used {
+
     animation:
         attackUsed 0.35s ease;
+
 }
+
 
 @keyframes attackUsed {
 
@@ -436,6 +691,69 @@
     100% {
         transform: translateX(0);
     }
+
+}
+
+
+/* =========================================================
+   HABILIDADE
+========================================================= */
+
+.character-card.ability-used {
+
+    animation:
+        abilityUsed 0.45s ease;
+
+}
+
+
+@keyframes abilityUsed {
+
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.008);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   PASSIVA
+========================================================= */
+
+.passive-card {
+
+    position: relative;
+
+    overflow: hidden;
+
+}
+
+
+.passive-card::before {
+
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    background:
+        radial-gradient(
+            circle at 0% 50%,
+            rgba(192, 132, 252, 0.08),
+            transparent 45%
+        );
+
 }
 
 
@@ -445,8 +763,10 @@
 
 @media (max-width: 420px) {
 
-    .character-image img:hover {
+    .character-image-display:hover {
+
         transform: none;
+
     }
 
 }
