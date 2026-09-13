@@ -1,69 +1,208 @@
-/* =========================================================
-   RPG CHARACTER CARD
-   EFFECTS.CSS
-   EFEITOS VISUAIS E ELEMENTAIS
-========================================================= */
-
-
-/* =========================================================
-   AURA BASE
-========================================================= */
+/* =========================================
+   EFEITOS VISUAIS — SISTEMA ELEMENTAL
+========================================= */
 
 .character-image {
-    isolation: isolate;
     position: relative;
+    isolation: isolate;
     overflow: hidden;
 }
 
 
-/* Aura central */
+/* =========================================
+   CORES DOS ELEMENTOS
+========================================= */
+
+.character-card.element-agua {
+    --element-color: #38bdf8;
+    --element-color-strong: #0ea5e9;
+}
+
+.character-card.element-luz {
+    --element-color: #fde68a;
+    --element-color-strong: #facc15;
+}
+
+.character-card.element-terra {
+    --element-color: #a3e635;
+    --element-color-strong: #65a30d;
+}
+
+.character-card.element-trevas {
+    --element-color: #a78bfa;
+    --element-color-strong: #7c3aed;
+}
+
+.character-card.element-vento {
+    --element-color: #67e8f9;
+    --element-color-strong: #06b6d4;
+}
+
+.character-card.element-fogo {
+    --element-color: #fb923c;
+    --element-color-strong: #ef4444;
+}
+
+.character-card.element-fisico {
+    --element-color: #f8fafc;
+    --element-color-strong: #94a3b8;
+}
+
+.character-card.element-magico {
+    --element-color: #e879f9;
+    --element-color-strong: #c026d3;
+}
+
+
+/* =========================================
+   AURA ELEMENTAL
+========================================= */
+
+.character-image::before {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: 45%;
+    aspect-ratio: 1;
+
+    transform: translate(-50%, -50%) scale(0.75);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            color-mix(
+                in srgb,
+                var(--element-color, transparent) 35%,
+                transparent
+            ) 0%,
+            transparent 70%
+        );
+
+    opacity: 0;
+
+    filter: blur(8px);
+
+    pointer-events: none;
+
+    z-index: 1;
+
+    animation: elementalPulse 2.4s ease-in-out infinite;
+}
+
+
+/* =========================================
+   ONDA DE ENERGIA
+========================================= */
 
 .character-image::after {
     content: "";
 
     position: absolute;
 
-    inset: -20%;
+    left: 50%;
+    top: 50%;
+
+    width: 25%;
+    aspect-ratio: 1;
+
+    transform: translate(-50%, -50%) scale(0.5);
+
+    border-radius: 50%;
+
+    border:
+        2px solid
+        var(--element-color, transparent);
+
+    box-shadow:
+        0 0 15px var(--element-color, transparent),
+        0 0 35px var(--element-color, transparent),
+        inset 0 0 20px var(--element-color, transparent);
+
+    opacity: 0;
 
     pointer-events: none;
 
-    z-index: 1;
+    z-index: 2;
 
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(192, 132, 252, 0.16),
-            transparent 58%
-        );
-
-    opacity: 0.65;
-
-    transform: scale(0.92);
-
-    animation:
-        characterAura 4s ease-in-out infinite;
+    animation: elementalWave 2.4s ease-out infinite;
 }
 
 
-@keyframes characterAura {
+/* =========================================
+   ANIMAÇÃO DA AURA
+========================================= */
 
-    0%,
-    100% {
-        opacity: 0.35;
-        transform: scale(0.92);
+@keyframes elementalPulse {
+
+    0% {
+        transform:
+            translate(-50%, -50%)
+            scale(0.65);
+
+        opacity: 0.15;
     }
 
     50% {
-        opacity: 0.85;
-        transform: scale(1.08);
+        transform:
+            translate(-50%, -50%)
+            scale(1.15);
+
+        opacity: 0.65;
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%)
+            scale(1.45);
+
+        opacity: 0;
     }
 
 }
 
 
-/* =========================================================
-   IMAGEM
-========================================================= */
+/* =========================================
+   ANIMAÇÃO DA ONDA
+========================================= */
+
+@keyframes elementalWave {
+
+    0% {
+        transform:
+            translate(-50%, -50%)
+            scale(0.4);
+
+        opacity: 0.8;
+    }
+
+    70% {
+        transform:
+            translate(-50%, -50%)
+            scale(2.4);
+
+        opacity: 0.25;
+    }
+
+    100% {
+        transform:
+            translate(-50%, -50%)
+            scale(3);
+
+        opacity: 0;
+    }
+
+}
+
+
+/* =========================================
+   IMAGEM DO PERSONAGEM
+========================================= */
 
 .character-image-display {
 
@@ -71,650 +210,171 @@
 
     z-index: 3;
 
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 92%;
+    max-height: 92%;
 
     object-fit: contain;
 
     filter:
         drop-shadow(
-            0 0 12px rgba(192, 132, 252, 0.3)
+            0 0 10px
+            var(--element-color, rgba(124, 58, 237, 0.35))
         );
 
     transition:
         filter 0.5s ease,
         transform 0.5s ease;
-
 }
 
 
-.character-image-display:hover {
+/* =========================================
+   BRILHO EXTRA DA IMAGEM
+========================================= */
 
-    transform: scale(1.015);
+.character-card.element-agua
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #38bdf8)
+        drop-shadow(0 0 20px #0ea5e9);
+}
 
+.character-card.element-luz
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #fde68a)
+        drop-shadow(0 0 20px #facc15);
+}
+
+.character-card.element-terra
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #a3e635)
+        drop-shadow(0 0 20px #65a30d);
+}
+
+.character-card.element-trevas
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #a78bfa)
+        drop-shadow(0 0 20px #7c3aed);
+}
+
+.character-card.element-vento
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #67e8f9)
+        drop-shadow(0 0 20px #06b6d4);
+}
+
+.character-card.element-fogo
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #fb923c)
+        drop-shadow(0 0 20px #ef4444);
+}
+
+.character-card.element-fisico
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #f8fafc)
+        drop-shadow(0 0 20px #94a3b8);
+}
+
+.character-card.element-magico
+.character-image-display {
+    filter:
+        drop-shadow(0 0 8px #e879f9)
+        drop-shadow(0 0 20px #c026d3);
 }
 
 
-/* =========================================================
-   ENERGIA CENTRAL
-========================================================= */
-
-.character-image::before {
-
-    animation:
-        energyPulse 5s ease-in-out infinite;
-
-}
-
-
-@keyframes energyPulse {
-
-    0%,
-    100% {
-        transform: scale(0.82);
-        opacity: 0.22;
-    }
-
-    50% {
-        transform: scale(1.16);
-        opacity: 0.55;
-    }
-
-}
-
-
-/* =========================================================
+/* =========================================
    BRASÃO
-========================================================= */
+========================================= */
 
-.character-crest {
+#character-crest {
 
-    position: relative;
+    transition:
+        transform 0.5s ease,
+        filter 0.5s ease;
+}
 
-    animation:
-        crestFloat 4s ease-in-out infinite;
+.character-card.element-agua #character-crest {
+    filter: drop-shadow(0 0 10px #38bdf8);
+}
 
+.character-card.element-luz #character-crest {
+    filter: drop-shadow(0 0 10px #facc15);
+}
+
+.character-card.element-terra #character-crest {
+    filter: drop-shadow(0 0 10px #65a30d);
+}
+
+.character-card.element-trevas #character-crest {
+    filter: drop-shadow(0 0 10px #7c3aed);
+}
+
+.character-card.element-vento #character-crest {
+    filter: drop-shadow(0 0 10px #06b6d4);
+}
+
+.character-card.element-fogo #character-crest {
+    filter: drop-shadow(0 0 10px #ef4444);
+}
+
+.character-card.element-fisico #character-crest {
+    filter: drop-shadow(0 0 10px #94a3b8);
+}
+
+.character-card.element-magico #character-crest {
+    filter: drop-shadow(0 0 10px #c026d3);
 }
 
 
-@keyframes crestFloat {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-2px);
-    }
-
-}
-
-
-.character-crest::after {
-
-    content: "";
-
-    position: absolute;
-
-    inset: -5px;
-
-    border-radius: 50%;
-
-    border:
-        1px solid rgba(192, 132, 252, 0.2);
-
-    pointer-events: none;
-
-    animation:
-        crestPulse 3s ease-in-out infinite;
-
-}
-
-
-@keyframes crestPulse {
-
-    0%,
-    100% {
-        opacity: 0.25;
-        transform: scale(0.95);
-    }
-
-    50% {
-        opacity: 0.85;
-        transform: scale(1.08);
-    }
-
-}
-
-
-/* =========================================================
-   XP
-========================================================= */
-
-.xp-progress {
-
-    position: relative;
-
-    overflow: hidden;
-
-}
-
-
-.xp-progress::after {
-
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: -80px;
-
-    width: 60px;
-    height: 100%;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.45),
-            transparent
-        );
-
-    animation:
-        xpShine 3s linear infinite;
-
-}
-
-
-@keyframes xpShine {
-
-    from {
-        left: -80px;
-    }
-
-    to {
-        left: 110%;
-    }
-
-}
-
-
-/* =========================================================
-   AFINIDADE SELECIONADA
-========================================================= */
+/* =========================================
+   ELEMENTO SELECIONADO
+========================================= */
 
 .element-option.selected {
 
-    position: relative;
+    transform: translateY(-3px) scale(1.03);
 
-    overflow: hidden;
+    border-color:
+        var(--element-color, #a855f7);
 
+    box-shadow:
+        0 0 15px
+        var(--element-color, #a855f7);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        border-color 0.25s ease;
 }
 
 
-.element-option.selected::after {
+/* =========================================
+   ATAQUES
+========================================= */
 
-    content: "";
-
-    position: absolute;
-
-    inset: 0;
-
-    pointer-events: none;
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(255, 255, 255, 0.1),
-            transparent 65%
-        );
+.combat-use-button.used {
 
     animation:
-        elementSelection 2.5s ease-in-out infinite;
-
+        attackFlash 0.45s ease;
 }
 
+@keyframes attackFlash {
 
-@keyframes elementSelection {
-
-    0%,
-    100% {
-        opacity: 0.25;
+    0% {
+        transform: scale(1);
     }
 
-    50% {
-        opacity: 0.9;
-    }
-
-}
-
-
-/* =========================================================
-   ÁGUA
-========================================================= */
-
-.character-card.element-agua .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(56, 189, 248, 0.38),
-            rgba(14, 116, 144, 0.12) 38%,
-            transparent 70%
-        );
-
-    animation:
-        waterAura 3.5s ease-in-out infinite;
-
-}
-
-
-.character-card.element-agua .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 18px rgba(56, 189, 248, 0.7)
-        );
-
-}
-
-
-@keyframes waterAura {
-
-    0%,
-    100% {
-        transform: scale(0.9);
-        opacity: 0.45;
-    }
-
-    50% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-
-}
-
-
-/* =========================================================
-   FOGO
-========================================================= */
-
-.character-card.element-fogo .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(249, 115, 22, 0.42),
-            rgba(239, 68, 68, 0.12) 42%,
-            transparent 72%
-        );
-
-    animation:
-        fireAura 1.8s ease-in-out infinite;
-
-}
-
-
-.character-card.element-fogo .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 20px rgba(249, 115, 22, 0.75)
-        );
-
-}
-
-
-@keyframes fireAura {
-
-    0%,
-    100% {
+    40% {
         transform: scale(0.94);
-        opacity: 0.55;
-    }
 
-    50% {
-        transform: scale(1.08);
-        opacity: 1;
-    }
-
-}
-
-
-/* =========================================================
-   TERRA
-========================================================= */
-
-.character-card.element-terra .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(161, 98, 55, 0.38),
-            rgba(120, 113, 108, 0.12) 42%,
-            transparent 72%
-        );
-
-    animation:
-        earthAura 4s ease-in-out infinite;
-
-}
-
-
-.character-card.element-terra .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 17px rgba(161, 98, 55, 0.65)
-        );
-
-}
-
-
-@keyframes earthAura {
-
-    0%,
-    100% {
-        transform: scale(0.96);
-        opacity: 0.5;
-    }
-
-    50% {
-        transform: scale(1.04);
-        opacity: 0.85;
-    }
-
-}
-
-
-/* =========================================================
-   VENTO
-========================================================= */
-
-.character-card.element-vento .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(125, 211, 252, 0.34),
-            rgba(186, 230, 253, 0.08) 40%,
-            transparent 72%
-        );
-
-    animation:
-        windAura 2.8s ease-in-out infinite;
-
-}
-
-
-.character-card.element-vento .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 19px rgba(125, 211, 252, 0.7)
-        );
-
-}
-
-
-@keyframes windAura {
-
-    0%,
-    100% {
-        transform: translateX(-2px) scale(0.96);
-        opacity: 0.45;
-    }
-
-    50% {
-        transform: translateX(2px) scale(1.06);
-        opacity: 0.95;
-    }
-
-}
-
-
-/* =========================================================
-   LUZ
-========================================================= */
-
-.character-card.element-luz .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(253, 224, 71, 0.38),
-            rgba(250, 204, 21, 0.1) 42%,
-            transparent 72%
-        );
-
-    animation:
-        lightAura 3s ease-in-out infinite;
-
-}
-
-
-.character-card.element-luz .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 22px rgba(253, 224, 71, 0.75)
-        );
-
-}
-
-
-@keyframes lightAura {
-
-    0%,
-    100% {
-        transform: scale(0.9);
-        opacity: 0.4;
-    }
-
-    50% {
-        transform: scale(1.12);
-        opacity: 1;
-    }
-
-}
-
-
-/* =========================================================
-   TREVAS
-========================================================= */
-
-.character-card.element-trevas .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(109, 40, 217, 0.42),
-            rgba(30, 13, 55, 0.22) 42%,
-            transparent 74%
-        );
-
-    animation:
-        darkAura 4s ease-in-out infinite;
-
-}
-
-
-.character-card.element-trevas .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 22px rgba(109, 40, 217, 0.85)
-        );
-
-}
-
-
-@keyframes darkAura {
-
-    0%,
-    100% {
-        transform: scale(0.9);
-        opacity: 0.5;
-    }
-
-    50% {
-        transform: scale(1.1);
-        opacity: 0.95;
-    }
-
-}
-
-
-/* =========================================================
-   FÍSICO
-========================================================= */
-
-.character-card.element-fisico .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(251, 191, 36, 0.32),
-            rgba(180, 120, 20, 0.08) 40%,
-            transparent 72%
-        );
-
-    animation:
-        physicalAura 1.7s ease-in-out infinite;
-
-}
-
-
-.character-card.element-fisico .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 17px rgba(251, 191, 36, 0.65)
-        );
-
-}
-
-
-@keyframes physicalAura {
-
-    0%,
-    100% {
-        transform: scale(0.98);
-        opacity: 0.45;
-    }
-
-    50% {
-        transform: scale(1.05);
-        opacity: 0.85;
-    }
-
-}
-
-
-/* =========================================================
-   MÁGICO
-========================================================= */
-
-.character-card.element-magico .character-image::after {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(217, 70, 239, 0.4),
-            rgba(126, 34, 206, 0.12) 42%,
-            transparent 74%
-        );
-
-    animation:
-        magicAura 3.2s ease-in-out infinite;
-
-}
-
-
-.character-card.element-magico .character-image-display {
-
-    filter:
-        drop-shadow(
-            0 0 22px rgba(217, 70, 239, 0.8)
-        );
-
-}
-
-
-@keyframes magicAura {
-
-    0%,
-    100% {
-        transform: scale(0.9);
-        opacity: 0.45;
-    }
-
-    50% {
-        transform: scale(1.1);
-        opacity: 1;
-    }
-
-}
-
-
-/* =========================================================
-   ATAQUE
-========================================================= */
-
-.character-card.attack-used {
-
-    animation:
-        attackUsed 0.35s ease;
-
-}
-
-
-@keyframes attackUsed {
-
-    0% {
-        transform: translateX(0);
-    }
-
-    25% {
-        transform: translateX(-3px);
-    }
-
-    50% {
-        transform: translateX(3px);
-    }
-
-    75% {
-        transform: translateX(-2px);
-    }
-
-    100% {
-        transform: translateX(0);
-    }
-
-}
-
-
-/* =========================================================
-   HABILIDADE
-========================================================= */
-
-.character-card.ability-used {
-
-    animation:
-        abilityUsed 0.45s ease;
-
-}
-
-
-@keyframes abilityUsed {
-
-    0% {
-        transform: scale(1);
-    }
-
-    35% {
-        transform: scale(1.008);
+        filter:
+            brightness(1.8);
     }
 
     100% {
@@ -724,49 +384,94 @@
 }
 
 
-/* =========================================================
+/* =========================================
+   HABILIDADES
+========================================= */
+
+.ability-card.used {
+
+    animation:
+        abilityPulse 0.55s ease;
+}
+
+@keyframes abilityPulse {
+
+    0% {
+        transform: scale(1);
+    }
+
+    45% {
+        transform: scale(1.025);
+
+        box-shadow:
+            0 0 25px
+            var(--element-color, #7c3aed);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+
+}
+
+
+/* =========================================
    PASSIVA
-========================================================= */
+========================================= */
 
 .passive-card {
 
-    position: relative;
+    transition:
+        box-shadow 0.5s ease,
+        border-color 0.5s ease;
+}
 
-    overflow: hidden;
+.character-card.element-agua .passive-card {
+    box-shadow: 0 0 15px rgba(56, 189, 248, 0.18);
+}
 
+.character-card.element-luz .passive-card {
+    box-shadow: 0 0 15px rgba(250, 204, 21, 0.18);
+}
+
+.character-card.element-terra .passive-card {
+    box-shadow: 0 0 15px rgba(101, 163, 13, 0.18);
+}
+
+.character-card.element-trevas .passive-card {
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.18);
+}
+
+.character-card.element-vento .passive-card {
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.18);
+}
+
+.character-card.element-fogo .passive-card {
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.18);
+}
+
+.character-card.element-fisico .passive-card {
+    box-shadow: 0 0 15px rgba(148, 163, 184, 0.18);
+}
+
+.character-card.element-magico .passive-card {
+    box-shadow: 0 0 15px rgba(192, 38, 211, 0.18);
 }
 
 
-.passive-card::before {
+/* =========================================
+   MODO CELULAR
+========================================= */
 
-    content: "";
+@media (max-width: 600px) {
 
-    position: absolute;
+    .character-image-display {
+        max-width: 95%;
+        max-height: 95%;
+    }
 
-    inset: 0;
-
-    pointer-events: none;
-
-    background:
-        radial-gradient(
-            circle at 0% 50%,
-            rgba(192, 132, 252, 0.08),
-            transparent 45%
-        );
-
-}
-
-
-/* =========================================================
-   RESPONSIVIDADE
-========================================================= */
-
-@media (max-width: 420px) {
-
-    .character-image-display:hover {
-
-        transform: none;
-
+    .character-image::before {
+        width: 55%;
     }
 
 }
