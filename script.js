@@ -922,773 +922,17 @@ function configurarReset() {
 
             CharacterModule.atualizarImagem();
 
-        }
-    );
-
-}
-
-
-/* =========================================================
-   COMBATE
-========================================================= */
-
-function configurarCombate() {
-
-    const buttons =
-        document.querySelectorAll(
-            ".combat-use-button"
-        );
-
-
-    buttons.forEach(button => {
-
-        if (
-            button.dataset.combatConfigured ===
-            "true"
-        ) {
-
-            return;
-
-        }
-
-
-        button.dataset.combatConfigured =
-            "true";
-
-
-        button.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-
-                const action =
-                    button.dataset.action;
-
-
-                if (
-                    action ===
-                    "basic-attack"
-                ) {
-
-                    usarAtaqueBasico();
-
-                }
-
-
-                else if (
-                    action ===
-                    "counterattack"
-                ) {
-
-                    usarContraAtaque();
-
-                }
-
-
-                else if (
-                    action ===
-                    "ability"
-                ) {
-
-                    const index =
-                        Number(
-                            button.dataset
-                                .abilityIndex
-                        );
-
-
-                    usarHabilidade(
-                        index
-                    );
-
-                }
-
-            }
-        );
-
-    });
-
-
-    configurarEditorDeCombate();
-
-}
-
-
-/* =========================================================
-   ATAQUE BÁSICO
-========================================================= */
-
-function usarAtaqueBasico() {
-
-    const custo = 1;
-
-
-    if (
-        character.resources.est <
-        custo
-    ) {
-
-        registrarCombate(
-            "EST insuficiente para o ataque básico."
-        );
-
-
-        return;
-
-    }
-
-
-    character.resources.est -=
-        custo;
-
-
-    const name =
-        character.combat
-            .basicAttackName ||
-        "Ataque básico";
-
-
-    registrarCombate(
-        `${name} usado. −1 EST.`
-    );
-
-
-    atualizarInterface();
-
-    salvarPersonagem();
-
-}
-
-
-/* =========================================================
-   CONTRA-ATAQUE
-========================================================= */
-
-function usarContraAtaque() {
-
-    const custo = 3;
-
-
-    if (
-        character.resources.est <
-        custo
-    ) {
-
-        registrarCombate(
-            "EST insuficiente para o contra-ataque."
-        );
-
-
-        return;
-
-    }
-
-
-    character.resources.est -=
-        custo;
-
-
-    registrarCombate(
-        "Contra-ataque realizado. −3 EST."
-    );
-
-
-    atualizarInterface();
-
-    salvarPersonagem();
-
-}
-
-
-/* =========================================================
-   HABILIDADES
-========================================================= */
-
-function usarHabilidade(
-    index
-) {
-
-    const ability =
-        character.combat
-            .abilities[index];
-
-
-    if (!ability) {
-
-        return;
-
-    }
-
-
-    const name =
-        String(
-            ability.name || ""
-        ).trim();
-
-
-    if (!name) {
-
-        registrarCombate(
-            `Habilidade ${index + 1} ainda não foi configurada.`
-        );
-
-
-        return;
-
-    }
-
-
-    const cost =
-        limitarNumero(
-            ability.cost,
-            0
-        );
-
-
-    const type =
-        ability.costType;
-
-
-    if (
-        type === "mp"
-    ) {
-
-        if (
-            character.resources.mp <
-            cost
-        ) {
-
-            registrarCombate(
-                `${name}: MP insuficiente.`
-            );
-
-
-            return;
-
-        }
-
-
-        character.resources.mp -=
-            cost;
-
-
-        registrarCombate(
-            `${name} usada. −${cost} MP.`
-        );
-
-    }
-
-
-    else if (
-        type === "est"
-    ) {
-
-        if (
-            character.resources.est <
-            cost
-        ) {
-
-            registrarCombate(
-                `${name}: EST insuficiente.`
-            );
-
-
-            return;
-
-        }
-
-
-        character.resources.est -=
-            cost;
-
-
-        registrarCombate(
-            `${name} usada. −${cost} EST.`
-        );
-
-    }
-
-
-    atualizarInterface();
-
-    salvarPersonagem();
-
-}
-
-
-/* =========================================================
-   EDITOR DAS HABILIDADES
-========================================================= */
-
-function configurarEditorDeCombate() {
-
-    const basicInput =
-        get("basic-attack-name");
-
-
-    if (basicInput) {
-
-        if (
-            basicInput.dataset.combatEditorConfigured !==
-            "true"
-        ) {
-
-            basicInput.dataset.combatEditorConfigured =
-                "true";
-
-
-            basicInput.addEventListener(
-                "input",
-                () => {
-
-                    character.combat
-                        .basicAttackName =
-                        basicInput.value;
-
-
-                    salvarPersonagem();
-
-                }
-            );
-
-        }
-
-    }
-
-
-    const abilityCards =
-        document.querySelectorAll(
-            ".ability-card"
-        );
-
-
-    abilityCards.forEach(card => {
-
-        const index =
-            Number(
-                card.dataset.abilityIndex
-            );
-
-
-        const ability =
-            character.combat
-                .abilities[index];
-
-
-        if (!ability) {
-
-            return;
-
-        }
-
-
-        const nameInput =
-            card.querySelector(
-                ".ability-name-input"
-            );
-
-
-        const costType =
-            card.querySelector(
-                ".ability-cost-type"
-            );
-
-
-        const costInput =
-            card.querySelector(
-                ".ability-cost-input"
-            );
-
-
-        const descriptionInput =
-            card.querySelector(
-                ".ability-description-input"
-            );
-
-
-        if (nameInput) {
-
             if (
-                nameInput.dataset.combatEditorConfigured !==
-                "true"
+                typeof CombatModule !==
+                "undefined"
             ) {
 
-                nameInput.dataset.combatEditorConfigured =
-                    "true";
-
-
-                nameInput.addEventListener(
-                    "input",
-                    () => {
-
-                        ability.name =
-                            nameInput.value;
-
-
-                        salvarPersonagem();
-
-                    }
-                );
+                CombatModule.iniciar();
 
             }
 
         }
-
-
-        if (costType) {
-
-            if (
-                costType.dataset.combatEditorConfigured !==
-                "true"
-            ) {
-
-                costType.dataset.combatEditorConfigured =
-                    "true";
-
-
-                costType.addEventListener(
-                    "change",
-                    () => {
-
-                        ability.costType =
-                            costType.value;
-
-
-                        salvarPersonagem();
-
-                    }
-                );
-
-            }
-
-        }
-
-
-        if (costInput) {
-
-            if (
-                costInput.dataset.combatEditorConfigured !==
-                "true"
-            ) {
-
-                costInput.dataset.combatEditorConfigured =
-                    "true";
-
-
-                costInput.addEventListener(
-                    "input",
-                    () => {
-
-                        ability.cost =
-                            limitarNumero(
-                                costInput.value,
-                                0
-                            );
-
-
-                        salvarPersonagem();
-
-                    }
-                );
-
-            }
-
-        }
-
-
-        if (descriptionInput) {
-
-            if (
-                descriptionInput.dataset.combatEditorConfigured !==
-                "true"
-            ) {
-
-                descriptionInput.dataset.combatEditorConfigured =
-                    "true";
-
-
-                descriptionInput.addEventListener(
-                    "input",
-                    () => {
-
-                        ability.description =
-                            descriptionInput.value;
-
-
-                        salvarPersonagem();
-
-                    }
-                );
-
-            }
-
-        }
-
-    });
-
-
-    /* =====================================================
-       PASSIVA
-    ===================================================== */
-
-    const passiveName =
-        get("passive-name");
-
-
-    const passiveDescription =
-        get("passive-description");
-
-
-    if (passiveName) {
-
-        if (
-            passiveName.dataset.combatEditorConfigured !==
-            "true"
-        ) {
-
-            passiveName.dataset.combatEditorConfigured =
-                "true";
-
-
-            passiveName.addEventListener(
-                "input",
-                () => {
-
-                    character.combat
-                        .passive.name =
-                        passiveName.value;
-
-
-                    salvarPersonagem();
-
-                }
-            );
-
-        }
-
-    }
-
-
-    if (passiveDescription) {
-
-        if (
-            passiveDescription.dataset.combatEditorConfigured !==
-            "true"
-        ) {
-
-            passiveDescription.dataset.combatEditorConfigured =
-                "true";
-
-
-            passiveDescription.addEventListener(
-                "input",
-                () => {
-
-                    character.combat
-                        .passive.description =
-                        passiveDescription.value;
-
-
-                    salvarPersonagem();
-
-                }
-            );
-
-        }
-
-    }
-
-}
-
-
-/* =========================================================
-   LOG DE COMBATE
-========================================================= */
-
-function registrarCombate(
-    message
-) {
-
-    character.combat.log.unshift(
-        message
     );
-
-
-    character.combat.log =
-        character.combat.log.slice(
-            0,
-            20
-        );
-
-
-    atualizarLogCombate();
-
-    salvarPersonagem();
-
-}
-
-
-function atualizarLogCombate() {
-
-    const log =
-        get("combat-log");
-
-
-    if (!log) {
-
-        return;
-
-    }
-
-
-    if (
-        !character.combat.log.length
-    ) {
-
-        log.innerHTML =
-            "<p>Nenhuma ação realizada.</p>";
-
-
-        return;
-
-    }
-
-
-    log.innerHTML =
-        character.combat.log
-            .map(
-                entry =>
-                    `<p>${escaparHTML(entry)}</p>`
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   ESCAPAR HTML
-========================================================= */
-
-function escaparHTML(
-    text
-) {
-
-    return String(text)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
-        );
-
-}
-
-
-/* =========================================================
-   INVENTÁRIO
-========================================================= */
-
-function atualizarInventario() {
-
-    const slots =
-        get("inventory-slots");
-
-
-    const capacity =
-        get("inventory-capacity");
-
-
-    const bonus =
-        Math.floor(
-            character.level / 10
-        ) * 50;
-
-
-    const maxSlots =
-        50 + bonus;
-
-
-    const used =
-        character.inventory.items.length;
-
-
-    if (capacity) {
-
-        capacity.textContent =
-            `${used} / ${maxSlots}`;
-
-    }
-
-
-    if (!slots) {
-
-        return;
-
-    }
-
-
-    slots.innerHTML = "";
-
-
-    for (
-        let i = 0;
-        i < maxSlots;
-        i++
-    ) {
-
-        const slot =
-            document.createElement(
-                "div"
-            );
-
-
-        slot.className =
-            "inventory-slot";
-
-
-        if (
-            character.inventory.items[i]
-        ) {
-
-            slot.textContent =
-                character.inventory.items[i];
-
-
-            slot.classList.add(
-                "occupied"
-            );
-
-        }
-
-        else {
-
-            slot.textContent =
-                i + 1;
-
-        }
-
-
-        slots.appendChild(
-            slot
-        );
-
-    }
 
 }
 
@@ -1854,154 +1098,92 @@ function atualizarBrasao() {
 
 
 /* =========================================================
-   SINCRONIZAR EDITOR DE COMBATE
+   INVENTÁRIO
 ========================================================= */
 
-function sincronizarEditorDeCombate() {
+function atualizarInventario() {
 
-    const basic =
-        get("basic-attack-name");
+    const slots =
+        get("inventory-slots");
 
 
-    if (
-        basic &&
-        document.activeElement !==
-        basic
-    ) {
+    const capacity =
+        get("inventory-capacity");
 
-        basic.value =
-            character.combat
-                .basicAttackName;
+
+    const bonus =
+        Math.floor(
+            character.level / 10
+        ) * 50;
+
+
+    const maxSlots =
+        50 + bonus;
+
+
+    const used =
+        character.inventory.items.length;
+
+
+    if (capacity) {
+
+        capacity.textContent =
+            `${used} / ${maxSlots}`;
 
     }
 
 
-    const cards =
-        document.querySelectorAll(
-            ".ability-card"
+    if (!slots) {
+
+        return;
+
+    }
+
+
+    slots.innerHTML = "";
+
+
+    for (
+        let i = 0;
+        i < maxSlots;
+        i++
+    ) {
+
+        const slot =
+            document.createElement(
+                "div"
+            );
+
+
+        slot.className =
+            "inventory-slot";
+
+
+        if (
+            character.inventory.items[i]
+        ) {
+
+            slot.textContent =
+                character.inventory.items[i];
+
+
+            slot.classList.add(
+                "occupied"
+            );
+
+        }
+
+        else {
+
+            slot.textContent =
+                i + 1;
+
+        }
+
+
+        slots.appendChild(
+            slot
         );
-
-
-    cards.forEach(card => {
-
-        const index =
-            Number(
-                card.dataset.abilityIndex
-            );
-
-
-        const ability =
-            character.combat
-                .abilities[index];
-
-
-        if (!ability) {
-
-            return;
-
-        }
-
-
-        const name =
-            card.querySelector(
-                ".ability-name-input"
-            );
-
-
-        const type =
-            card.querySelector(
-                ".ability-cost-type"
-            );
-
-
-        const cost =
-            card.querySelector(
-                ".ability-cost-input"
-            );
-
-
-        const description =
-            card.querySelector(
-                ".ability-description-input"
-            );
-
-
-        if (
-            name &&
-            document.activeElement !==
-            name
-        ) {
-
-            name.value =
-                ability.name;
-
-        }
-
-
-        if (type) {
-
-            type.value =
-                ability.costType;
-
-        }
-
-
-        if (
-            cost &&
-            document.activeElement !==
-            cost
-        ) {
-
-            cost.value =
-                ability.cost;
-
-        }
-
-
-        if (
-            description &&
-            document.activeElement !==
-            description
-        ) {
-
-            description.value =
-                ability.description;
-
-        }
-
-    });
-
-
-    const passiveName =
-        get("passive-name");
-
-
-    const passiveDescription =
-        get("passive-description");
-
-
-    if (
-        passiveName &&
-        document.activeElement !==
-        passiveName
-    ) {
-
-        passiveName.value =
-            character.combat
-                .passive.name;
-
-    }
-
-
-    if (
-        passiveDescription &&
-        document.activeElement !==
-        passiveDescription
-    ) {
-
-        passiveDescription.value =
-            character.combat
-                .passive.description;
 
     }
 
@@ -2143,21 +1325,14 @@ function atualizarInterface() {
        COMBATE
     ===================================================== */
 
-    definirTexto(
-        "combat-mp",
-        character.resources.mp
-    );
+    if (
+        typeof CombatModule !==
+        "undefined"
+    ) {
 
+        CombatModule.atualizar();
 
-    definirTexto(
-        "combat-est",
-        character.resources.est
-    );
-
-
-    atualizarLogCombate();
-
-    sincronizarEditorDeCombate();
+    }
 
 
     /* =====================================================
@@ -2258,7 +1433,14 @@ function iniciar() {
     configurarReset();
 
 
-    configurarCombate();
+    if (
+        typeof CombatModule !==
+        "undefined"
+    ) {
+
+        CombatModule.iniciar();
+
+    }
 
 
     atualizarInterface();
