@@ -3,25 +3,88 @@
    MÓDULO: CHARACTER
 ========================================================= */
 
-/*
-   Este arquivo será responsável por tudo relacionado
-   à identidade e evolução básica do personagem.
 
-   Por enquanto, o script.js continua sendo o responsável
-   pela execução principal.
-
-   Nesta primeira etapa estamos apenas preparando a
-   separação do sistema sem interferir nas outras áreas.
-*/
-
+/* =========================================================
+   CONFIGURAÇÕES
+========================================================= */
 
 const CharacterModule = (() => {
 
+    const MAX_LEVEL = 30;
+
+
     /* =====================================================
-       CONFIGURAÇÕES
+       RAÇAS
     ===================================================== */
 
-    const MAX_LEVEL = 30;
+    const RACES = {
+
+        "Humano": {
+            hp: 25,
+            mp: 15,
+            est: 30,
+            sanidade: 100,
+            atk: 4,
+            atkMgc: 4,
+            def: 8,
+            res: 8,
+            agi: 8,
+            int: 15
+        },
+
+        "Meio-elfo": {
+            hp: 23,
+            mp: 22,
+            est: 25,
+            sanidade: 100,
+            atk: 3,
+            atkMgc: 7,
+            def: 6,
+            res: 9,
+            agi: 10,
+            int: 15
+        },
+
+        "Elfo": {
+            hp: 22,
+            mp: 25,
+            est: 25,
+            sanidade: 100,
+            atk: 3,
+            atkMgc: 8,
+            def: 5,
+            res: 9,
+            agi: 12,
+            int: 16
+        },
+
+        "Semi-besta": {
+            hp: 30,
+            mp: 10,
+            est: 35,
+            sanidade: 90,
+            atk: 9,
+            atkMgc: 3,
+            def: 7,
+            res: 6,
+            agi: 10,
+            int: 10
+        },
+
+        "Besta": {
+            hp: 35,
+            mp: 8,
+            est: 40,
+            sanidade: 80,
+            atk: 11,
+            atkMgc: 2,
+            def: 6,
+            res: 5,
+            agi: 9,
+            int: 6
+        }
+
+    };
 
 
     /* =====================================================
@@ -50,173 +113,21 @@ const CharacterModule = (() => {
 
 
     /* =====================================================
-       XP NECESSÁRIO PARA O PRÓXIMO NÍVEL
+       XP NECESSÁRIO
     ===================================================== */
 
-    function getXPNecessario(level) {
+    function obterXPNecessario(level) {
 
-        if (level >= MAX_LEVEL) {
+        if (level < 10) {
 
-            return 0;
-
-        }
-
-
-        if (XP_LEVELS[level]) {
-
-            return XP_LEVELS[level];
+            return XP_LEVELS[level] || 100;
 
         }
 
 
-        /*
-           Depois do nível 15,
-           continua aumentando em 150 XP.
-        */
-
-        return 1950 + ((level - 15) * 150);
-
-    }
-
-
-    /* =====================================================
-       LIMITE DE NÍVEL
-    ===================================================== */
-
-    function getMaxLevel() {
-
-        return MAX_LEVEL;
-
-    }
-
-
-    /* =====================================================
-       PORCENTAGEM DE XP
-    ===================================================== */
-
-    function getXPProgress(level, xp) {
-
-        if (level >= MAX_LEVEL) {
-
-            return 100;
-
-        }
-
-
-        const necessario =
-            getXPNecessario(level);
-
-
-        if (necessario <= 0) {
-
-            return 0;
-
-        }
-
-
-        return Math.min(
-            100,
-            Math.max(
-                0,
-                (xp / necessario) * 100
-            )
+        return 1200 + (
+            Math.max(0, level - 10) * 150
         );
-
-    }
-
-
-    /* =====================================================
-       NOME DO PERSONAGEM
-    ===================================================== */
-
-    function definirNome(personagem, nome) {
-
-        if (!personagem) {
-
-            return;
-
-        }
-
-
-        const novoNome =
-            String(nome || "").trim();
-
-
-        personagem.name =
-            novoNome || "Personagem";
-
-    }
-
-
-    /* =====================================================
-       RAÇA
-    ===================================================== */
-
-    function definirRaca(personagem, raca) {
-
-        if (!personagem || !raca) {
-
-            return;
-
-        }
-
-
-        personagem.race = raca;
-
-    }
-
-
-    /* =====================================================
-       CLASSE
-    ===================================================== */
-
-    function definirClasse(personagem, classe) {
-
-        if (!personagem || !classe) {
-
-            return;
-
-        }
-
-
-        personagem.class = classe;
-
-    }
-
-
-    /* =====================================================
-       IMAGEM POR URL
-    ===================================================== */
-
-    function definirImagem(personagem, url) {
-
-        if (!personagem) {
-
-            return;
-
-        }
-
-
-        personagem.imageURL =
-            String(url || "").trim();
-
-    }
-
-
-    /* =====================================================
-       REMOVER IMAGEM
-    ===================================================== */
-
-    function removerImagem(personagem) {
-
-        if (!personagem) {
-
-            return;
-
-        }
-
-
-        personagem.imageURL = "";
 
     }
 
@@ -225,35 +136,111 @@ const CharacterModule = (() => {
        ADICIONAR XP
     ===================================================== */
 
-    function adicionarXP(personagem, quantidade) {
+    function adicionarXP(valor) {
 
-        if (!personagem) {
-
-            return;
-
-        }
+        valor =
+            Number(valor);
 
 
-        const valor =
-            Number(quantidade);
-
-
-        if (!Number.isFinite(valor) || valor <= 0) {
+        if (
+            !Number.isFinite(valor) ||
+            valor <= 0
+        ) {
 
             return;
 
         }
 
 
-        personagem.xp += valor;
+        const nivelAntes =
+            character.level;
+
+
+        character.xp += valor;
+
+
+        while (
+            character.level < MAX_LEVEL &&
+            character.xp >=
+            obterXPNecessario(
+                character.level
+            )
+        ) {
+
+            character.xp -=
+                obterXPNecessario(
+                    character.level
+                );
+
+
+            character.level++;
+
+
+            /*
+               Cada nível:
+               +3 pontos de atributo
+               +1 Sanidade
+            */
+
+            character.attributePoints += 3;
+
+            character.resources.sanidade++;
+
+
+            /*
+               A cada 3 níveis:
+               +5 HP
+               +5 MP
+               +5 EST
+            */
+
+            if (
+                character.level % 3 === 0
+            ) {
+
+                character.resources.hp += 5;
+
+                character.resources.mp += 5;
+
+                character.resources.est += 5;
+
+            }
+
+        }
+
+
+        if (
+            character.level >= MAX_LEVEL
+        ) {
+
+            character.level = MAX_LEVEL;
+
+            character.xp = 0;
+
+        }
 
 
         /*
-           A lógica de aplicação dos níveis continuará
-           temporariamente no script.js.
-
-           Isso é proposital nesta primeira etapa.
+           O sistema de brasão continua no
+           script principal.
         */
+
+        if (
+            typeof atualizarMarcosBrasao ===
+            "function"
+        ) {
+
+            atualizarMarcosBrasao(
+                nivelAntes,
+                character.level
+            );
+
+        }
+
+
+        atualizarInterface();
+
+        salvarPersonagem();
 
     }
 
@@ -262,121 +249,452 @@ const CharacterModule = (() => {
        REMOVER XP
     ===================================================== */
 
-    function removerXP(personagem, quantidade) {
+    function removerXP(valor) {
 
-        if (!personagem) {
-
-            return;
-
-        }
+        valor =
+            Number(valor);
 
 
-        const valor =
-            Number(quantidade);
-
-
-        if (!Number.isFinite(valor) || valor <= 0) {
+        if (
+            !Number.isFinite(valor) ||
+            valor <= 0
+        ) {
 
             return;
 
         }
 
 
-        personagem.xp =
-            Math.max(
-                0,
-                personagem.xp - valor
+        character.xp -= valor;
+
+
+        while (
+            character.xp < 0 &&
+            character.level > 1
+        ) {
+
+            character.level--;
+
+
+            character.xp +=
+                obterXPNecessario(
+                    character.level
+                );
+
+
+            character.attributePoints =
+                Math.max(
+                    0,
+                    character.attributePoints - 3
+                );
+
+
+            character.resources.sanidade =
+                Math.max(
+                    0,
+                    character.resources.sanidade - 1
+                );
+
+        }
+
+
+        if (
+            character.level <= 1
+        ) {
+
+            character.level = 1;
+
+            character.xp =
+                Math.max(
+                    0,
+                    character.xp
+                );
+
+        }
+
+
+        atualizarInterface();
+
+        salvarPersonagem();
+
+    }
+
+
+    /* =====================================================
+       ALTERAR RAÇA
+    ===================================================== */
+
+    function alterarRaca(raceName) {
+
+        const race =
+            RACES[raceName];
+
+
+        if (!race) {
+
+            return;
+
+        }
+
+
+        character.race =
+            raceName;
+
+
+        character.resources.hp =
+            race.hp;
+
+        character.resources.mp =
+            race.mp;
+
+        character.resources.est =
+            race.est;
+
+        character.resources.sanidade =
+            race.sanidade;
+
+
+        character.attributes.atk =
+            race.atk;
+
+        character.attributes.atkMgc =
+            race.atkMgc;
+
+        character.attributes.def =
+            race.def;
+
+        character.attributes.res =
+            race.res;
+
+        character.attributes.agi =
+            race.agi;
+
+        character.attributes.int =
+            race.int;
+
+
+        atualizarInterface();
+
+        salvarPersonagem();
+
+    }
+
+
+    /* =====================================================
+       EDITOR DO PERSONAGEM
+    ===================================================== */
+
+    function configurarEditor() {
+
+        const nameInput =
+            get("character-name-input");
+
+        const raceSelect =
+            get("character-race-select");
+
+        const classSelect =
+            get("character-class-select");
+
+
+        /* -------------------------------------------------
+           NOME
+        ------------------------------------------------- */
+
+        if (nameInput) {
+
+            nameInput.value =
+                character.name;
+
+
+            nameInput.addEventListener(
+                "input",
+                () => {
+
+                    character.name =
+                        nameInput.value ||
+                        "Personagem";
+
+
+                    atualizarInterface();
+
+                    salvarPersonagem();
+
+                }
             );
 
-    }
+        }
 
 
-    /* =====================================================
-       NÍVEL ATUAL
-    ===================================================== */
+        /* -------------------------------------------------
+           RAÇA
+        ------------------------------------------------- */
 
-    function getLevel(personagem) {
+        if (raceSelect) {
 
-        if (!personagem) {
+            raceSelect.value =
+                character.race;
 
-            return 1;
+
+            raceSelect.addEventListener(
+                "change",
+                () => {
+
+                    alterarRaca(
+                        raceSelect.value
+                    );
+
+                }
+            );
 
         }
 
 
-        return Math.max(
-            1,
-            Math.min(
-                MAX_LEVEL,
-                Number(personagem.level) || 1
-            )
-        );
+        /* -------------------------------------------------
+           CLASSE
+        ------------------------------------------------- */
+
+        if (classSelect) {
+
+            classSelect.value =
+                character.class;
+
+
+            classSelect.addEventListener(
+                "change",
+                () => {
+
+                    character.class =
+                        classSelect.value;
+
+
+                    atualizarInterface();
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           URL DA IMAGEM
+        ------------------------------------------------- */
+
+        const imageURL =
+            get("character-image-url");
+
+
+        if (imageURL) {
+
+            imageURL.value =
+                character.imageURL || "";
+
+        }
+
+
+        const applyImage =
+            get("apply-image-url");
+
+
+        if (applyImage) {
+
+            applyImage.addEventListener(
+                "click",
+                () => {
+
+                    character.imageURL =
+                        imageURL.value.trim();
+
+
+                    atualizarImagem();
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           REMOVER IMAGEM
+        ------------------------------------------------- */
+
+        const removeImage =
+            get("remove-image-button");
+
+
+        if (removeImage) {
+
+            removeImage.addEventListener(
+                "click",
+                () => {
+
+                    character.imageURL = "";
+
+
+                    if (imageURL) {
+
+                        imageURL.value = "";
+
+                    }
+
+
+                    atualizarImagem();
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
 
     }
 
 
     /* =====================================================
-       XP ATUAL
+       ATUALIZAR IMAGEM
     ===================================================== */
 
-    function getXP(personagem) {
+    function atualizarImagem() {
 
-        if (!personagem) {
+        const container =
+            get(
+                "character-art-container"
+            );
 
-            return 0;
+
+        if (!container) {
+
+            return;
 
         }
 
 
-        return Math.max(
-            0,
-            Number(personagem.xp) || 0
-        );
+        if (
+            character.imageURL
+        ) {
+
+            container.innerHTML = `
+                <img
+                    src="${escaparHTML(character.imageURL)}"
+                    alt="Imagem do personagem"
+                    class="character-image-display"
+                    onerror="this.style.display='none'; this.parentElement.classList.add('image-error');"
+                >
+            `;
+
+        } else {
+
+            container.innerHTML = `
+
+                <div class="image-placeholder">
+
+                    <span>
+                        IMAGEM DO PERSONAGEM
+                    </span>
+
+                    <span>
+                        Adicione uma imagem no editor
+                    </span>
+
+                </div>
+
+            `;
+
+        }
 
     }
 
 
     /* =====================================================
-       INFORMAÇÕES DO PERSONAGEM
+       SINCRONIZAR EDITOR
     ===================================================== */
 
-    function getInfo(personagem) {
+    function sincronizarEditor() {
 
-        if (!personagem) {
+        const name =
+            get("character-name-input");
 
-            return {
 
-                name: "Personagem",
-                race: "",
-                class: "",
-                level: 1,
-                xp: 0,
-                imageURL: ""
+        if (
+            name &&
+            document.activeElement !== name
+        ) {
 
-            };
+            name.value =
+                character.name;
 
         }
 
+
+        const race =
+            get("character-race-select");
+
+
+        if (race) {
+
+            race.value =
+                character.race;
+
+        }
+
+
+        const classSelect =
+            get("character-class-select");
+
+
+        if (classSelect) {
+
+            classSelect.value =
+                character.class;
+
+        }
+
+
+        const imageURL =
+            get("character-image-url");
+
+
+        if (
+            imageURL &&
+            document.activeElement !== imageURL
+        ) {
+
+            imageURL.value =
+                character.imageURL || "";
+
+        }
+
+    }
+
+
+    /* =====================================================
+       INFORMAÇÕES
+    ===================================================== */
+
+    function getInfo() {
 
         return {
 
             name:
-                personagem.name || "Personagem",
+                character.name,
 
             race:
-                personagem.race || "",
+                character.race,
 
             class:
-                personagem.class || "",
+                character.class,
 
             level:
-                getLevel(personagem),
+                character.level,
 
             xp:
-                getXP(personagem),
+                character.xp,
 
             imageURL:
-                personagem.imageURL || ""
+                character.imageURL
 
         };
 
@@ -389,33 +707,25 @@ const CharacterModule = (() => {
 
     return {
 
-        MAX_LEVEL,
+        RACES,
 
         XP_LEVELS,
 
-        getXPNecessario,
+        MAX_LEVEL,
 
-        getMaxLevel,
-
-        getXPProgress,
-
-        definirNome,
-
-        definirRaca,
-
-        definirClasse,
-
-        definirImagem,
-
-        removerImagem,
+        obterXPNecessario,
 
         adicionarXP,
 
         removerXP,
 
-        getLevel,
+        alterarRaca,
 
-        getXP,
+        configurarEditor,
+
+        atualizarImagem,
+
+        sincronizarEditor,
 
         getInfo
 
