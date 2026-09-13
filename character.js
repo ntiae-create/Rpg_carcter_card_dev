@@ -732,3 +732,17 @@ const CharacterModule = (() => {
     };
 
 })();
+nameInput.addEventListener(
+    "input",
+    () => {
+
+        character.name =
+            nameInput.value ||
+            "Personagem";
+
+        atualizarInterface();
+
+        salvarPersonagem();
+
+    }
+);
