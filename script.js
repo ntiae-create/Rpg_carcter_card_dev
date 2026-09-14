@@ -1112,46 +1112,141 @@ function atualizarBrasao() {
    TESTE DE LEITURA DO SUPABASE
 ========================================================= */
 
-/*
-   Esta função NÃO altera o personagem.
-
-   Ela apenas verifica se o personagem da campanha
-   pode ser encontrado no banco.
-
-   Será removida/substituída quando começarmos
-   a sincronização definitiva.
-*/
-
 async function testarLeituraPersonagemSupabase() {
+
+    mostrarResultadoSupabase(
+        "🔎 Testando conexão com o Supabase...",
+        "info"
+    );
+
+
+    console.log(
+        "========== TESTE SUPABASE =========="
+    );
+
+
+    /* -----------------------------------------------------
+       1. SUPABASE
+    ----------------------------------------------------- */
 
     if (
         !window.supabaseClient
     ) {
 
-        console.warn(
-            "Supabase ainda não está disponível."
+        console.error(
+            "❌ window.supabaseClient não existe."
         );
+
+
+        mostrarResultadoSupabase(
+            "❌ Supabase não foi inicializado.",
+            "erro"
+        );
+
 
         return;
 
     }
 
 
-    /*
-       Espera a autenticação terminar de
-       identificar usuário e campanha.
-    */
+    console.log(
+        "✅ supabaseClient encontrado."
+    );
+
+
+    /* -----------------------------------------------------
+       2. AUTENTICAÇÃO
+    ----------------------------------------------------- */
 
     if (
-        !window.rpgAuth ||
-        !window.rpgAuth.user ||
+        !window.rpgAuth
+    ) {
+
+        console.error(
+            "❌ window.rpgAuth não existe."
+        );
+
+
+        mostrarResultadoSupabase(
+            "❌ Sistema de autenticação ainda não foi carregado.",
+            "erro"
+        );
+
+
+        return;
+
+    }
+
+
+    console.log(
+        "rpgAuth:",
+        window.rpgAuth
+    );
+
+
+    /* -----------------------------------------------------
+       3. USUÁRIO
+    ----------------------------------------------------- */
+
+    if (
+        !window.rpgAuth.user
+    ) {
+
+        console.warn(
+            "⚠️ rpgAuth existe, mas nenhum usuário foi encontrado."
+        );
+
+
+        mostrarResultadoSupabase(
+            "⚠️ Usuário não encontrado na sessão do Supabase.",
+            "aviso"
+        );
+
+
+        return;
+
+    }
+
+
+    console.log(
+        "✅ Usuário encontrado:",
+        window.rpgAuth.user.id
+    );
+
+
+    /* -----------------------------------------------------
+       4. CAMPANHA
+    ----------------------------------------------------- */
+
+    if (
         !window.rpgAuth.campaign
     ) {
 
+        console.warn(
+            "⚠️ Usuário encontrado, mas campanha não foi encontrada."
+        );
+
+
+        mostrarResultadoSupabase(
+            "⚠️ Usuário autenticado, mas nenhuma campanha foi encontrada.",
+            "aviso"
+        );
+
+
         return;
 
     }
 
+
+    console.log(
+        "✅ Campanha encontrada:",
+        window.rpgAuth.campaign
+    );
+
+
+    /* -----------------------------------------------------
+       5. CONSULTA DO PERSONAGEM
+    ----------------------------------------------------- */
 
     try {
 
@@ -1178,14 +1273,16 @@ async function testarLeituraPersonagemSupabase() {
         if (error) {
 
             console.error(
-                "Erro ao ler personagem do Supabase:",
+                "❌ Erro retornado pelo Supabase:",
                 error
             );
 
+
             mostrarResultadoSupabase(
-                "❌ Erro ao ler o personagem no Supabase.",
-                false
+                `❌ Supabase respondeu com erro: ${error.message}`,
+                "erro"
             );
+
 
             return;
 
@@ -1195,13 +1292,15 @@ async function testarLeituraPersonagemSupabase() {
         if (!data) {
 
             console.warn(
-                "Nenhum personagem encontrado para este usuário."
+                "⚠️ Consulta funcionou, mas nenhum personagem foi encontrado."
             );
 
+
             mostrarResultadoSupabase(
-                "⚠️ Nenhum personagem encontrado no Supabase.",
-                false
+                "⚠️ Conexão funcionando, mas nenhum personagem foi encontrado para esta conta/campanha.",
+                "aviso"
             );
+
 
             return;
 
@@ -1209,28 +1308,30 @@ async function testarLeituraPersonagemSupabase() {
 
 
         console.log(
-            "✅ Personagem encontrado no Supabase:",
+            "✅ PERSONAGEM ENCONTRADO:",
             data
         );
 
 
         mostrarResultadoSupabase(
-            `✅ Supabase encontrou: ${data.name} — LV. ${data.level}`,
-            true
+            `✅ SUPABASE OK — ${data.name} | LV. ${data.level}`,
+            "sucesso"
         );
 
 
-    } catch (error) {
+    }
+
+    catch (error) {
 
         console.error(
-            "Falha ao ler personagem do Supabase:",
+            "❌ Falha inesperada:",
             error
         );
 
 
         mostrarResultadoSupabase(
-            "❌ Falha na leitura do personagem.",
-            false
+            "❌ Falha inesperada ao consultar o Supabase.",
+            "erro"
         );
 
     }
@@ -1244,7 +1345,7 @@ async function testarLeituraPersonagemSupabase() {
 
 function mostrarResultadoSupabase(
     texto,
-    sucesso
+    tipo = "info"
 ) {
 
     const existente =
@@ -1256,10 +1357,41 @@ function mostrarResultadoSupabase(
         existente.textContent =
             texto;
 
-        existente.style.color =
-            sucesso
-                ? "#86efac"
-                : "#fca5a5";
+
+        if (
+            tipo === "sucesso"
+        ) {
+
+            existente.style.color =
+                "#86efac";
+
+        }
+
+        else if (
+            tipo === "erro"
+        ) {
+
+            existente.style.color =
+                "#fca5a5";
+
+        }
+
+        else if (
+            tipo === "aviso"
+        ) {
+
+            existente.style.color =
+                "#fde68a";
+
+        }
+
+        else {
+
+            existente.style.color =
+                "#c4b5fd";
+
+        }
+
 
         return;
 
@@ -1289,38 +1421,21 @@ function mostrarResultadoSupabase(
             transform: "translateX(-50%)",
             zIndex: "9998",
             width: "min(92vw, 500px)",
-            padding: "10px 14px",
+            padding: "12px 15px",
             borderRadius: "12px",
-            background: "rgba(11, 9, 16, 0.96)",
+            background: "rgba(11, 9, 16, 0.97)",
             border: "1px solid #6f3aa8",
             boxShadow: "0 0 20px rgba(124, 58, 237, 0.25)",
             textAlign: "center",
             fontFamily: "Arial, sans-serif",
             fontSize: "12px",
-            color: sucesso
-                ? "#86efac"
-                : "#fca5a5"
+            color: "#c4b5fd"
         }
     );
 
 
     document.body.appendChild(
         mensagem
-    );
-
-
-    /*
-       O aviso desaparece sozinho depois
-       de alguns segundos.
-    */
-
-    setTimeout(
-        () => {
-
-            mensagem.remove();
-
-        },
-        5000
     );
 
 }
@@ -1600,15 +1715,22 @@ function iniciar() {
     atualizarInterface();
 
 
-    /*
-       O auth.js pode ainda estar terminando
-       de carregar a sessão/campanha.
+    /* -----------------------------------------------------
+       DIAGNÓSTICO SUPABASE
+    ----------------------------------------------------- */
 
-       Por isso verificamos algumas vezes.
-       Isso NÃO modifica o personagem.
+    console.log(
+        "🚀 Sistema iniciado. Aguardando autenticação..."
+    );
+
+
+    /*
+       Em vez de desistir silenciosamente,
+       vamos verificar por até 15 segundos.
     */
 
-    let tentativas = 0;
+    let tentativas =
+        0;
 
 
     const verificarSupabase =
@@ -1618,7 +1740,32 @@ function iniciar() {
                 tentativas++;
 
 
+                console.log(
+                    `🔎 Verificação Supabase ${tentativas}/60`,
+                    {
+                        supabase:
+                            !!window.supabaseClient,
+
+                        rpgAuth:
+                            !!window.rpgAuth,
+
+                        user:
+                            !!(
+                                window.rpgAuth &&
+                                window.rpgAuth.user
+                            ),
+
+                        campaign:
+                            !!(
+                                window.rpgAuth &&
+                                window.rpgAuth.campaign
+                            )
+                    }
+                );
+
+
                 if (
+                    window.supabaseClient &&
                     window.rpgAuth &&
                     window.rpgAuth.user &&
                     window.rpgAuth.campaign
@@ -1631,13 +1778,70 @@ function iniciar() {
 
                     testarLeituraPersonagemSupabase();
 
+
                     return;
 
                 }
 
 
+                /*
+                   Mostra um diagnóstico
+                   enquanto aguarda.
+                */
+
                 if (
-                    tentativas >= 20
+                    tentativas === 10
+                ) {
+
+                    if (
+                        !window.supabaseClient
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "❌ Supabase ainda não foi inicializado.",
+                            "erro"
+                        );
+
+                    }
+
+                    else if (
+                        !window.rpgAuth
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "⏳ Supabase carregado. Aguardando sistema de autenticação...",
+                            "info"
+                        );
+
+                    }
+
+                    else if (
+                        !window.rpgAuth.user
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "⏳ Aguardando usuário autenticado...",
+                            "info"
+                        );
+
+                    }
+
+                    else if (
+                        !window.rpgAuth.campaign
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "⏳ Usuário encontrado. Aguardando campanha...",
+                            "info"
+                        );
+
+                    }
+
+                }
+
+
+                if (
+                    tentativas >= 60
                 ) {
 
                     clearInterval(
@@ -1645,9 +1849,54 @@ function iniciar() {
                     );
 
 
-                    console.warn(
-                        "Não foi possível identificar usuário/campanha para o teste do Supabase."
+                    console.error(
+                        "❌ Diagnóstico Supabase encerrado após 15 segundos."
                     );
+
+
+                    if (
+                        !window.supabaseClient
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "❌ Diagnóstico: Supabase não foi carregado.",
+                            "erro"
+                        );
+
+                    }
+
+                    else if (
+                        !window.rpgAuth
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "❌ Diagnóstico: auth.js não criou window.rpgAuth.",
+                            "erro"
+                        );
+
+                    }
+
+                    else if (
+                        !window.rpgAuth.user
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "❌ Diagnóstico: usuário não está disponível na sessão.",
+                            "erro"
+                        );
+
+                    }
+
+                    else if (
+                        !window.rpgAuth.campaign
+                    ) {
+
+                        mostrarResultadoSupabase(
+                            "❌ Diagnóstico: usuário existe, mas a campanha não foi carregada.",
+                            "erro"
+                        );
+
+                    }
 
                 }
 
