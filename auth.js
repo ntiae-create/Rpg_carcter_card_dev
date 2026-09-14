@@ -5,6 +5,7 @@
 (function () {
     "use strict";
 
+
     // ==========================================
     // ESTADO DA AUTENTICAÇÃO
     // ==========================================
@@ -29,7 +30,8 @@
 
         if (!mensagem) return;
 
-        mensagem.textContent = texto;
+        mensagem.textContent =
+            texto;
 
         mensagem.style.color =
             sucesso
@@ -39,96 +41,299 @@
 
 
     // ==========================================
+    // DIAGNÓSTICO VISUAL
+    // ==========================================
+
+    function mostrarDiagnostico(texto, tipo = "info") {
+
+        let elemento =
+            document.getElementById(
+                "auth-diagnostic"
+            );
+
+
+        if (!elemento) {
+
+            elemento =
+                document.createElement("div");
+
+
+            elemento.id =
+                "auth-diagnostic";
+
+
+            Object.assign(
+                elemento.style,
+                {
+                    position: "fixed",
+                    bottom: "15px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    zIndex: "99999",
+                    width: "min(92vw, 520px)",
+                    padding: "12px 15px",
+                    borderRadius: "12px",
+                    background: "rgba(11, 9, 16, 0.97)",
+                    border: "1px solid #6f3aa8",
+                    boxShadow:
+                        "0 0 20px rgba(124, 58, 237, 0.30)",
+                    textAlign: "center",
+                    fontFamily: "Arial, sans-serif",
+                    fontSize: "12px",
+                    lineHeight: "1.5"
+                }
+            );
+
+
+            document.body.appendChild(
+                elemento
+            );
+
+        }
+
+
+        if (tipo === "sucesso") {
+
+            elemento.style.color =
+                "#86efac";
+
+        }
+
+        else if (tipo === "erro") {
+
+            elemento.style.color =
+                "#fca5a5";
+
+        }
+
+        else if (tipo === "aviso") {
+
+            elemento.style.color =
+                "#fde68a";
+
+        }
+
+        else {
+
+            elemento.style.color =
+                "#c4b5fd";
+
+        }
+
+
+        elemento.textContent =
+            texto;
+
+    }
+
+
+    // ==========================================
     // CARREGAR CAMPANHAS DO USUÁRIO
     // ==========================================
 
     async function carregarCampanhas(user) {
 
+        console.log(
+            "========== CARREGANDO CAMPANHAS =========="
+        );
+
+
         if (!window.supabaseClient) {
+
             console.error(
-                "Supabase Client não encontrado."
+                "❌ Supabase Client não encontrado."
             );
 
+
+            mostrarDiagnostico(
+                "❌ Supabase Client não encontrado.",
+                "erro"
+            );
+
+
             return false;
         }
 
+
         if (!user) {
+
+            console.error(
+                "❌ Usuário não encontrado."
+            );
+
+
+            mostrarDiagnostico(
+                "❌ Usuário não encontrado.",
+                "erro"
+            );
+
+
             return false;
         }
+
+
+        console.log(
+            "Usuário:",
+            user
+        );
+
+
+        console.log(
+            "ID do usuário:",
+            user.id
+        );
+
+
+        mostrarDiagnostico(
+            "🔎 Usuário encontrado. Consultando campanhas...",
+            "info"
+        );
+
 
         try {
 
-            const { data, error } =
+            const {
+                data,
+                error
+            } =
                 await window.supabaseClient
                     .from("campaigns")
                     .select(
                         "id, name, master_id, created_at"
                     )
-                    .eq("master_id", user.id);
+                    .eq(
+                        "master_id",
+                        user.id
+                    );
+
+
+            console.log(
+                "Resultado da consulta campaigns:",
+                {
+                    data: data,
+                    error: error
+                }
+            );
+
+
+            // ==================================
+            // ERRO
+            // ==================================
 
             if (error) {
 
                 console.error(
-                    "Erro ao carregar campanhas:",
+                    "❌ ERRO AO CONSULTAR CAMPAIGNS:",
                     error
                 );
+
+
+                mostrarDiagnostico(
+                    `❌ Erro ao consultar campanhas: ${error.message}`,
+                    "erro"
+                );
+
 
                 return false;
             }
 
 
+            // ==================================
+            // RESULTADO
+            // ==================================
+
             window.rpgAuth.campaigns =
                 data || [];
 
 
-            window.rpgAuth.isMaster =
-                window.rpgAuth.campaigns.length > 0;
+            console.log(
+                "Quantidade de campanhas:",
+                window.rpgAuth.campaigns.length
+            );
 
 
             // ==================================
-            // CAMPANHA PRINCIPAL
+            // NENHUMA CAMPANHA
             // ==================================
 
-            if (window.rpgAuth.campaigns.length > 0) {
+            if (
+                window.rpgAuth.campaigns.length === 0
+            ) {
 
                 window.rpgAuth.campaign =
-                    window.rpgAuth.campaigns[0];
+                    null;
 
-            } else {
 
-                window.rpgAuth.campaign = null;
+                window.rpgAuth.isMaster =
+                    false;
+
+
+                console.warn(
+                    "⚠️ A consulta funcionou, mas retornou ZERO campanhas."
+                );
+
+
+                mostrarDiagnostico(
+                    "⚠️ Usuário autenticado, mas a consulta retornou 0 campanhas.",
+                    "aviso"
+                );
+
+
+                return true;
             }
 
 
+            // ==================================
+            // CAMPANHAS ENCONTRADAS
+            // ==================================
+
+            window.rpgAuth.isMaster =
+                true;
+
+
+            window.rpgAuth.campaign =
+                window.rpgAuth.campaigns[0];
+
+
             console.log(
-                "Campanhas do usuário:",
+                "✅ CAMPANHAS ENCONTRADAS:",
                 window.rpgAuth.campaigns
             );
 
 
             console.log(
-                "Campanha selecionada:",
+                "✅ CAMPANHA SELECIONADA:",
                 window.rpgAuth.campaign
             );
 
 
-            console.log(
-                "Usuário é Mestre:",
-                window.rpgAuth.isMaster
+            mostrarDiagnostico(
+                `✅ Campanha encontrada: ${window.rpgAuth.campaign.name}`,
+                "sucesso"
             );
 
 
             return true;
 
-        } catch (error) {
+        }
+
+        catch (error) {
 
             console.error(
-                "Falha ao carregar campanhas:",
+                "❌ EXCEÇÃO AO CARREGAR CAMPANHAS:",
                 error
             );
 
+
+            mostrarDiagnostico(
+                `❌ Falha ao carregar campanhas: ${error.message}`,
+                "erro"
+            );
+
+
             return false;
         }
+
     }
 
 
@@ -138,8 +343,14 @@
 
     async function atualizarEstadoSessao(session) {
 
+        console.log(
+            "========== ATUALIZANDO SESSÃO =========="
+        );
+
+
         window.rpgAuth.session =
             session || null;
+
 
         window.rpgAuth.user =
             session?.user || null;
@@ -147,17 +358,35 @@
 
         if (!session?.user) {
 
-            window.rpgAuth.campaign = null;
-            window.rpgAuth.campaigns = [];
-            window.rpgAuth.isMaster = false;
+            console.log(
+                "Nenhuma sessão ativa."
+            );
+
+
+            window.rpgAuth.campaign =
+                null;
+
+            window.rpgAuth.campaigns =
+                [];
+
+            window.rpgAuth.isMaster =
+                false;
+
 
             return;
         }
 
 
+        console.log(
+            "Sessão ativa para:",
+            session.user.email
+        );
+
+
         await carregarCampanhas(
             session.user
         );
+
     }
 
 
@@ -195,13 +424,18 @@
         );
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await window.supabaseClient.auth
                 .signInWithPassword({
 
-                    email: email.trim(),
+                    email:
+                        email.trim(),
 
-                    password: senha
+                    password:
+                        senha
 
                 });
 
@@ -213,9 +447,11 @@
                 error
             );
 
+
             mostrarMensagem(
                 "Não foi possível entrar. Verifique e-mail e senha."
             );
+
 
             return false;
         }
@@ -239,6 +475,7 @@
 
 
         return true;
+
     }
 
 
@@ -257,7 +494,9 @@
                 "auth-login-panel"
             )
         ) {
+
             return;
+
         }
 
 
@@ -422,6 +661,7 @@
                 if (sucesso) {
 
                     painel.remove();
+
                 }
 
             }
@@ -437,6 +677,7 @@
                 ) {
 
                     botao.click();
+
                 }
 
             }
@@ -444,6 +685,7 @@
 
 
         email.focus();
+
     }
 
 
@@ -453,17 +695,33 @@
 
     async function iniciarAutenticacao() {
 
+        console.log(
+            "========== INICIANDO AUTENTICAÇÃO =========="
+        );
+
+
         if (!window.supabaseClient) {
 
             console.error(
                 "Supabase Client não encontrado."
             );
 
+
+            mostrarDiagnostico(
+                "❌ Supabase Client não encontrado.",
+                "erro"
+            );
+
+
             return;
+
         }
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await window.supabaseClient.auth
                 .getSession();
 
@@ -475,9 +733,18 @@
                 error
             );
 
+
+            mostrarDiagnostico(
+                `❌ Erro ao recuperar sessão: ${error.message}`,
+                "erro"
+            );
+
+
             criarPainelLogin();
 
+
             return;
+
         }
 
 
@@ -494,10 +761,17 @@
 
 
             return;
+
         }
 
 
+        console.log(
+            "Nenhuma sessão encontrada."
+        );
+
+
         criarPainelLogin();
+
     }
 
 
@@ -507,7 +781,7 @@
 
     window.supabaseClient?.auth
         .onAuthStateChange(
-            async function (
+            function (
                 event,
                 session
             ) {
@@ -518,8 +792,23 @@
                 );
 
 
-                await atualizarEstadoSessao(
-                    session
+                /*
+                   Não usamos await diretamente
+                   dentro do callback do Supabase.
+
+                   Colocamos o processamento em
+                   uma tarefa separada.
+                */
+
+                setTimeout(
+                    () => {
+
+                        atualizarEstadoSessao(
+                            session
+                        );
+
+                    },
+                    0
                 );
 
             }
@@ -540,7 +829,9 @@
             iniciarAutenticacao
         );
 
-    } else {
+    }
+
+    else {
 
         iniciarAutenticacao();
 
