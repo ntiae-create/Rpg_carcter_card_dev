@@ -92,26 +92,79 @@
 
 
         // --------------------------------------
-        // VERIFICAR CAMPANHA
+        // ESPERAR CAMPANHA
         // --------------------------------------
 
-        if (
-            !window.rpgCampaign
+        let campanha = null;
+
+        let tentativasCampanha = 0;
+
+        const limiteCampanha = 40;
+
+
+        while (
+            !campanha &&
+            tentativasCampanha < limiteCampanha
         ) {
 
-            console.log(
-                "ℹ️ Mesa.js: Campaign.js ainda não está disponível."
-            );
+            // ----------------------------------
+            // TENTAR CAMPAIGN.JS
+            // ----------------------------------
 
-            return;
+            if (
+                window.obterCampanhaAtiva
+            ) {
+
+                campanha =
+                    window.obterCampanhaAtiva();
+
+            }
+
+
+            // ----------------------------------
+            // FALLBACK: AUTH.JS
+            // ----------------------------------
+
+            if (
+                !campanha &&
+                window.rpgAuth &&
+                window.rpgAuth.campaign
+            ) {
+
+                campanha =
+                    window.rpgAuth.campaign;
+
+            }
+
+
+            // ----------------------------------
+            // SE AINDA NÃO EXISTIR
+            // ----------------------------------
+
+            if (!campanha) {
+
+                await new Promise(
+                    function (resolve) {
+
+                        setTimeout(
+                            resolve,
+                            250
+                        );
+
+                    }
+                );
+
+            }
+
+
+            tentativasCampanha++;
+
         }
 
 
-        const campanha =
-            window.obterCampanhaAtiva
-                ? window.obterCampanhaAtiva()
-                : null;
-
+        // --------------------------------------
+        // VERIFICAR CAMPANHA
+        // --------------------------------------
 
         if (!campanha) {
 
