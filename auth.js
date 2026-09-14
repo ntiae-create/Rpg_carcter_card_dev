@@ -80,7 +80,9 @@
                     textAlign: "center",
                     fontFamily: "Arial, sans-serif",
                     fontSize: "12px",
-                    lineHeight: "1.5"
+                    lineHeight: "1.5",
+                    opacity: "1",
+                    transition: "opacity 0.4s ease"
                 }
             );
 
@@ -91,6 +93,23 @@
 
         }
 
+
+        // ==================================
+        // CANCELAR REMOÇÃO ANTERIOR
+        // ==================================
+
+        if (elemento._diagnosticoTimer) {
+
+            clearTimeout(
+                elemento._diagnosticoTimer
+            );
+
+        }
+
+
+        // ==================================
+        // DEFINIR COR
+        // ==================================
 
         if (tipo === "sucesso") {
 
@@ -121,8 +140,74 @@
         }
 
 
+        // ==================================
+        // MOSTRAR
+        // ==================================
+
+        elemento.style.opacity =
+            "1";
+
         elemento.textContent =
             texto;
+
+
+        // ==================================
+        // TEMPO DE EXIBIÇÃO
+        // ==================================
+
+        let tempo = 3000;
+
+
+        if (tipo === "erro") {
+
+            tempo = 6000;
+
+        }
+
+        else if (tipo === "aviso") {
+
+            tempo = 4500;
+
+        }
+
+        else if (tipo === "info") {
+
+            tempo = 2500;
+
+        }
+
+
+        // ==================================
+        // REMOVER AUTOMATICAMENTE
+        // ==================================
+
+        elemento._diagnosticoTimer =
+            setTimeout(
+                function () {
+
+                    elemento.style.opacity =
+                        "0";
+
+
+                    setTimeout(
+                        function () {
+
+                            if (
+                                elemento &&
+                                elemento.parentNode
+                            ) {
+
+                                elemento.remove();
+
+                            }
+
+                        },
+                        400
+                    );
+
+                },
+                tempo
+            );
 
     }
 
