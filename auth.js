@@ -15,7 +15,14 @@
         session: null,
         campaign: null,
         campaigns: [],
-        isMaster: false
+        isMaster: false,
+
+        // ==================================
+        // NOVOS DADOS DA CAMPANHA
+        // ==================================
+
+        campaignMembers: [],
+        campaignCharacters: []
     };
 
 
@@ -213,6 +220,406 @@
 
 
     // ==========================================
+    // LIMPAR DADOS DA CAMPANHA
+    // ==========================================
+
+    function limparDadosCampanha() {
+
+        window.rpgAuth.campaign =
+            null;
+
+        window.rpgAuth.campaigns =
+            [];
+
+        window.rpgAuth.isMaster =
+            false;
+
+        window.rpgAuth.campaignMembers =
+            [];
+
+        window.rpgAuth.campaignCharacters =
+            [];
+
+    }
+
+
+    // ==========================================
+    // CARREGAR MEMBROS DA CAMPANHA
+    // ==========================================
+
+    async function carregarMembrosCampanha(
+        campaignId
+    ) {
+
+        if (!window.supabaseClient) {
+
+            console.error(
+                "❌ Supabase Client não encontrado ao carregar membros."
+            );
+
+            return false;
+        }
+
+
+        if (!campaignId) {
+
+            console.warn(
+                "⚠️ Campaign ID não informado."
+            );
+
+            window.rpgAuth.campaignMembers =
+                [];
+
+            return false;
+        }
+
+
+        console.log(
+            "========== CARREGANDO MEMBROS DA CAMPANHA =========="
+        );
+
+
+        console.log(
+            "Campaign ID:",
+            campaignId
+        );
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient
+                    .from("campaign_members")
+                    .select(
+                        "id, campaign_id, user_id"
+                    )
+                    .eq(
+                        "campaign_id",
+                        campaignId
+                    );
+
+
+            console.log(
+                "Resultado campaign_members:",
+                {
+                    data: data,
+                    error: error
+                }
+            );
+
+
+            if (error) {
+
+                console.error(
+                    "❌ ERRO AO CONSULTAR CAMPAIGN_MEMBERS:",
+                    error
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ Erro ao carregar jogadores: ${error.message}`,
+                    "erro"
+                );
+
+
+                window.rpgAuth.campaignMembers =
+                    [];
+
+                return false;
+            }
+
+
+            window.rpgAuth.campaignMembers =
+                data || [];
+
+
+            console.log(
+                "✅ Membros encontrados:",
+                window.rpgAuth.campaignMembers
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ EXCEÇÃO AO CARREGAR MEMBROS:",
+                error
+            );
+
+
+            window.rpgAuth.campaignMembers =
+                [];
+
+            return false;
+        }
+
+    }
+
+
+    // ==========================================
+    // CARREGAR PERSONAGENS DA CAMPANHA
+    // ==========================================
+
+    async function carregarPersonagensCampanha(
+        campaignId
+    ) {
+
+        if (!window.supabaseClient) {
+
+            console.error(
+                "❌ Supabase Client não encontrado ao carregar personagens."
+            );
+
+            return false;
+        }
+
+
+        if (!campaignId) {
+
+            window.rpgAuth.campaignCharacters =
+                [];
+
+            return false;
+        }
+
+
+        console.log(
+            "========== CARREGANDO PERSONAGENS DA CAMPANHA =========="
+        );
+
+
+        // ==================================
+        // OBTER IDS DOS MEMBROS
+        // ==================================
+
+        const membros =
+            window.rpgAuth.campaignMembers || [];
+
+
+        const userIds =
+            membros
+                .map(
+                    membro =>
+                        membro.user_id
+                )
+                .filter(
+                    id =>
+                        !!id
+                );
+
+
+        // ==================================
+        // GARANTIR QUE O MESTRE TAMBÉM
+        // POSSA SER ENCONTRADO
+        // ==================================
+
+        if (
+            window.rpgAuth.campaign &&
+            window.rpgAuth.campaign.master_id
+        ) {
+
+            if (
+                !userIds.includes(
+                    window.rpgAuth.campaign.master_id
+                )
+            ) {
+
+                userIds.push(
+                    window.rpgAuth.campaign.master_id
+                );
+
+            }
+
+        }
+
+
+        console.log(
+            "Usuários que serão consultados:",
+            userIds
+        );
+
+
+        // ==================================
+        // NENHUM USUÁRIO
+        // ==================================
+
+        if (
+            userIds.length === 0
+        ) {
+
+            window.rpgAuth.campaignCharacters =
+                [];
+
+            console.warn(
+                "⚠️ Nenhum usuário encontrado para consultar personagens."
+            );
+
+            return true;
+        }
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient
+                    .from("characters")
+                    .select("*")
+                    .eq(
+                        "campaign_id",
+                        campaignId
+                    )
+                    .in(
+                        "user_id",
+                        userIds
+                    );
+
+
+            console.log(
+                "Resultado characters:",
+                {
+                    data: data,
+                    error: error
+                }
+            );
+
+
+            if (error) {
+
+                console.error(
+                    "❌ ERRO AO CONSULTAR CHARACTERS:",
+                    error
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ Erro ao carregar personagens: ${error.message}`,
+                    "erro"
+                );
+
+
+                window.rpgAuth.campaignCharacters =
+                    [];
+
+                return false;
+            }
+
+
+            window.rpgAuth.campaignCharacters =
+                data || [];
+
+
+            console.log(
+                "✅ Personagens encontrados:",
+                window.rpgAuth.campaignCharacters
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ EXCEÇÃO AO CARREGAR PERSONAGENS:",
+                error
+            );
+
+
+            window.rpgAuth.campaignCharacters =
+                [];
+
+            return false;
+        }
+
+    }
+
+
+    // ==========================================
+    // CARREGAR DADOS COMPLETOS DA CAMPANHA
+    // ==========================================
+
+    async function carregarDadosCampanha() {
+
+        if (
+            !window.rpgAuth.campaign
+        ) {
+
+            window.rpgAuth.campaignMembers =
+                [];
+
+            window.rpgAuth.campaignCharacters =
+                [];
+
+            return false;
+        }
+
+
+        const campaignId =
+            window.rpgAuth.campaign.id;
+
+
+        const membrosCarregados =
+            await carregarMembrosCampanha(
+                campaignId
+            );
+
+
+        if (!membrosCarregados) {
+
+            return false;
+        }
+
+
+        await carregarPersonagensCampanha(
+            campaignId
+        );
+
+
+        console.log(
+            "=========================================="
+        );
+
+        console.log(
+            "📋 DADOS DA CAMPANHA PRONTOS"
+        );
+
+        console.log(
+            "Campanha:",
+            window.rpgAuth.campaign
+        );
+
+        console.log(
+            "Membros:",
+            window.rpgAuth.campaignMembers
+        );
+
+        console.log(
+            "Personagens:",
+            window.rpgAuth.campaignCharacters
+        );
+
+        console.log(
+            "=========================================="
+        );
+
+
+        return true;
+
+    }
+
+
+    // ==========================================
     // CARREGAR CAMPANHAS DO USUÁRIO
     // ==========================================
 
@@ -277,9 +684,13 @@
 
         try {
 
+            // ==================================
+            // 1. CAMPANHAS ONDE É MESTRE
+            // ==================================
+
             const {
-                data,
-                error
+                data: campanhasMestre,
+                error: erroMestre
             } =
                 await window.supabaseClient
                     .from("campaigns")
@@ -292,29 +703,16 @@
                     );
 
 
-            console.log(
-                "Resultado da consulta campaigns:",
-                {
-                    data: data,
-                    error: error
-                }
-            );
-
-
-            // ==================================
-            // ERRO
-            // ==================================
-
-            if (error) {
+            if (erroMestre) {
 
                 console.error(
-                    "❌ ERRO AO CONSULTAR CAMPAIGNS:",
-                    error
+                    "❌ ERRO AO CONSULTAR CAMPANHAS DO MESTRE:",
+                    erroMestre
                 );
 
 
                 mostrarDiagnostico(
-                    `❌ Erro ao consultar campanhas: ${error.message}`,
+                    `❌ Erro ao consultar campanhas: ${erroMestre.message}`,
                     "erro"
                 );
 
@@ -323,16 +721,192 @@
             }
 
 
+            console.log(
+                "Campanhas onde é Mestre:",
+                campanhasMestre
+            );
+
+
             // ==================================
-            // RESULTADO
+            // 2. CAMPANHAS ONDE É MEMBRO
             // ==================================
 
-            window.rpgAuth.campaigns =
-                data || [];
+            const {
+                data: participacoes,
+                error: erroParticipacoes
+            } =
+                await window.supabaseClient
+                    .from("campaign_members")
+                    .select(
+                        "id, campaign_id, user_id"
+                    )
+                    .eq(
+                        "user_id",
+                        user.id
+                    );
+
+
+            if (erroParticipacoes) {
+
+                console.error(
+                    "❌ ERRO AO CONSULTAR PARTICIPAÇÕES:",
+                    erroParticipacoes
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ Erro ao consultar participações: ${erroParticipacoes.message}`,
+                    "erro"
+                );
+
+
+                return false;
+            }
 
 
             console.log(
-                "Quantidade de campanhas:",
+                "Participações do usuário:",
+                participacoes
+            );
+
+
+            // ==================================
+            // 3. IDS DAS CAMPANHAS DOS MEMBROS
+            // ==================================
+
+            const campaignIds =
+                (participacoes || [])
+                    .map(
+                        membro =>
+                            membro.campaign_id
+                    )
+                    .filter(
+                        id =>
+                            !!id
+                    );
+
+
+            // ==================================
+            // 4. BUSCAR CAMPANHAS DOS MEMBROS
+            // ==================================
+
+            let campanhasMembro =
+                [];
+
+
+            if (
+                campaignIds.length > 0
+            ) {
+
+                const {
+                    data,
+                    error
+                } =
+                    await window.supabaseClient
+                        .from("campaigns")
+                        .select(
+                            "id, name, master_id, created_at"
+                        )
+                        .in(
+                            "id",
+                            campaignIds
+                        );
+
+
+                if (error) {
+
+                    console.error(
+                        "❌ ERRO AO CONSULTAR CAMPANHAS DOS MEMBROS:",
+                        error
+                    );
+
+
+                    mostrarDiagnostico(
+                        `❌ Erro ao consultar campanhas: ${error.message}`,
+                        "erro"
+                    );
+
+
+                    return false;
+                }
+
+
+                campanhasMembro =
+                    data || [];
+
+            }
+
+
+            console.log(
+                "Campanhas onde participa:",
+                campanhasMembro
+            );
+
+
+            // ==================================
+            // 5. JUNTAR CAMPANHAS
+            // ==================================
+
+            const todasCampanhas = [
+                ...(campanhasMestre || []),
+                ...(campanhasMembro || [])
+            ];
+
+
+            // ==================================
+            // REMOVER DUPLICADAS
+            // ==================================
+
+            const campanhasUnicas =
+                [];
+
+
+            const idsAdicionados =
+                new Set();
+
+
+            for (
+                const campanha
+                of todasCampanhas
+            ) {
+
+                if (
+                    !campanha ||
+                    !campanha.id
+                ) {
+
+                    continue;
+                }
+
+
+                if (
+                    idsAdicionados.has(
+                        campanha.id
+                    )
+                ) {
+
+                    continue;
+                }
+
+
+                idsAdicionados.add(
+                    campanha.id
+                );
+
+
+                campanhasUnicas.push(
+                    campanha
+                );
+
+            }
+
+
+            window.rpgAuth.campaigns =
+                campanhasUnicas;
+
+
+            console.log(
+                "Quantidade total de campanhas:",
                 window.rpgAuth.campaigns.length
             );
 
@@ -345,21 +919,16 @@
                 window.rpgAuth.campaigns.length === 0
             ) {
 
-                window.rpgAuth.campaign =
-                    null;
-
-
-                window.rpgAuth.isMaster =
-                    false;
+                limparDadosCampanha();
 
 
                 console.warn(
-                    "⚠️ A consulta funcionou, mas retornou ZERO campanhas."
+                    "⚠️ Usuário autenticado, mas não pertence a nenhuma campanha."
                 );
 
 
                 mostrarDiagnostico(
-                    "⚠️ Usuário autenticado, mas a consulta retornou 0 campanhas.",
+                    "⚠️ Usuário autenticado, mas nenhuma campanha foi encontrada.",
                     "aviso"
                 );
 
@@ -369,15 +938,20 @@
 
 
             // ==================================
-            // CAMPANHAS ENCONTRADAS
+            // SELECIONAR CAMPANHA
             // ==================================
-
-            window.rpgAuth.isMaster =
-                true;
-
 
             window.rpgAuth.campaign =
                 window.rpgAuth.campaigns[0];
+
+
+            // ==================================
+            // VERIFICAR SE É MESTRE
+            // ==================================
+
+            window.rpgAuth.isMaster =
+                window.rpgAuth.campaign.master_id ===
+                user.id;
 
 
             console.log(
@@ -390,6 +964,19 @@
                 "✅ CAMPANHA SELECIONADA:",
                 window.rpgAuth.campaign
             );
+
+
+            console.log(
+                "👑 É Mestre:",
+                window.rpgAuth.isMaster
+            );
+
+
+            // ==================================
+            // CARREGAR JOGADORES E PERSONAGENS
+            // ==================================
+
+            await carregarDadosCampanha();
 
 
             mostrarDiagnostico(
@@ -448,14 +1035,7 @@
             );
 
 
-            window.rpgAuth.campaign =
-                null;
-
-            window.rpgAuth.campaigns =
-                [];
-
-            window.rpgAuth.isMaster =
-                false;
+            limparDadosCampanha();
 
 
             return;
@@ -898,6 +1478,58 @@
 
             }
         );
+
+
+    // ==========================================
+    // FUNÇÕES PÚBLICAS
+    // ==========================================
+
+    window.obterMembrosCampanha =
+        function () {
+
+            return (
+                window.rpgAuth
+                    .campaignMembers || []
+            );
+
+        };
+
+
+    window.obterPersonagensCampanha =
+        function () {
+
+            return (
+                window.rpgAuth
+                    .campaignCharacters || []
+            );
+
+        };
+
+
+    window.obterCampanhaAtual =
+        function () {
+
+            return (
+                window.rpgAuth
+                    .campaign || null
+            );
+
+        };
+
+
+    window.usuarioEhMestre =
+        function () {
+
+            return (
+                window.rpgAuth
+                    .isMaster === true
+            );
+
+        };
+
+
+    window.recarregarDadosCampanha =
+        carregarDadosCampanha;
 
 
     // ==========================================
