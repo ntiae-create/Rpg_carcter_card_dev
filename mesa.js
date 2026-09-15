@@ -692,12 +692,9 @@
         }
 
 
-        if (user.email) {
-
-            return user.email;
-
-        }
-
+        // Não utilizar e-mail como identificação visual.
+        // Se o usuário não possuir nome configurado,
+        // mostrar apenas "Mestre".
 
         return "Mestre";
 
