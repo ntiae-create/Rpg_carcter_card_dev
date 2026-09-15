@@ -661,44 +661,65 @@
 
     function obterNomeMestre() {
 
-        const user =
-            window.rpgAuth?.user;
+    const user =
+        window.rpgAuth?.user;
 
 
-        if (!user) {
-
-            return "Mestre";
-
-        }
-
-
-        if (
-            user.user_metadata &&
-            user.user_metadata.name
-        ) {
-
-            return user.user_metadata.name;
-
-        }
-
-
-        if (
-            user.user_metadata &&
-            user.user_metadata.full_name
-        ) {
-
-            return user.user_metadata.full_name;
-
-        }
-
-
-        // Não utilizar e-mail como identificação visual.
-        // Se o usuário não possuir nome configurado,
-        // mostrar apenas "Mestre".
+    if (!user) {
 
         return "Mestre";
 
     }
+
+
+    // --------------------------------------
+    // NOME DO USUÁRIO
+    // --------------------------------------
+
+    const nome =
+        user.user_metadata?.name;
+
+
+    const nomeCompleto =
+        user.user_metadata?.full_name;
+
+
+    // --------------------------------------
+    // ACEITAR SOMENTE NOMES
+    // --------------------------------------
+    //
+    // Se o valor possuir "@", provavelmente
+    // é um endereço de e-mail.
+    // Nesse caso, não mostrar.
+    //
+
+    if (
+        nome &&
+        !String(nome).includes("@")
+    ) {
+
+        return nome;
+
+    }
+
+
+    if (
+        nomeCompleto &&
+        !String(nomeCompleto).includes("@")
+    ) {
+
+        return nomeCompleto;
+
+    }
+
+
+    // --------------------------------------
+    // FALLBACK SEGURO
+    // --------------------------------------
+
+    return "Mestre";
+
+}
 
 
     // ==========================================
