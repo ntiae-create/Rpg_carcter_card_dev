@@ -1,55 +1,88 @@
 /* =================================
-   MESA ONLINE
-   Estilo exclusivo da mesa de RPG
+   MESA ONLINE — BASE
 ================================= */
 
 #online-table-panel {
     position: relative;
+
     width: min(100%, 540px);
+
     margin: 24px auto 0;
-    padding: 20px;
-
-    border: 1px solid #6f3aa8 !important;
-    border-radius: 22px !important;
-
-    background:
-        radial-gradient(
-            circle at top,
-            rgba(124, 58, 237, 0.16),
-            rgba(7, 10, 24, 0.98) 48%,
-            rgba(3, 5, 10, 0.99) 100%
-        ) !important;
+    padding: 22px;
 
     color: #f5f0ff !important;
 
+    border: 2px solid #276749 !important;
+    border-radius: 24px !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            #10291d 0%,
+            #0b1d15 45%,
+            #07120d 100%
+        ) !important;
+
     box-shadow:
-        0 0 30px rgba(124, 58, 237, 0.22),
-        inset 0 0 35px rgba(124, 58, 237, 0.05) !important;
+        0 0 35px rgba(34, 197, 94, 0.18),
+        inset 0 0 35px rgba(34, 197, 94, 0.06) !important;
 
     overflow: hidden;
+
+    transition:
+        background 0.7s ease,
+        border-color 0.7s ease,
+        box-shadow 0.7s ease;
 }
 
-/* Brilho decorativo superior */
+
+/* =================================
+   BRILHO DA MESA
+================================= */
+
 #online-table-panel::before {
     content: "";
 
     position: absolute;
+
     top: 0;
-    left: 12%;
-    right: 12%;
+    left: 8%;
+    right: 8%;
 
-    height: 1px;
+    height: 2px;
 
-    background: linear-gradient(
-        90deg,
-        transparent,
-        #a855f7,
-        #c084fc,
-        #a855f7,
-        transparent
-    );
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #4ade80,
+            #86efac,
+            #4ade80,
+            transparent
+        );
 
     opacity: 0.8;
+
+    pointer-events: none;
+}
+
+#online-table-panel::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 0;
+
+    border-radius: inherit;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(74, 222, 128, 0.035),
+            transparent 65%
+        );
+
+    pointer-events: none;
 }
 
 
@@ -60,24 +93,26 @@
 #online-table-panel h2 {
     margin: 0 0 6px !important;
 
-    color: #e9d5ff !important;
+    color: #dcfce7 !important;
 
     font-size: 18px !important;
+
     letter-spacing: 2px;
+
     text-transform: uppercase;
 }
 
 #online-table-panel > p {
     margin: 0 0 18px !important;
 
-    color: #8f839d !important;
+    color: #91a89b !important;
 
     font-size: 11px !important;
 }
 
 
 /* =================================
-   BLOCOS DE INFORMAÇÃO
+   INFORMAÇÕES
 ================================= */
 
 #online-table-panel .table-info {
@@ -97,12 +132,12 @@
     padding: 12px;
 
     border:
-        1px solid rgba(255, 255, 255, 0.07) !important;
+        1px solid rgba(74, 222, 128, 0.12) !important;
 
     border-radius: 12px !important;
 
     background:
-        rgba(255, 255, 255, 0.035) !important;
+        rgba(0, 0, 0, 0.18) !important;
 }
 
 #online-table-panel .table-info small {
@@ -110,7 +145,7 @@
 
     margin-bottom: 5px;
 
-    color: #75687f !important;
+    color: #718276 !important;
 
     font-size: 9px !important;
 
@@ -122,7 +157,7 @@
 #online-table-panel .table-info strong {
     display: block;
 
-    color: #d8c7e8 !important;
+    color: #d1fae5 !important;
 
     font-size: 13px !important;
 
@@ -135,7 +170,7 @@
 
 
 /* =================================
-   STATUS ONLINE
+   STATUS DA MESA
 ================================= */
 
 #online-table-panel .table-status {
@@ -150,14 +185,14 @@
     padding: 6px 10px;
 
     border:
-        1px solid rgba(124, 58, 237, 0.35);
+        1px solid rgba(74, 222, 128, 0.3);
 
     border-radius: 999px;
 
     background:
-        rgba(124, 58, 237, 0.08);
+        rgba(34, 197, 94, 0.08);
 
-    color: #c084fc;
+    color: #86efac;
 
     font-size: 10px;
 
@@ -174,12 +209,14 @@
     width: 7px;
     height: 7px;
 
+    flex-shrink: 0;
+
     border-radius: 50%;
 
-    background: #a78bfa;
+    background: #4ade80;
 
     box-shadow:
-        0 0 9px rgba(167, 139, 250, 0.8);
+        0 0 10px rgba(74, 222, 128, 0.85);
 
     animation:
         tableOnlinePulse 1.8s ease-in-out infinite;
@@ -210,19 +247,22 @@
 #online-table-panel .table-master {
     margin-top: 14px;
 
-    padding: 13px;
+    padding: 14px;
 
-    border-radius: 13px;
+    border-radius: 14px;
 
     border:
-        1px solid rgba(168, 85, 247, 0.2);
+        1px solid rgba(74, 222, 128, 0.2);
 
     background:
-        rgba(124, 58, 237, 0.06);
+        rgba(34, 197, 94, 0.055);
+
+    box-shadow:
+        inset 0 0 20px rgba(34, 197, 94, 0.025);
 }
 
 #online-table-panel .table-master strong {
-    color: #c084fc;
+    color: #86efac;
 }
 
 
@@ -241,7 +281,7 @@
         1px solid rgba(255, 255, 255, 0.07);
 
     background:
-        rgba(255, 255, 255, 0.025);
+        rgba(0, 0, 0, 0.14);
 }
 
 #online-table-panel .table-players-header {
@@ -257,7 +297,7 @@
 }
 
 #online-table-panel .table-players-header strong {
-    color: #b9a9c8;
+    color: #b7c9bd;
 
     font-size: 12px;
 
@@ -267,7 +307,7 @@
 }
 
 #online-table-panel .table-players-count {
-    color: #c084fc;
+    color: #86efac;
 
     font-size: 12px;
 
@@ -280,9 +320,9 @@
     border-radius: 10px;
 
     background:
-        rgba(0, 0, 0, 0.16);
+        rgba(0, 0, 0, 0.18);
 
-    color: #75687f;
+    color: #718276;
 
     font-size: 10px;
 
@@ -291,13 +331,103 @@
 
 
 /* =================================
+   FUTURO ESTADO DE BATALHA
+   O mesa.js poderá adicionar:
+   .battle-mode
+================================= */
+
+#online-table-panel.battle-mode {
+    border-color: #7f1d1d !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            #321010 0%,
+            #210b0b 45%,
+            #100606 100%
+        ) !important;
+
+    box-shadow:
+        0 0 35px rgba(220, 38, 38, 0.22),
+        inset 0 0 35px rgba(220, 38, 38, 0.06) !important;
+}
+
+#online-table-panel.battle-mode::before {
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #ef4444,
+            #fca5a5,
+            #ef4444,
+            transparent
+        );
+}
+
+#online-table-panel.battle-mode::after {
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(239, 68, 68, 0.045),
+            transparent 65%
+        );
+}
+
+#online-table-panel.battle-mode .table-status {
+    border-color: rgba(239, 68, 68, 0.35);
+
+    background:
+        rgba(220, 38, 38, 0.09);
+
+    color: #fca5a5;
+}
+
+#online-table-panel.battle-mode .table-status::before {
+    background: #ef4444;
+
+    box-shadow:
+        0 0 10px rgba(239, 68, 68, 0.9);
+}
+
+#online-table-panel.battle-mode .table-master {
+    border-color: rgba(239, 68, 68, 0.2);
+
+    background:
+        rgba(220, 38, 38, 0.06);
+}
+
+#online-table-panel.battle-mode .table-master strong {
+    color: #fca5a5;
+}
+
+#online-table-panel.battle-mode .table-players-count {
+    color: #fca5a5;
+}
+
+
+/* =================================
    RESPONSIVO
 ================================= */
+
+@media (max-width: 540px) {
+
+    #online-table-panel {
+        width: calc(100% - 20px);
+
+        margin-top: 18px;
+
+        padding: 18px;
+
+        border-radius: 21px !important;
+    }
+
+}
+
 
 @media (max-width: 380px) {
 
     #online-table-panel {
-        padding: 16px;
+        padding: 15px;
 
         border-radius: 18px !important;
     }
@@ -314,6 +444,11 @@
 ================================= */
 
 @media (prefers-reduced-motion: reduce) {
+
+    #online-table-panel,
+    #online-table-panel.battle-mode {
+        transition: none;
+    }
 
     #online-table-panel .table-status::before {
         animation: none;
