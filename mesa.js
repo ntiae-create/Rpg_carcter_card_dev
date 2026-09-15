@@ -61,17 +61,7 @@
             }
 
 
-            await new Promise(
-                function (resolve) {
-
-                    setTimeout(
-                        resolve,
-                        250
-                    );
-
-                }
-            );
-
+            await esperar(250);
 
             tentativas++;
 
@@ -142,22 +132,9 @@
             }
 
 
-            // ----------------------------------
-            // SE AINDA NÃO EXISTIR
-            // ----------------------------------
-
             if (!campanha) {
 
-                await new Promise(
-                    function (resolve) {
-
-                        setTimeout(
-                            resolve,
-                            250
-                        );
-
-                    }
-                );
+                await esperar(250);
 
             }
 
@@ -194,10 +171,6 @@
             campanha.master_id;
 
 
-        window.rpgMesa.initialized =
-            true;
-
-
         // --------------------------------------
         // MOSTRAR MESA
         // --------------------------------------
@@ -205,9 +178,40 @@
         criarInterfaceMesa();
 
 
+        // --------------------------------------
+        // ESPERAR DADOS DOS JOGADORES
+        // --------------------------------------
+
+        await carregarJogadoresMesa();
+
+
+        window.rpgMesa.initialized =
+            true;
+
+
         console.log(
             "✅ Mesa.js: mesa inicializada.",
             campanha
+        );
+
+    }
+
+
+    // ==========================================
+    // ESPERAR
+    // ==========================================
+
+    function esperar(tempo) {
+
+        return new Promise(
+            function (resolve) {
+
+                setTimeout(
+                    resolve,
+                    tempo
+                );
+
+            }
         );
 
     }
@@ -519,14 +523,406 @@
 
 
     // ==========================================
-    // PREENCHER ASSENTO
+    // CARREGAR JOGADORES DA MESA
     // ==========================================
-    //
-    // Preparado para quando os jogadores
-    // forem carregados da campanha.
-    //
-    // Por enquanto esta função não é chamada
-    // automaticamente.
+
+    async function carregarJogadoresMesa() {
+
+        // --------------------------------------
+        // ESPERAR AUTH.JS TERMINAR OS DADOS
+        // --------------------------------------
+
+        let tentativas = 0;
+
+        const limite = 40;
+
+
+        while (
+            tentativas < limite
+        ) {
+
+            if (
+                window.rpgAuth &&
+                Array.isArray(
+                    window.rpgAuth.campaignCharacters
+                )
+            ) {
+
+                /*
+                    O auth.js já criou o array.
+                    Agora podemos utilizá-lo.
+                */
+
+                if (
+                    window.rpgAuth.campaignCharacters.length > 0 ||
+                    tentativas >= 4
+                ) {
+
+                    break;
+
+                }
+
+            }
+
+
+            await esperar(250);
+
+            tentativas++;
+
+        }
+
+
+        // --------------------------------------
+        // OBTER MEMBROS
+        // --------------------------------------
+
+        const membros =
+            Array.isArray(
+                window.rpgAuth?.campaignMembers
+            )
+                ? window.rpgAuth.campaignMembers
+                : [];
+
+
+        // --------------------------------------
+        // OBTER PERSONAGENS
+        // --------------------------------------
+
+        const personagens =
+            Array.isArray(
+                window.rpgAuth?.campaignCharacters
+            )
+                ? window.rpgAuth.campaignCharacters
+                : [];
+
+
+        console.log(
+            "👥 Membros disponíveis para a mesa:",
+            membros
+        );
+
+
+        console.log(
+            "🎴 Personagens disponíveis para a mesa:",
+            personagens
+        );
+
+
+        // --------------------------------------
+        // CRIAR JOGADORES
+        // --------------------------------------
+
+        const jogadores = [];
+
+
+        for (
+            const membro
+            of membros
+        ) {
+
+            if (!membro?.user_id) {
+
+                continue;
+
+            }
+
+
+            // ----------------------------------
+            // NÃO COLOCAR O MESTRE COMO JOGADOR
+            // ----------------------------------
+
+            if (
+                membro.user_id ===
+                window.rpgMesa.master
+            ) {
+
+                continue;
+
+            }
+
+
+            // ----------------------------------
+            // PROCURAR PERSONAGEM
+            // ----------------------------------
+
+            const personagem =
+                personagens.find(
+                    function (item) {
+
+                        return (
+                            item &&
+                            item.user_id ===
+                            membro.user_id
+                        );
+
+                    }
+                );
+
+
+            // ----------------------------------
+            // SE NÃO POSSUI PERSONAGEM
+            // ----------------------------------
+
+            if (!personagem) {
+
+                jogadores.push({
+
+                    playerId:
+                        membro.user_id,
+
+                    characterId:
+                        "",
+
+                    character:
+                        null
+
+                });
+
+
+                continue;
+
+            }
+
+
+            jogadores.push({
+
+                playerId:
+                    membro.user_id,
+
+                characterId:
+                    personagem.id || "",
+
+                character:
+                    personagem
+
+            });
+
+        }
+
+
+        // --------------------------------------
+        // SALVAR ESTADO
+        // --------------------------------------
+
+        window.rpgMesa.players =
+            jogadores;
+
+
+        console.log(
+            "🎲 Jogadores da mesa:",
+            window.rpgMesa.players
+        );
+
+
+        // --------------------------------------
+        // PREENCHER ASSENTOS
+        // --------------------------------------
+
+        preencherAssentosAutomaticamente();
+
+
+        // --------------------------------------
+        // ATUALIZAR LISTA
+        // --------------------------------------
+
+        atualizarListaJogadores();
+
+
+        // --------------------------------------
+        // ATUALIZAR CONTADOR
+        // --------------------------------------
+
+        atualizarContadorJogadores();
+
+
+        // --------------------------------------
+        // ATUALIZAR CHAT
+        // --------------------------------------
+
+        atualizarMensagemMesa();
+
+    }
+
+
+    // ==========================================
+    // PREENCHER ASSENTOS AUTOMATICAMENTE
+    // ==========================================
+
+    function preencherAssentosAutomaticamente() {
+
+        const painel =
+            document.getElementById(
+                "online-table-panel"
+            );
+
+
+        if (!painel) {
+
+            return;
+
+        }
+
+
+        // --------------------------------------
+        // LIMPAR TODOS OS ASSENTOS
+        // --------------------------------------
+
+        for (
+            let numero = 1;
+            numero <= window.rpgMesa.maxPlayers;
+            numero++
+        ) {
+
+            limparAssento(numero);
+
+        }
+
+
+        // --------------------------------------
+        // PREENCHER OS ASSENTOS
+        // --------------------------------------
+
+        const jogadores =
+            Array.isArray(
+                window.rpgMesa.players
+            )
+                ? window.rpgMesa.players
+                : [];
+
+
+        let assento =
+            1;
+
+
+        for (
+            const jogador
+            of jogadores
+        ) {
+
+            if (
+                assento >
+                window.rpgMesa.maxPlayers
+            ) {
+
+                break;
+
+            }
+
+
+            preencherAssento(
+                assento,
+                jogador.character,
+                jogador.playerId
+            );
+
+
+            assento++;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // ATUALIZAR LISTA DE JOGADORES
+    // ==========================================
+
+    function atualizarListaJogadores() {
+
+        const lista =
+            document.getElementById(
+                "online-table-player-list"
+            );
+
+
+        if (!lista) {
+
+            return;
+
+        }
+
+
+        const jogadores =
+            Array.isArray(
+                window.rpgMesa.players
+            )
+                ? window.rpgMesa.players
+                : [];
+
+
+        // --------------------------------------
+        // NENHUM JOGADOR
+        // --------------------------------------
+
+        if (
+            jogadores.length === 0
+        ) {
+
+            lista.innerHTML = `
+
+                <div class="online-table-empty">
+
+                    Nenhum jogador entrou na mesa.
+
+                </div>
+
+            `;
+
+
+            return;
+
+        }
+
+
+        // --------------------------------------
+        // CRIAR LISTA
+        // --------------------------------------
+
+        lista.innerHTML =
+            jogadores
+                .map(
+                    function (
+                        jogador,
+                        indice
+                    ) {
+
+                        const nome =
+                            jogador.character?.name ||
+                            jogador.character?.nome ||
+                            "Sem personagem";
+
+
+                        const numero =
+                            indice + 1;
+
+
+                        return `
+
+                            <div class="online-table-player">
+
+                                <strong>
+                                    LUGAR ${numero}
+                                </strong>
+
+                                <span>
+                                    ${escaparHTML(
+                                        nome
+                                    )}
+                                </span>
+
+                            </div>
+
+                        `;
+
+                    }
+                )
+                .join("");
+
+    }
+
+
+    // ==========================================
+    // PREENCHER ASSENTO
     // ==========================================
 
     function preencherAssento(
@@ -689,7 +1085,62 @@
 
 
         contador.textContent =
-            `${jogadores} / ${window.rpgMesa.maxPlayers}`;
+            `${Math.min(
+                jogadores,
+                window.rpgMesa.maxPlayers
+            )} / ${window.rpgMesa.maxPlayers}`;
+
+    }
+
+
+    // ==========================================
+    // ATUALIZAR MENSAGEM DA MESA
+    // ==========================================
+
+    function atualizarMensagemMesa() {
+
+        const mensagem =
+            document.getElementById(
+                "online-table-chat-messages"
+            );
+
+
+        if (!mensagem) {
+
+            return;
+
+        }
+
+
+        const jogadores =
+            Array.isArray(
+                window.rpgMesa.players
+            )
+                ? window.rpgMesa.players
+                : [];
+
+
+        if (
+            jogadores.length === 0
+        ) {
+
+            mensagem.textContent =
+                "A mesa está pronta. Aguardando os jogadores...";
+
+            return;
+
+        }
+
+
+        const quantidade =
+            Math.min(
+                jogadores.length,
+                window.rpgMesa.maxPlayers
+            );
+
+
+        mensagem.textContent =
+            `${quantidade} jogador${quantidade === 1 ? "" : "es"} presente${quantidade === 1 ? "" : "s"} na mesa.`;
 
     }
 
@@ -834,10 +1285,6 @@
     // ==========================================
     // DISPONIBILIZAR FUNÇÕES DOS ASSENTOS
     // ==========================================
-    //
-    // Elas serão utilizadas posteriormente
-    // pelo sistema de jogadores da campanha.
-    // ==========================================
 
     window.rpgMesa.preencherAssento =
         preencherAssento;
@@ -849,6 +1296,18 @@
 
     window.rpgMesa.atualizarContadorJogadores =
         atualizarContadorJogadores;
+
+
+    // ==========================================
+    // ATUALIZAR JOGADORES MANUALMENTE
+    // ==========================================
+
+    window.rpgMesa.carregarJogadores =
+        carregarJogadoresMesa;
+
+
+    window.rpgMesa.atualizarJogadores =
+        carregarJogadoresMesa;
 
 
     // ==========================================
@@ -883,11 +1342,6 @@
         // --------------------------------------
         // ACEITAR SOMENTE NOMES
         // --------------------------------------
-        //
-        // Se o valor possuir "@", provavelmente
-        // é um endereço de e-mail.
-        // Nesse caso, não mostrar.
-        //
 
         if (
             nome &&
