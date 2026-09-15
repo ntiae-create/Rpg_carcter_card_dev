@@ -381,6 +381,70 @@ const CharacterModule = (() => {
 
 
     /* =====================================================
+       OBTER CLASSE ATUAL
+       
+       Busca a classe escolhida no módulo classe.js.
+    ===================================================== */
+
+    function obterClasseAtual() {
+
+        /*
+           Verifica se o módulo de classes
+           foi carregado.
+        */
+
+        if (
+            typeof RPGClasses ===
+            "undefined"
+        ) {
+
+            return null;
+
+        }
+
+
+        /*
+           Verifica se existe um personagem
+           carregado.
+        */
+
+        if (
+            typeof character ===
+            "undefined"
+        ) {
+
+            return null;
+
+        }
+
+
+        /*
+           Sem classe selecionada.
+        */
+
+        if (
+            !character.class
+        ) {
+
+            return null;
+
+        }
+
+
+        /*
+           Procura a classe no RPGClasses.
+        */
+
+        return (
+            RPGClasses[
+                character.class
+            ] || null
+        );
+
+    }
+
+
+    /* =====================================================
        EDITOR DO PERSONAGEM
     ===================================================== */
 
@@ -465,6 +529,22 @@ const CharacterModule = (() => {
 
                     character.class =
                         classSelect.value;
+
+
+                    /*
+                       Agora a classe escolhida
+                       passa a ser reconhecida pelo
+                       módulo classe.js.
+                    */
+
+                    const classe =
+                        obterClasseAtual();
+
+
+                    console.log(
+                        "Classe atual:",
+                        classe
+                    );
 
 
                     atualizarInterface();
@@ -866,6 +946,8 @@ const CharacterModule = (() => {
         removerXP,
 
         alterarRaca,
+
+        obterClasseAtual,
 
         configurarEditor,
 
