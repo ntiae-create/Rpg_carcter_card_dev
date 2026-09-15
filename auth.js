@@ -273,12 +273,6 @@
                 data || null;
 
 
-            console.log(
-                "👤 Perfil:",
-                window.rpgAuth.profile
-            );
-
-
             return true;
 
         }
@@ -362,12 +356,6 @@
                 data;
 
 
-            console.log(
-                "✅ Perfil criado:",
-                data
-            );
-
-
             return true;
 
         }
@@ -387,6 +375,200 @@
 
 
     // ==========================================
+    // REENVIAR CONFIRMAÇÃO DE E-MAIL
+    // ==========================================
+
+    async function reenviarConfirmacaoEmail(email) {
+
+        if (!window.supabaseClient) {
+
+            mostrarMensagem(
+                "Supabase não está disponível."
+            );
+
+            return false;
+        }
+
+
+        email =
+            email?.trim();
+
+
+        if (!email) {
+
+            mostrarMensagem(
+                "Digite seu e-mail primeiro."
+            );
+
+            return false;
+        }
+
+
+        try {
+
+            mostrarMensagem(
+                "Enviando confirmação..."
+            );
+
+
+            const {
+                error
+            } =
+                await window.supabaseClient.auth
+                    .resend({
+
+                        type: "signup",
+
+                        email:
+                            email
+
+                    });
+
+
+            if (error) {
+
+                console.error(
+                    "❌ ERRO AO REENVIAR CONFIRMAÇÃO:",
+                    error
+                );
+
+
+                mostrarMensagem(
+                    `Não foi possível reenviar: ${error.message}`
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ ${error.message}`,
+                    "erro"
+                );
+
+
+                return false;
+            }
+
+
+            mostrarMensagem(
+                "E-mail de confirmação reenviado!",
+                true
+            );
+
+
+            mostrarDiagnostico(
+                "📧 Verifique sua caixa de entrada e também a pasta de spam.",
+                "sucesso"
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ EXCEÇÃO AO REENVIAR CONFIRMAÇÃO:",
+                error
+            );
+
+
+            mostrarMensagem(
+                "Não foi possível reenviar o e-mail."
+            );
+
+
+            return false;
+        }
+
+    }
+
+
+    // ==========================================
+    // MOSTRAR BOTÃO DE CONFIRMAÇÃO
+    // ==========================================
+
+    function mostrarBotaoConfirmacao(email) {
+
+        const container =
+            document.getElementById(
+                "auth-confirmation-area"
+            );
+
+
+        if (!container) {
+
+            return;
+
+        }
+
+
+        container.innerHTML = "";
+
+
+        const botao =
+            document.createElement("button");
+
+
+        botao.type =
+            "button";
+
+
+        botao.textContent =
+            "REENVIAR CONFIRMAÇÃO DO E-MAIL";
+
+
+        Object.assign(
+            botao.style,
+            {
+                width: "100%",
+                padding: "10px",
+                marginTop: "8px",
+                border: "1px solid #8b5cf6",
+                borderRadius: "10px",
+                background: "#100b18",
+                color: "#c084fc",
+                fontWeight: "bold",
+                cursor: "pointer"
+            }
+        );
+
+
+        botao.addEventListener(
+            "click",
+            async function () {
+
+                botao.disabled =
+                    true;
+
+
+                botao.style.opacity =
+                    "0.6";
+
+
+                await reenviarConfirmacaoEmail(
+                    email
+                );
+
+
+                botao.disabled =
+                    false;
+
+
+                botao.style.opacity =
+                    "1";
+
+            }
+        );
+
+
+        container.appendChild(
+            botao
+        );
+
+    }
+
+
+    // ==========================================
     // CARREGAR MEMBROS DA CAMPANHA
     // ==========================================
 
@@ -395,10 +577,6 @@
     ) {
 
         if (!window.supabaseClient) {
-
-            console.error(
-                "❌ Supabase Client não encontrado ao carregar membros."
-            );
 
             return false;
         }
@@ -455,12 +633,6 @@
                 data || [];
 
 
-            console.log(
-                "✅ Membros encontrados:",
-                window.rpgAuth.campaignMembers
-            );
-
-
             return true;
 
         }
@@ -491,10 +663,6 @@
     ) {
 
         if (!window.supabaseClient) {
-
-            console.error(
-                "❌ Supabase Client não encontrado ao carregar personagens."
-            );
 
             return false;
         }
@@ -600,12 +768,6 @@
                 data || [];
 
 
-            console.log(
-                "✅ Personagens encontrados:",
-                window.rpgAuth.campaignCharacters
-            );
-
-
             return true;
 
         }
@@ -665,11 +827,6 @@
 
         await carregarPersonagensCampanha(
             campaignId
-        );
-
-
-        console.log(
-            "📋 DADOS DA CAMPANHA PRONTOS"
         );
 
 
@@ -953,12 +1110,6 @@
             );
 
 
-            /*
-             * IMPORTANTE:
-             * Falha ao carregar campanha NÃO
-             * significa que o login falhou.
-             */
-
             mostrarDiagnostico(
                 `⚠️ Login realizado, mas houve um problema ao carregar a campanha: ${error.message}`,
                 "aviso"
@@ -977,11 +1128,6 @@
 
     async function atualizarEstadoSessao(session) {
 
-        console.log(
-            "========== ATUALIZANDO SESSÃO =========="
-        );
-
-
         window.rpgAuth.session =
             session || null;
 
@@ -992,11 +1138,6 @@
 
         if (!session?.user) {
 
-            console.log(
-                "Nenhuma sessão ativa."
-            );
-
-
             limparDadosCampanha();
 
             window.rpgAuth.profile =
@@ -1004,12 +1145,6 @@
 
             return;
         }
-
-
-        console.log(
-            "Sessão ativa para:",
-            session.user.email
-        );
 
 
         await carregarPerfil(
@@ -1053,9 +1188,27 @@
         }
 
 
+        email =
+            email.trim();
+
+
         mostrarMensagem(
             "Entrando..."
         );
+
+
+        const areaConfirmacao =
+            document.getElementById(
+                "auth-confirmation-area"
+            );
+
+
+        if (areaConfirmacao) {
+
+            areaConfirmacao.innerHTML =
+                "";
+
+        }
 
 
         try {
@@ -1068,7 +1221,7 @@
                     .signInWithPassword({
 
                         email:
-                            email.trim(),
+                            email,
 
                         password:
                             senha
@@ -1084,8 +1237,79 @@
                 );
 
 
+                /*
+                 * =================================
+                 * E-MAIL NÃO CONFIRMADO
+                 * =================================
+                 */
+
+                if (
+                    error.code ===
+                    "email_not_confirmed" ||
+
+                    error.message
+                        ?.toLowerCase()
+                        .includes(
+                            "email not confirmed"
+                        )
+                ) {
+
+                    mostrarMensagem(
+                        "Seu e-mail ainda não foi confirmado."
+                    );
+
+
+                    mostrarDiagnostico(
+                        "📧 Confirme seu e-mail antes de entrar.",
+                        "aviso"
+                    );
+
+
+                    mostrarBotaoConfirmacao(
+                        email
+                    );
+
+
+                    return false;
+
+                }
+
+
+                /*
+                 * =================================
+                 * CREDENCIAIS INVÁLIDAS
+                 * =================================
+                 */
+
+                if (
+                    error.code ===
+                    "invalid_credentials"
+                ) {
+
+                    mostrarMensagem(
+                        "E-mail ou senha incorretos."
+                    );
+
+
+                    mostrarDiagnostico(
+                        "❌ Verifique o e-mail e a senha.",
+                        "erro"
+                    );
+
+
+                    return false;
+
+                }
+
+
+                /*
+                 * =================================
+                 * OUTROS ERROS
+                 * =================================
+                 */
+
                 mostrarMensagem(
-                    "Não foi possível entrar. Verifique e-mail e senha."
+                    "Não foi possível entrar."
                 );
 
 
@@ -1104,11 +1328,6 @@
                 data.user
             );
 
-
-            /*
-             * A autenticação já foi confirmada
-             * pelo Supabase neste ponto.
-             */
 
             await atualizarEstadoSessao(
                 data.session
@@ -1214,12 +1433,6 @@
 
         try {
 
-            /*
-             * O nome de usuário vai como metadata
-             * também. Isso permite recuperá-lo caso
-             * a confirmação de e-mail esteja ativada.
-             */
-
             const {
                 data,
                 error
@@ -1276,12 +1489,6 @@
             );
 
 
-            /*
-             * Se o Supabase entregar uma sessão
-             * imediatamente, podemos criar o perfil
-             * agora.
-             */
-
             if (
                 data.user &&
                 data.session
@@ -1315,12 +1522,6 @@
             }
 
 
-            /*
-             * Se a confirmação de e-mail estiver
-             * ativada no Supabase, não haverá sessão
-             * imediatamente.
-             */
-
             mostrarMensagem(
                 "Conta criada! Verifique seu e-mail para confirmar a conta.",
                 true
@@ -1328,7 +1529,7 @@
 
 
             mostrarDiagnostico(
-                "📧 Conta criada. Verifique o e-mail para confirmar sua conta.",
+                "📧 Conta criada. Verifique seu e-mail para confirmar sua conta.",
                 "sucesso"
             );
 
@@ -1356,12 +1557,20 @@
     }
 
 
+    // ==========================================
+    // FUNÇÕES PÚBLICAS
+    // ==========================================
+
     window.entrarComEmailSenha =
         entrarComEmailSenha;
 
 
     window.criarConta =
         criarConta;
+
+
+    window.reenviarConfirmacaoEmail =
+        reenviarConfirmacaoEmail;
 
 
     // ==========================================
@@ -1494,6 +1703,10 @@
                     >
                         CRIAR CONTA
                     </button>
+
+                    <div
+                        id="auth-confirmation-area"
+                    ></div>
 
                 </div>
 
@@ -1847,11 +2060,6 @@
                     );
 
 
-                /*
-                 * Se houver sessão imediata,
-                 * podemos fechar o painel.
-                 */
-
                 if (
                     sucesso &&
                     window.rpgAuth.session
@@ -1891,11 +2099,6 @@
     // ==========================================
 
     async function iniciarAutenticacao() {
-
-        console.log(
-            "========== INICIANDO AUTENTICAÇÃO =========="
-        );
-
 
         if (!window.supabaseClient) {
 
@@ -1940,11 +2143,6 @@
 
         if (data.session) {
 
-            console.log(
-                "Sessão existente encontrada."
-            );
-
-
             await atualizarEstadoSessao(
                 data.session
             );
@@ -1952,11 +2150,6 @@
 
             return;
         }
-
-
-        console.log(
-            "Nenhuma sessão encontrada."
-        );
 
 
         criarPainelLogin();
@@ -1974,12 +2167,6 @@
                 event,
                 session
             ) {
-
-                console.log(
-                    "Evento de autenticação:",
-                    event
-                );
-
 
                 setTimeout(
                     () => {
