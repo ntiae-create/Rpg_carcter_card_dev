@@ -17,12 +17,10 @@
         campaigns: [],
         isMaster: false,
 
-        // ==================================
-        // NOVOS DADOS DA CAMPANHA
-        // ==================================
-
         campaignMembers: [],
-        campaignCharacters: []
+        campaignCharacters: [],
+
+        profile: null
     };
 
 
@@ -101,10 +99,6 @@
         }
 
 
-        // ==================================
-        // CANCELAR REMOÇÃO ANTERIOR
-        // ==================================
-
         if (elemento._diagnosticoTimer) {
 
             clearTimeout(
@@ -113,10 +107,6 @@
 
         }
 
-
-        // ==================================
-        // DEFINIR COR
-        // ==================================
 
         if (tipo === "sucesso") {
 
@@ -147,20 +137,12 @@
         }
 
 
-        // ==================================
-        // MOSTRAR
-        // ==================================
-
         elemento.style.opacity =
             "1";
 
         elemento.textContent =
             texto;
 
-
-        // ==================================
-        // TEMPO DE EXIBIÇÃO
-        // ==================================
 
         let tempo = 3000;
 
@@ -183,10 +165,6 @@
 
         }
 
-
-        // ==================================
-        // REMOVER AUTOMATICAMENTE
-        // ==================================
 
         elemento._diagnosticoTimer =
             setTimeout(
@@ -244,6 +222,171 @@
 
 
     // ==========================================
+    // CARREGAR PERFIL DO USUÁRIO
+    // ==========================================
+
+    async function carregarPerfil(user) {
+
+        if (!window.supabaseClient) {
+
+            return false;
+        }
+
+
+        if (!user) {
+
+            window.rpgAuth.profile =
+                null;
+
+            return false;
+        }
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient
+                    .from("profiles")
+                    .select("id, username, created_at")
+                    .eq("id", user.id)
+                    .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "❌ ERRO AO CARREGAR PERFIL:",
+                    error
+                );
+
+                window.rpgAuth.profile =
+                    null;
+
+                return false;
+            }
+
+
+            window.rpgAuth.profile =
+                data || null;
+
+
+            console.log(
+                "👤 Perfil:",
+                window.rpgAuth.profile
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ EXCEÇÃO AO CARREGAR PERFIL:",
+                error
+            );
+
+            window.rpgAuth.profile =
+                null;
+
+            return false;
+        }
+
+    }
+
+
+    // ==========================================
+    // CRIAR PERFIL
+    // ==========================================
+
+    async function criarPerfil(user, username) {
+
+        if (!window.supabaseClient) {
+
+            return false;
+        }
+
+
+        if (!user || !username) {
+
+            return false;
+        }
+
+
+        try {
+
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient
+                    .from("profiles")
+                    .insert({
+
+                        id:
+                            user.id,
+
+                        username:
+                            username.trim()
+
+                    })
+                    .select(
+                        "id, username, created_at"
+                    )
+                    .single();
+
+
+            if (error) {
+
+                console.error(
+                    "❌ ERRO AO CRIAR PERFIL:",
+                    error
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ Não foi possível criar o perfil: ${error.message}`,
+                    "erro"
+                );
+
+
+                return false;
+            }
+
+
+            window.rpgAuth.profile =
+                data;
+
+
+            console.log(
+                "✅ Perfil criado:",
+                data
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ EXCEÇÃO AO CRIAR PERFIL:",
+                error
+            );
+
+
+            return false;
+        }
+
+    }
+
+
+    // ==========================================
     // CARREGAR MEMBROS DA CAMPANHA
     // ==========================================
 
@@ -263,26 +406,11 @@
 
         if (!campaignId) {
 
-            console.warn(
-                "⚠️ Campaign ID não informado."
-            );
-
             window.rpgAuth.campaignMembers =
                 [];
 
             return false;
         }
-
-
-        console.log(
-            "========== CARREGANDO MEMBROS DA CAMPANHA =========="
-        );
-
-
-        console.log(
-            "Campaign ID:",
-            campaignId
-        );
 
 
         try {
@@ -300,15 +428,6 @@
                         "campaign_id",
                         campaignId
                     );
-
-
-            console.log(
-                "Resultado campaign_members:",
-                {
-                    data: data,
-                    error: error
-                }
-            );
 
 
             if (error) {
@@ -390,15 +509,6 @@
         }
 
 
-        console.log(
-            "========== CARREGANDO PERSONAGENS DA CAMPANHA =========="
-        );
-
-
-        // ==================================
-        // OBTER IDS DOS MEMBROS
-        // ==================================
-
         const membros =
             window.rpgAuth.campaignMembers || [];
 
@@ -414,11 +524,6 @@
                         !!id
                 );
 
-
-        // ==================================
-        // GARANTIR QUE O MESTRE TAMBÉM
-        // POSSA SER ENCONTRADO
-        // ==================================
 
         if (
             window.rpgAuth.campaign &&
@@ -440,26 +545,12 @@
         }
 
 
-        console.log(
-            "Usuários que serão consultados:",
-            userIds
-        );
-
-
-        // ==================================
-        // NENHUM USUÁRIO
-        // ==================================
-
         if (
             userIds.length === 0
         ) {
 
             window.rpgAuth.campaignCharacters =
                 [];
-
-            console.warn(
-                "⚠️ Nenhum usuário encontrado para consultar personagens."
-            );
 
             return true;
         }
@@ -482,15 +573,6 @@
                         "user_id",
                         userIds
                     );
-
-
-            console.log(
-                "Resultado characters:",
-                {
-                    data: data,
-                    error: error
-                }
-            );
 
 
             if (error) {
@@ -587,30 +669,7 @@
 
 
         console.log(
-            "=========================================="
-        );
-
-        console.log(
             "📋 DADOS DA CAMPANHA PRONTOS"
-        );
-
-        console.log(
-            "Campanha:",
-            window.rpgAuth.campaign
-        );
-
-        console.log(
-            "Membros:",
-            window.rpgAuth.campaignMembers
-        );
-
-        console.log(
-            "Personagens:",
-            window.rpgAuth.campaignCharacters
-        );
-
-        console.log(
-            "=========================================="
         );
 
 
@@ -625,23 +684,12 @@
 
     async function carregarCampanhas(user) {
 
-        console.log(
-            "========== CARREGANDO CAMPANHAS =========="
-        );
-
-
         if (!window.supabaseClient) {
-
-            console.error(
-                "❌ Supabase Client não encontrado."
-            );
-
 
             mostrarDiagnostico(
                 "❌ Supabase Client não encontrado.",
                 "erro"
             );
-
 
             return false;
         }
@@ -649,43 +697,14 @@
 
         if (!user) {
 
-            console.error(
-                "❌ Usuário não encontrado."
-            );
-
-
-            mostrarDiagnostico(
-                "❌ Usuário não encontrado.",
-                "erro"
-            );
-
-
             return false;
         }
-
-
-        console.log(
-            "Usuário:",
-            user
-        );
-
-
-        console.log(
-            "ID do usuário:",
-            user.id
-        );
-
-
-        mostrarDiagnostico(
-            "🔎 Usuário encontrado. Consultando campanhas...",
-            "info"
-        );
 
 
         try {
 
             // ==================================
-            // 1. CAMPANHAS ONDE É MESTRE
+            // CAMPANHAS DO MESTRE
             // ==================================
 
             const {
@@ -721,14 +740,8 @@
             }
 
 
-            console.log(
-                "Campanhas onde é Mestre:",
-                campanhasMestre
-            );
-
-
             // ==================================
-            // 2. CAMPANHAS ONDE É MEMBRO
+            // CAMPANHAS ONDE É MEMBRO
             // ==================================
 
             const {
@@ -764,16 +777,6 @@
             }
 
 
-            console.log(
-                "Participações do usuário:",
-                participacoes
-            );
-
-
-            // ==================================
-            // 3. IDS DAS CAMPANHAS DOS MEMBROS
-            // ==================================
-
             const campaignIds =
                 (participacoes || [])
                     .map(
@@ -787,7 +790,7 @@
 
 
             // ==================================
-            // 4. BUSCAR CAMPANHAS DOS MEMBROS
+            // CAMPANHAS DOS MEMBROS
             // ==================================
 
             let campanhasMembro =
@@ -836,16 +839,6 @@
 
             }
 
-
-            console.log(
-                "Campanhas onde participa:",
-                campanhasMembro
-            );
-
-
-            // ==================================
-            // 5. JUNTAR CAMPANHAS
-            // ==================================
 
             const todasCampanhas = [
                 ...(campanhasMestre || []),
@@ -905,12 +898,6 @@
                 campanhasUnicas;
 
 
-            console.log(
-                "Quantidade total de campanhas:",
-                window.rpgAuth.campaigns.length
-            );
-
-
             // ==================================
             // NENHUMA CAMPANHA
             // ==================================
@@ -922,14 +909,9 @@
                 limparDadosCampanha();
 
 
-                console.warn(
-                    "⚠️ Usuário autenticado, mas não pertence a nenhuma campanha."
-                );
-
-
                 mostrarDiagnostico(
-                    "⚠️ Usuário autenticado, mas nenhuma campanha foi encontrada.",
-                    "aviso"
+                    "ℹ️ Conta autenticada. Nenhuma campanha vinculada ainda.",
+                    "info"
                 );
 
 
@@ -938,43 +920,17 @@
 
 
             // ==================================
-            // SELECIONAR CAMPANHA
+            // CAMPANHA ATUAL
             // ==================================
 
             window.rpgAuth.campaign =
                 window.rpgAuth.campaigns[0];
 
 
-            // ==================================
-            // VERIFICAR SE É MESTRE
-            // ==================================
-
             window.rpgAuth.isMaster =
                 window.rpgAuth.campaign.master_id ===
                 user.id;
 
-
-            console.log(
-                "✅ CAMPANHAS ENCONTRADAS:",
-                window.rpgAuth.campaigns
-            );
-
-
-            console.log(
-                "✅ CAMPANHA SELECIONADA:",
-                window.rpgAuth.campaign
-            );
-
-
-            console.log(
-                "👑 É Mestre:",
-                window.rpgAuth.isMaster
-            );
-
-
-            // ==================================
-            // CARREGAR JOGADORES E PERSONAGENS
-            // ==================================
 
             await carregarDadosCampanha();
 
@@ -997,9 +953,15 @@
             );
 
 
+            /*
+             * IMPORTANTE:
+             * Falha ao carregar campanha NÃO
+             * significa que o login falhou.
+             */
+
             mostrarDiagnostico(
-                `❌ Falha ao carregar campanhas: ${error.message}`,
-                "erro"
+                `⚠️ Login realizado, mas houve um problema ao carregar a campanha: ${error.message}`,
+                "aviso"
             );
 
 
@@ -1037,6 +999,8 @@
 
             limparDadosCampanha();
 
+            window.rpgAuth.profile =
+                null;
 
             return;
         }
@@ -1045,6 +1009,11 @@
         console.log(
             "Sessão ativa para:",
             session.user.email
+        );
+
+
+        await carregarPerfil(
+            session.user
         );
 
 
@@ -1089,63 +1058,310 @@
         );
 
 
-        const {
-            data,
-            error
-        } =
-            await window.supabaseClient.auth
-                .signInWithPassword({
+        try {
 
-                    email:
-                        email.trim(),
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient.auth
+                    .signInWithPassword({
 
-                    password:
-                        senha
+                        email:
+                            email.trim(),
 
-                });
+                        password:
+                            senha
+
+                    });
 
 
-        if (error) {
+            if (error) {
+
+                console.error(
+                    "Erro de autenticação:",
+                    error
+                );
+
+
+                mostrarMensagem(
+                    "Não foi possível entrar. Verifique e-mail e senha."
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ ${error.message}`,
+                    "erro"
+                );
+
+
+                return false;
+            }
+
+
+            console.log(
+                "Usuário autenticado:",
+                data.user
+            );
+
+
+            /*
+             * A autenticação já foi confirmada
+             * pelo Supabase neste ponto.
+             */
+
+            await atualizarEstadoSessao(
+                data.session
+            );
+
+
+            mostrarMensagem(
+                "Login realizado com sucesso!",
+                true
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
 
             console.error(
-                "Erro de autenticação:",
+                "❌ EXCEÇÃO NO LOGIN:",
                 error
             );
 
 
             mostrarMensagem(
-                "Não foi possível entrar. Verifique e-mail e senha."
+                "Não foi possível entrar."
+            );
+
+
+            mostrarDiagnostico(
+                `❌ Erro ao entrar: ${error.message}`,
+                "erro"
             );
 
 
             return false;
         }
 
-
-        console.log(
-            "Usuário autenticado:",
-            data.user
-        );
+    }
 
 
-        await atualizarEstadoSessao(
-            data.session
-        );
+    // ==========================================
+    // CRIAR CONTA
+    // ==========================================
+
+    async function criarConta(
+        username,
+        email,
+        senha
+    ) {
+
+        if (!window.supabaseClient) {
+
+            mostrarMensagem(
+                "Supabase não está disponível."
+            );
+
+            return false;
+        }
+
+
+        username =
+            username?.trim();
+
+        email =
+            email?.trim();
+
+
+        if (!username || !email || !senha) {
+
+            mostrarMensagem(
+                "Preencha nome de usuário, e-mail e senha."
+            );
+
+            return false;
+        }
+
+
+        if (username.length < 3) {
+
+            mostrarMensagem(
+                "O nome de usuário precisa ter pelo menos 3 caracteres."
+            );
+
+            return false;
+        }
+
+
+        if (senha.length < 6) {
+
+            mostrarMensagem(
+                "A senha precisa ter pelo menos 6 caracteres."
+            );
+
+            return false;
+        }
 
 
         mostrarMensagem(
-            "Login realizado com sucesso!",
-            true
+            "Criando conta..."
         );
 
 
-        return true;
+        try {
+
+            /*
+             * O nome de usuário vai como metadata
+             * também. Isso permite recuperá-lo caso
+             * a confirmação de e-mail esteja ativada.
+             */
+
+            const {
+                data,
+                error
+            } =
+                await window.supabaseClient.auth
+                    .signUp({
+
+                        email:
+                            email,
+
+                        password:
+                            senha,
+
+                        options: {
+
+                            data: {
+
+                                username:
+                                    username
+
+                            }
+
+                        }
+
+                    });
+
+
+            if (error) {
+
+                console.error(
+                    "❌ ERRO AO CRIAR CONTA:",
+                    error
+                );
+
+
+                mostrarMensagem(
+                    `Não foi possível criar a conta: ${error.message}`
+                );
+
+
+                mostrarDiagnostico(
+                    `❌ ${error.message}`,
+                    "erro"
+                );
+
+
+                return false;
+            }
+
+
+            console.log(
+                "✅ Conta criada:",
+                data.user
+            );
+
+
+            /*
+             * Se o Supabase entregar uma sessão
+             * imediatamente, podemos criar o perfil
+             * agora.
+             */
+
+            if (
+                data.user &&
+                data.session
+            ) {
+
+                await criarPerfil(
+                    data.user,
+                    username
+                );
+
+
+                await atualizarEstadoSessao(
+                    data.session
+                );
+
+
+                mostrarMensagem(
+                    "Conta criada com sucesso!",
+                    true
+                );
+
+
+                mostrarDiagnostico(
+                    "✅ Conta criada com sucesso!",
+                    "sucesso"
+                );
+
+
+                return true;
+
+            }
+
+
+            /*
+             * Se a confirmação de e-mail estiver
+             * ativada no Supabase, não haverá sessão
+             * imediatamente.
+             */
+
+            mostrarMensagem(
+                "Conta criada! Verifique seu e-mail para confirmar a conta.",
+                true
+            );
+
+
+            mostrarDiagnostico(
+                "📧 Conta criada. Verifique o e-mail para confirmar sua conta.",
+                "sucesso"
+            );
+
+
+            return true;
+
+        }
+
+        catch (error) {
+
+            console.error(
+                "❌ EXCEÇÃO AO CRIAR CONTA:",
+                error
+            );
+
+
+            mostrarMensagem(
+                `Erro ao criar conta: ${error.message}`
+            );
+
+
+            return false;
+        }
 
     }
 
 
     window.entrarComEmailSenha =
         entrarComEmailSenha;
+
+
+    window.criarConta =
+        criarConta;
 
 
     // ==========================================
@@ -1161,7 +1377,6 @@
         ) {
 
             return;
-
         }
 
 
@@ -1206,58 +1421,197 @@
                     Entre na sua conta
                 </p>
 
-                <input
-                    id="auth-email"
-                    type="email"
-                    autocomplete="email"
-                    placeholder="E-mail"
-                    style="
-                        width: 100%;
-                        box-sizing: border-box;
-                        padding: 12px;
-                        margin-bottom: 10px;
-                        border: 1px solid #68408a;
-                        border-radius: 10px;
-                        background: #100b18;
-                        color: #f5f0ff;
-                        outline: none;
-                    "
+
+                <div id="auth-login-fields">
+
+                    <input
+                        id="auth-email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="E-mail"
+                        style="
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 12px;
+                            margin-bottom: 10px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #f5f0ff;
+                            outline: none;
+                        "
+                    >
+
+                    <input
+                        id="auth-password"
+                        type="password"
+                        autocomplete="current-password"
+                        placeholder="Senha"
+                        style="
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 12px;
+                            margin-bottom: 14px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #f5f0ff;
+                            outline: none;
+                        "
+                    >
+
+                    <button
+                        id="auth-login-button"
+                        type="button"
+                        style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 1px solid #8b5cf6;
+                            border-radius: 10px;
+                            background: #241633;
+                            color: #f5f0ff;
+                            font-weight: bold;
+                            cursor: pointer;
+                        "
+                    >
+                        ENTRAR
+                    </button>
+
+                    <button
+                        id="auth-create-account-button"
+                        type="button"
+                        style="
+                            width: 100%;
+                            padding: 10px;
+                            margin-top: 10px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #c084fc;
+                            font-weight: bold;
+                            cursor: pointer;
+                        "
+                    >
+                        CRIAR CONTA
+                    </button>
+
+                </div>
+
+
+                <div
+                    id="auth-register-fields"
+                    style="display: none;"
                 >
 
-                <input
-                    id="auth-password"
-                    type="password"
-                    autocomplete="current-password"
-                    placeholder="Senha"
-                    style="
-                        width: 100%;
-                        box-sizing: border-box;
-                        padding: 12px;
-                        margin-bottom: 14px;
-                        border: 1px solid #68408a;
-                        border-radius: 10px;
-                        background: #100b18;
-                        color: #f5f0ff;
-                        outline: none;
-                    "
-                >
+                    <input
+                        id="auth-username"
+                        type="text"
+                        autocomplete="username"
+                        placeholder="Nome de usuário"
+                        style="
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 12px;
+                            margin-bottom: 10px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #f5f0ff;
+                            outline: none;
+                        "
+                    >
 
-                <button
-                    id="auth-login-button"
-                    type="button"
-                    style="
-                        width: 100%;
-                        padding: 12px;
-                        border: 1px solid #8b5cf6;
-                        border-radius: 10px;
-                        background: #241633;
-                        color: #f5f0ff;
-                        font-weight: bold;
-                        cursor: pointer;
-                    "
-                >
-                    ENTRAR
-                </button>
+                    <input
+                        id="auth-register-email"
+                        type="email"
+                        autocomplete="email"
+                        placeholder="E-mail"
+                        style="
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 12px;
+                            margin-bottom: 10px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #f5f0ff;
+                            outline: none;
+                        "
+                    >
+
+                    <input
+                        id="auth-register-password"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Senha"
+                        style="
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 12px;
+                            margin-bottom: 10px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #f5f0ff;
+                            outline: none;
+                        "
+                    >
+
+                    <input
+                        id="auth-register-password-confirm"
+                        type="password"
+                        autocomplete="new-password"
+                        placeholder="Confirmar senha"
+                        style="
+                            width: 100%;
+                            box-sizing: border-box;
+                            padding: 12px;
+                            margin-bottom: 14px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #f5f0ff;
+                            outline: none;
+                        "
+                    >
+
+                    <button
+                        id="auth-register-button"
+                        type="button"
+                        style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 1px solid #8b5cf6;
+                            border-radius: 10px;
+                            background: #241633;
+                            color: #f5f0ff;
+                            font-weight: bold;
+                            cursor: pointer;
+                        "
+                    >
+                        CRIAR CONTA
+                    </button>
+
+                    <button
+                        id="auth-back-login-button"
+                        type="button"
+                        style="
+                            width: 100%;
+                            padding: 10px;
+                            margin-top: 10px;
+                            border: 1px solid #68408a;
+                            border-radius: 10px;
+                            background: #100b18;
+                            color: #c084fc;
+                            font-weight: bold;
+                            cursor: pointer;
+                        "
+                    >
+                        VOLTAR PARA LOGIN
+                    </button>
+
+                </div>
+
 
                 <p
                     id="auth-message"
@@ -1294,7 +1648,11 @@
         );
 
 
-        const botao =
+        // ==================================
+        // ELEMENTOS DE LOGIN
+        // ==================================
+
+        const botaoLogin =
             document.getElementById(
                 "auth-login-button"
             );
@@ -1312,7 +1670,69 @@
             );
 
 
-        botao.addEventListener(
+        // ==================================
+        // ELEMENTOS DE CADASTRO
+        // ==================================
+
+        const username =
+            document.getElementById(
+                "auth-username"
+            );
+
+
+        const registerEmail =
+            document.getElementById(
+                "auth-register-email"
+            );
+
+
+        const registerPassword =
+            document.getElementById(
+                "auth-register-password"
+            );
+
+
+        const registerPasswordConfirm =
+            document.getElementById(
+                "auth-register-password-confirm"
+            );
+
+
+        const botaoCriarConta =
+            document.getElementById(
+                "auth-register-button"
+            );
+
+
+        const botaoMostrarCadastro =
+            document.getElementById(
+                "auth-create-account-button"
+            );
+
+
+        const botaoVoltarLogin =
+            document.getElementById(
+                "auth-back-login-button"
+            );
+
+
+        const camposLogin =
+            document.getElementById(
+                "auth-login-fields"
+            );
+
+
+        const camposCadastro =
+            document.getElementById(
+                "auth-register-fields"
+            );
+
+
+        // ==================================
+        // ENTRAR
+        // ==================================
+
+        botaoLogin.addEventListener(
             "click",
             async function () {
 
@@ -1341,7 +1761,119 @@
                     event.key === "Enter"
                 ) {
 
-                    botao.click();
+                    botaoLogin.click();
+
+                }
+
+            }
+        );
+
+
+        // ==================================
+        // MOSTRAR CADASTRO
+        // ==================================
+
+        botaoMostrarCadastro.addEventListener(
+            "click",
+            function () {
+
+                camposLogin.style.display =
+                    "none";
+
+                camposCadastro.style.display =
+                    "block";
+
+                mostrarMensagem(
+                    ""
+                );
+
+                username.focus();
+
+            }
+        );
+
+
+        // ==================================
+        // VOLTAR PARA LOGIN
+        // ==================================
+
+        botaoVoltarLogin.addEventListener(
+            "click",
+            function () {
+
+                camposCadastro.style.display =
+                    "none";
+
+                camposLogin.style.display =
+                    "block";
+
+                mostrarMensagem(
+                    ""
+                );
+
+                email.focus();
+
+            }
+        );
+
+
+        // ==================================
+        // CRIAR CONTA
+        // ==================================
+
+        botaoCriarConta.addEventListener(
+            "click",
+            async function () {
+
+                if (
+                    registerPassword.value !==
+                    registerPasswordConfirm.value
+                ) {
+
+                    mostrarMensagem(
+                        "As senhas não são iguais."
+                    );
+
+                    return;
+
+                }
+
+
+                const sucesso =
+                    await criarConta(
+                        username.value,
+                        registerEmail.value,
+                        registerPassword.value
+                    );
+
+
+                /*
+                 * Se houver sessão imediata,
+                 * podemos fechar o painel.
+                 */
+
+                if (
+                    sucesso &&
+                    window.rpgAuth.session
+                ) {
+
+                    painel.remove();
+
+                }
+
+            }
+        );
+
+
+        registerPasswordConfirm.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Enter"
+                ) {
+
+                    botaoCriarConta.click();
 
                 }
 
@@ -1367,11 +1899,6 @@
 
         if (!window.supabaseClient) {
 
-            console.error(
-                "Supabase Client não encontrado."
-            );
-
-
             mostrarDiagnostico(
                 "❌ Supabase Client não encontrado.",
                 "erro"
@@ -1379,7 +1906,6 @@
 
 
             return;
-
         }
 
 
@@ -1409,7 +1935,6 @@
 
 
             return;
-
         }
 
 
@@ -1426,7 +1951,6 @@
 
 
             return;
-
         }
 
 
@@ -1456,14 +1980,6 @@
                     event
                 );
 
-
-                /*
-                   Não usamos await diretamente
-                   dentro do callback do Supabase.
-
-                   Colocamos o processamento em
-                   uma tarefa separada.
-                */
 
                 setTimeout(
                     () => {
@@ -1523,6 +2039,17 @@
             return (
                 window.rpgAuth
                     .isMaster === true
+            );
+
+        };
+
+
+    window.obterPerfilUsuario =
+        function () {
+
+            return (
+                window.rpgAuth
+                    .profile || null
             );
 
         };
