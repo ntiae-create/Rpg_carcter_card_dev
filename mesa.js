@@ -495,15 +495,17 @@
             <div
                 class="table-seat"
                 data-seat="${numero}"
+                data-player-id=""
+                data-character-id=""
             >
 
-                <div>
+                <div class="table-seat-content">
 
-                    <strong>
+                    <strong class="table-seat-number">
                         LUGAR ${numero}
                     </strong>
 
-                    <small>
+                    <small class="table-seat-character">
                         VAZIO
                     </small>
 
@@ -512,6 +514,182 @@
             </div>
 
         `;
+
+    }
+
+
+    // ==========================================
+    // PREENCHER ASSENTO
+    // ==========================================
+    //
+    // Preparado para quando os jogadores
+    // forem carregados da campanha.
+    //
+    // Por enquanto esta função não é chamada
+    // automaticamente.
+    // ==========================================
+
+    function preencherAssento(
+        numero,
+        personagem,
+        playerId = ""
+    ) {
+
+        const painel =
+            document.getElementById(
+                "online-table-panel"
+            );
+
+
+        if (!painel) {
+
+            return;
+
+        }
+
+
+        const assento =
+            painel.querySelector(
+                `.table-seat[data-seat="${numero}"]`
+            );
+
+
+        if (!assento) {
+
+            return;
+
+        }
+
+
+        const nome =
+            personagem?.name ||
+            personagem?.nome ||
+            "VAZIO";
+
+
+        const campoNome =
+            assento.querySelector(
+                ".table-seat-character"
+            );
+
+
+        const campoNumero =
+            assento.querySelector(
+                ".table-seat-number"
+            );
+
+
+        if (campoNome) {
+
+            campoNome.textContent =
+                nome;
+
+        }
+
+
+        if (campoNumero) {
+
+            campoNumero.textContent =
+                `LUGAR ${numero}`;
+
+        }
+
+
+        assento.dataset.playerId =
+            playerId || "";
+
+
+        assento.dataset.characterId =
+            personagem?.id || "";
+
+    }
+
+
+    // ==========================================
+    // LIMPAR ASSENTO
+    // ==========================================
+
+    function limparAssento(numero) {
+
+        const painel =
+            document.getElementById(
+                "online-table-panel"
+            );
+
+
+        if (!painel) {
+
+            return;
+
+        }
+
+
+        const assento =
+            painel.querySelector(
+                `.table-seat[data-seat="${numero}"]`
+            );
+
+
+        if (!assento) {
+
+            return;
+
+        }
+
+
+        const campoNome =
+            assento.querySelector(
+                ".table-seat-character"
+            );
+
+
+        if (campoNome) {
+
+            campoNome.textContent =
+                "VAZIO";
+
+        }
+
+
+        assento.dataset.playerId =
+            "";
+
+
+        assento.dataset.characterId =
+            "";
+
+    }
+
+
+    // ==========================================
+    // ATUALIZAR CONTADOR DE JOGADORES
+    // ==========================================
+
+    function atualizarContadorJogadores() {
+
+        const contador =
+            document.getElementById(
+                "online-table-player-count"
+            );
+
+
+        if (!contador) {
+
+            return;
+
+        }
+
+
+        const jogadores =
+            Array.isArray(
+                window.rpgMesa.players
+            )
+                ? window.rpgMesa.players.length
+                : 0;
+
+
+        contador.textContent =
+            `${jogadores} / ${window.rpgMesa.maxPlayers}`;
 
     }
 
@@ -573,12 +751,9 @@
     // MODO DA MESA
     // ==========================================
     //
-    // Preparado para a futura batalha.
-    //
     // campaign = verde
     // battle   = vermelho
     //
-    // Ainda não ativamos batalha nesta etapa.
     // ==========================================
 
     function definirModoMesa(modo) {
@@ -648,11 +823,32 @@
     }
 
 
-    // Disponibilizar futuramente para
-    // outros módulos do sistema.
+    // ==========================================
+    // DISPONIBILIZAR MODO DA MESA
+    // ==========================================
 
     window.definirModoMesa =
         definirModoMesa;
+
+
+    // ==========================================
+    // DISPONIBILIZAR FUNÇÕES DOS ASSENTOS
+    // ==========================================
+    //
+    // Elas serão utilizadas posteriormente
+    // pelo sistema de jogadores da campanha.
+    // ==========================================
+
+    window.rpgMesa.preencherAssento =
+        preencherAssento;
+
+
+    window.rpgMesa.limparAssento =
+        limparAssento;
+
+
+    window.rpgMesa.atualizarContadorJogadores =
+        atualizarContadorJogadores;
 
 
     // ==========================================
@@ -661,65 +857,65 @@
 
     function obterNomeMestre() {
 
-    const user =
-        window.rpgAuth?.user;
+        const user =
+            window.rpgAuth?.user;
 
 
-    if (!user) {
+        if (!user) {
+
+            return "Mestre";
+
+        }
+
+
+        // --------------------------------------
+        // NOME DO USUÁRIO
+        // --------------------------------------
+
+        const nome =
+            user.user_metadata?.name;
+
+
+        const nomeCompleto =
+            user.user_metadata?.full_name;
+
+
+        // --------------------------------------
+        // ACEITAR SOMENTE NOMES
+        // --------------------------------------
+        //
+        // Se o valor possuir "@", provavelmente
+        // é um endereço de e-mail.
+        // Nesse caso, não mostrar.
+        //
+
+        if (
+            nome &&
+            !String(nome).includes("@")
+        ) {
+
+            return nome;
+
+        }
+
+
+        if (
+            nomeCompleto &&
+            !String(nomeCompleto).includes("@")
+        ) {
+
+            return nomeCompleto;
+
+        }
+
+
+        // --------------------------------------
+        // FALLBACK SEGURO
+        // --------------------------------------
 
         return "Mestre";
 
     }
-
-
-    // --------------------------------------
-    // NOME DO USUÁRIO
-    // --------------------------------------
-
-    const nome =
-        user.user_metadata?.name;
-
-
-    const nomeCompleto =
-        user.user_metadata?.full_name;
-
-
-    // --------------------------------------
-    // ACEITAR SOMENTE NOMES
-    // --------------------------------------
-    //
-    // Se o valor possuir "@", provavelmente
-    // é um endereço de e-mail.
-    // Nesse caso, não mostrar.
-    //
-
-    if (
-        nome &&
-        !String(nome).includes("@")
-    ) {
-
-        return nome;
-
-    }
-
-
-    if (
-        nomeCompleto &&
-        !String(nomeCompleto).includes("@")
-    ) {
-
-        return nomeCompleto;
-
-    }
-
-
-    // --------------------------------------
-    // FALLBACK SEGURO
-    // --------------------------------------
-
-    return "Mestre";
-
-}
 
 
     // ==========================================
