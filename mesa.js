@@ -20,7 +20,9 @@
 
         maxPlayers: 8,
 
-        initialized: false
+        initialized: false,
+
+        mode: "campaign"
 
     };
 
@@ -55,6 +57,7 @@
             ) {
 
                 break;
+
             }
 
 
@@ -71,6 +74,7 @@
 
 
             tentativas++;
+
         }
 
 
@@ -88,6 +92,7 @@
             );
 
             return;
+
         }
 
 
@@ -173,6 +178,7 @@
             );
 
             return;
+
         }
 
 
@@ -208,7 +214,7 @@
 
 
     // ==========================================
-    // CRIAR INTERFACE
+    // CRIAR INTERFACE DA MESA
     // ==========================================
 
     function criarInterfaceMesa() {
@@ -222,6 +228,7 @@
         ) {
 
             return;
+
         }
 
 
@@ -234,6 +241,10 @@
 
 
         painel.innerHTML = `
+
+            <!-- =================================
+                 CABEÇALHO
+            ================================== -->
 
             <div class="online-table-header">
 
@@ -251,20 +262,28 @@
 
                 </div>
 
+
                 <div class="online-table-status">
-                    🟢 ATIVA
+
+                    🟢 CAMPANHA
+
                 </div>
 
             </div>
 
 
-            <div class="online-table-master">
+            <!-- =================================
+                 MESA
+            ================================== -->
 
-                <span class="online-table-icon">
-                    👑
-                </span>
+            <div class="rpg-table">
 
-                <div>
+
+                <!-- =================================
+                     MESTRE — CABECEIRA
+                ================================== -->
+
+                <div class="table-head">
 
                     <small>MESTRE</small>
 
@@ -276,8 +295,151 @@
 
                 </div>
 
+
+                <!-- =================================
+                     JOGADORES — ESQUERDA
+                ================================== -->
+
+                <div class="table-side left">
+
+                    ${criarAssento(1)}
+
+                    ${criarAssento(2)}
+
+                    ${criarAssento(3)}
+
+                    ${criarAssento(4)}
+
+                </div>
+
+
+                <!-- =================================
+                     JOGADORES — DIREITA
+                ================================== -->
+
+                <div class="table-side right">
+
+                    ${criarAssento(5)}
+
+                    ${criarAssento(6)}
+
+                    ${criarAssento(7)}
+
+                    ${criarAssento(8)}
+
+                </div>
+
+
+                <!-- =================================
+                     CENTRO DA MESA
+                ================================== -->
+
+                <div class="table-center">
+
+
+                    <!-- CHAT -->
+
+                    <div class="table-chat">
+
+                        <div class="table-chat-title">
+
+                            💬 CHAT DA MESA
+
+                        </div>
+
+
+                        <div
+                            id="online-table-chat-messages"
+                            class="table-chat-messages"
+                        >
+
+                            A mesa está pronta.
+                            Aguardando os jogadores...
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================
+                         MÓDULOS
+                    ================================== -->
+
+                    <div class="table-modules">
+
+
+                        <button
+                            type="button"
+                            class="table-module"
+                            data-table-module="character"
+                        >
+
+                            <span>🎴</span>
+
+                            <small>
+                                PERSONAGEM
+                            </small>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="table-module"
+                            data-table-module="status"
+                        >
+
+                            <span>❤️</span>
+
+                            <small>
+                                STATUS
+                            </small>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="table-module"
+                            data-table-module="affinity"
+                        >
+
+                            <span>✨</span>
+
+                            <small>
+                                AFINIDADES
+                            </small>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            class="table-module"
+                            data-table-module="inventory"
+                        >
+
+                            <span>🎒</span>
+
+                            <small>
+                                INVENTÁRIO
+                            </small>
+
+                        </button>
+
+
+                    </div>
+
+
+                </div>
+
+
             </div>
 
+
+            <!-- =================================
+                 ÁREA DE JOGADORES
+            ================================== -->
 
             <div class="online-table-players">
 
@@ -300,7 +462,9 @@
                 >
 
                     <div class="online-table-empty">
+
                         Nenhum jogador entrou na mesa.
+
                     </div>
 
                 </div>
@@ -314,7 +478,181 @@
             painel
         );
 
+
+        configurarModulosMesa();
+
     }
+
+
+    // ==========================================
+    // CRIAR ASSENTO
+    // ==========================================
+
+    function criarAssento(numero) {
+
+        return `
+
+            <div
+                class="table-seat"
+                data-seat="${numero}"
+            >
+
+                <div>
+
+                    <strong>
+                        LUGAR ${numero}
+                    </strong>
+
+                    <small>
+                        VAZIO
+                    </small>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // MÓDULOS DA MESA
+    // ==========================================
+
+    function configurarModulosMesa() {
+
+        const painel =
+            document.getElementById(
+                "online-table-panel"
+            );
+
+
+        if (!painel) {
+
+            return;
+
+        }
+
+
+        const botoes =
+            painel.querySelectorAll(
+                "[data-table-module]"
+            );
+
+
+        botoes.forEach(
+            function (botao) {
+
+                botao.addEventListener(
+                    "click",
+                    function (evento) {
+
+                        evento.stopPropagation();
+
+
+                        const modulo =
+                            botao.dataset.tableModule;
+
+
+                        console.log(
+                            "🎴 Módulo da mesa selecionado:",
+                            modulo
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+    }
+
+
+    // ==========================================
+    // MODO DA MESA
+    // ==========================================
+    //
+    // Preparado para a futura batalha.
+    //
+    // campaign = verde
+    // battle   = vermelho
+    //
+    // Ainda não ativamos batalha nesta etapa.
+    // ==========================================
+
+    function definirModoMesa(modo) {
+
+        const painel =
+            document.getElementById(
+                "online-table-panel"
+            );
+
+
+        if (!painel) {
+
+            return;
+
+        }
+
+
+        window.rpgMesa.mode =
+            modo;
+
+
+        if (
+            modo === "battle"
+        ) {
+
+            painel.classList.add(
+                "battle-mode"
+            );
+
+
+            const status =
+                painel.querySelector(
+                    ".online-table-status"
+                );
+
+
+            if (status) {
+
+                status.innerHTML =
+                    "🔴 BATALHA";
+
+            }
+
+
+        } else {
+
+            painel.classList.remove(
+                "battle-mode"
+            );
+
+
+            const status =
+                painel.querySelector(
+                    ".online-table-status"
+                );
+
+
+            if (status) {
+
+                status.innerHTML =
+                    "🟢 CAMPANHA";
+
+            }
+
+        }
+
+    }
+
+
+    // Disponibilizar futuramente para
+    // outros módulos do sistema.
+
+    window.definirModoMesa =
+        definirModoMesa;
 
 
     // ==========================================
