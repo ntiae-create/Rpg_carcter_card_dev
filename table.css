@@ -1,0 +1,322 @@
+/* =================================
+   MESA ONLINE
+   Estilo exclusivo da mesa de RPG
+================================= */
+
+#online-table-panel {
+    position: relative;
+    width: min(100%, 540px);
+    margin: 24px auto 0;
+    padding: 20px;
+
+    border: 1px solid #6f3aa8 !important;
+    border-radius: 22px !important;
+
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(124, 58, 237, 0.16),
+            rgba(7, 10, 24, 0.98) 48%,
+            rgba(3, 5, 10, 0.99) 100%
+        ) !important;
+
+    color: #f5f0ff !important;
+
+    box-shadow:
+        0 0 30px rgba(124, 58, 237, 0.22),
+        inset 0 0 35px rgba(124, 58, 237, 0.05) !important;
+
+    overflow: hidden;
+}
+
+/* Brilho decorativo superior */
+#online-table-panel::before {
+    content: "";
+
+    position: absolute;
+    top: 0;
+    left: 12%;
+    right: 12%;
+
+    height: 1px;
+
+    background: linear-gradient(
+        90deg,
+        transparent,
+        #a855f7,
+        #c084fc,
+        #a855f7,
+        transparent
+    );
+
+    opacity: 0.8;
+}
+
+
+/* =================================
+   CABEÇALHO
+================================= */
+
+#online-table-panel h2 {
+    margin: 0 0 6px !important;
+
+    color: #e9d5ff !important;
+
+    font-size: 18px !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+#online-table-panel > p {
+    margin: 0 0 18px !important;
+
+    color: #8f839d !important;
+
+    font-size: 11px !important;
+}
+
+
+/* =================================
+   BLOCOS DE INFORMAÇÃO
+================================= */
+
+#online-table-panel .table-info {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 10px;
+
+    margin-top: 12px;
+}
+
+#online-table-panel .table-info > div {
+    min-width: 0;
+
+    padding: 12px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07) !important;
+
+    border-radius: 12px !important;
+
+    background:
+        rgba(255, 255, 255, 0.035) !important;
+}
+
+#online-table-panel .table-info small {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: #75687f !important;
+
+    font-size: 9px !important;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+#online-table-panel .table-info strong {
+    display: block;
+
+    color: #d8c7e8 !important;
+
+    font-size: 13px !important;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+}
+
+
+/* =================================
+   STATUS ONLINE
+================================= */
+
+#online-table-panel .table-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-bottom: 16px;
+
+    padding: 6px 10px;
+
+    border:
+        1px solid rgba(124, 58, 237, 0.35);
+
+    border-radius: 999px;
+
+    background:
+        rgba(124, 58, 237, 0.08);
+
+    color: #c084fc;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+#online-table-panel .table-status::before {
+    content: "";
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: #a78bfa;
+
+    box-shadow:
+        0 0 9px rgba(167, 139, 250, 0.8);
+
+    animation:
+        tableOnlinePulse 1.8s ease-in-out infinite;
+}
+
+@keyframes tableOnlinePulse {
+
+    0%,
+    100% {
+        opacity: 0.55;
+
+        transform: scale(0.9);
+    }
+
+    50% {
+        opacity: 1;
+
+        transform: scale(1.15);
+    }
+
+}
+
+
+/* =================================
+   MESTRE
+================================= */
+
+#online-table-panel .table-master {
+    margin-top: 14px;
+
+    padding: 13px;
+
+    border-radius: 13px;
+
+    border:
+        1px solid rgba(168, 85, 247, 0.2);
+
+    background:
+        rgba(124, 58, 237, 0.06);
+}
+
+#online-table-panel .table-master strong {
+    color: #c084fc;
+}
+
+
+/* =================================
+   JOGADORES
+================================= */
+
+#online-table-panel .table-players {
+    margin-top: 14px;
+
+    padding: 14px;
+
+    border-radius: 14px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+#online-table-panel .table-players-header {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 10px;
+}
+
+#online-table-panel .table-players-header strong {
+    color: #b9a9c8;
+
+    font-size: 12px;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+#online-table-panel .table-players-count {
+    color: #c084fc;
+
+    font-size: 12px;
+
+    font-weight: bold;
+}
+
+#online-table-panel .table-empty {
+    padding: 14px 8px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(0, 0, 0, 0.16);
+
+    color: #75687f;
+
+    font-size: 10px;
+
+    text-align: center;
+}
+
+
+/* =================================
+   RESPONSIVO
+================================= */
+
+@media (max-width: 380px) {
+
+    #online-table-panel {
+        padding: 16px;
+
+        border-radius: 18px !important;
+    }
+
+    #online-table-panel .table-info {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =================================
+   ACESSIBILIDADE
+================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    #online-table-panel .table-status::before {
+        animation: none;
+    }
+
+}
