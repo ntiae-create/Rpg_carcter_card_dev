@@ -1,103 +1,68 @@
-/* =========================================================
-   MESA-ENTRADA.JS
-   ENTRADA NA MESA PELO CÓDIGO DA MESA
-========================================================= */
+"use strict";
 
-(() => {
-    "use strict";
+/*
+============================================================
+ MESA — ENTRADA POR CÓDIGO
+============================================================
+
+ Responsável por:
+
+ - Ler o código digitado pelo jogador
+ - Encontrar a campanha
+ - Verificar o usuário
+ - Encontrar o personagem
+ - Confirmar se o personagem está definido
+ - Adicionar o jogador à campanha
+ - Reservar um dos 8 slots
+ - Salvar a mesa ativa
+ - Entrar na mesa.html
+
+ Código oficial:
+ campaigns.codigo_mesa
+============================================================
+*/
+
+
+(function () {
 
     const MAX_JOGADORES = 8;
 
-    /* =====================================================
-       ELEMENTOS
-    ===================================================== */
+    const STORAGE_KEY = "rpg_mesa_ativa";
 
-    let codigoInput = null;
-    let entrarButton = null;
+
+    /*
+    ========================================================
+     ELEMENTOS
+    ========================================================
+    */
+
+    let inputCodigo = null;
+    let botaoEntrar = null;
     let mensagem = null;
 
-    /* =====================================================
-       ELEMENTOS DA PÁGINA
-    ===================================================== */
 
-    function localizarElementos() {
-        /*
-         * Usa os elementos que já existem no index.html.
-         */
+    /*
+    ========================================================
+     UTILITÁRIOS
+    ========================================================
+    */
 
-        codigoInput =
-            document.getElementById("campaign-code-input");
+    function obterSupabase() {
 
-        entrarButton =
-            document.getElementById("join-campaign-button");
-
-        mensagem =
-            document.getElementById("campaign-join-message");
-
-        /*
-         * Compatibilidade caso algum elemento ainda
-         * esteja usando outro ID.
-         */
-
-        if (!codigoInput) {
-            codigoInput =
-                document.getElementById("mesa-code-input");
+        if (window.supabaseClient) {
+            return window.supabaseClient;
         }
 
-        if (!entrarButton) {
-            entrarButton =
-                document.getElementById("entrar-mesa-button");
+        if (window.supabase) {
+            return window.supabase;
         }
 
-        if (!mensagem) {
-            mensagem =
-                document.getElementById("mesa-entry-message");
-        }
+        return null;
     }
 
-    /* =====================================================
-       MENSAGENS
-    ===================================================== */
-
-    function mostrarMensagem(texto, tipo = "info") {
-        if (!mensagem) {
-            console.log("[Mesa]", texto);
-            return;
-        }
-
-        mensagem.textContent = texto;
-
-        mensagem.dataset.tipo = tipo;
-
-        mensagem.style.display = "block";
-    }
-
-    function limparMensagem() {
-        if (!mensagem) {
-            return;
-        }
-
-        mensagem.textContent = "";
-        mensagem.style.display = "none";
-        delete mensagem.dataset.tipo;
-    }
-
-    /* =====================================================
-       CÓDIGO
-    ===================================================== */
-
-    function normalizarCodigo(codigo) {
-        return String(codigo || "")
-            .trim()
-            .toUpperCase()
-            .replace(/\s+/g, "");
-    }
-
-    /* =====================================================
-       USUÁRIO
-    ===================================================== */
 
     function obterUsuario() {
+
         if (
             window.rpgAuth &&
             window.rpgAuth.user
@@ -108,820 +73,1179 @@
         return null;
     }
 
-    /* =====================================================
-       PERSONAGEM
-    ===================================================== */
 
-    async function obterPersonagemDoJogador(userId) {
-        if (!window.supabase || !userId) {
-            return null;
+    function normalizarCodigo(valor) {
+
+        return String(valor || "")
+            .trim()
+            .toUpperCase()
+            .replace(/\s+/g, "");
+    }
+
+
+    function mostrarMensagem(texto, tipo = "") {
+
+        if (!mensagem) return;
+
+        mensagem.textContent = texto;
+
+        mensagem.className = "campaign-message";
+
+        if (tipo) {
+            mensagem.classList.add(tipo);
         }
+    }
+
+
+    function bloquearEntrada(bloquear) {
+
+        if (inputCodigo) {
+            inputCodigo.disabled = bloquear;
+        }
+
+        if (botaoEntrar) {
+            botaoEntrar.disabled = bloquear;
+        }
+    }
+
+
+    /*
+    ========================================================
+     PERSONAGEM
+    ========================================================
+    */
+
+    function personagemEstaConfirmado(personagem) {
+
+        if (!personagem) {
+            return false;
+        }
+
+        const nome =
+            String(personagem.name || "")
+                .trim();
+
+        const raca =
+            String(personagem.race || "")
+                .trim();
+
+        const classe =
+            String(personagem.class || "")
+                .trim();
+
+        return Boolean(
+            nome &&
+            raca &&
+            classe
+        );
+    }
+
+
+    /*
+    ========================================================
+     ENCONTRAR PERSONAGEM
+    ========================================================
+    */
+
+    async function encontrarPersonagem(
+        supabase,
+        usuario,
+        campanhaId
+    ) {
 
         /*
-         * Primeiro tentamos encontrar o personagem
-         * que já pertence à campanha ativa.
-         */
+         Primeiro tenta encontrar um personagem
+         já pertencente à campanha.
+        */
 
-        let campanhaAtual = null;
-
-        if (
-            window.rpgCampaign &&
-            typeof window.rpgCampaign.obterCampanhaAtiva ===
-                "function"
-        ) {
-            campanhaAtual =
-                window.rpgCampaign.obterCampanhaAtiva();
-        }
-
-        if (
-            campanhaAtual &&
-            campanhaAtual.id
-        ) {
-            const { data, error } =
-                await window.supabase
-                    .from("characters")
-                    .select("*")
-                    .eq("campaign_id", campanhaAtual.id)
-                    .eq("user_id", userId)
-                    .maybeSingle();
-
-            if (!error && data) {
-                return data;
-            }
-        }
-
-        /*
-         * Caso ainda não esteja associado a uma campanha,
-         * pega o personagem do usuário.
-         *
-         * Se houver mais de um personagem, usamos o mais
-         * recentemente criado.
-         */
-
-        const { data, error } =
-            await window.supabase
+        const { data: personagemCampanha, error: erroCampanha } =
+            await supabase
                 .from("characters")
                 .select("*")
-                .eq("user_id", userId)
+                .eq("campaign_id", campanhaId)
+                .eq("user_id", usuario.id)
                 .order("created_at", {
                     ascending: false
                 })
                 .limit(1)
                 .maybeSingle();
 
-        if (error) {
-            console.error(
-                "[Mesa] Erro ao buscar personagem:",
-                error
+
+        if (
+            !erroCampanha &&
+            personagemCampanha
+        ) {
+
+            return personagemCampanha;
+
+        }
+
+
+        /*
+         Caso ainda não esteja associado à campanha,
+         procura o personagem mais recente do usuário.
+        */
+
+        const { data: personagemUsuario, error: erroUsuario } =
+            await supabase
+                .from("characters")
+                .select("*")
+                .eq("user_id", usuario.id)
+                .order("created_at", {
+                    ascending: false
+                })
+                .limit(1)
+                .maybeSingle();
+
+
+        if (erroUsuario) {
+
+            throw erroUsuario;
+
+        }
+
+
+        return personagemUsuario || null;
+    }
+
+
+
+    /*
+    ========================================================
+     BUSCAR CAMPANHA PELO CÓDIGO
+    ========================================================
+    */
+
+    async function buscarCampanha(codigo) {
+
+        /*
+         Primeiro usamos o campaign.js,
+         caso ele esteja disponível.
+        */
+
+        if (
+            window.rpgCampaign &&
+            typeof window.rpgCampaign.buscarCampanhaPorCodigo === "function"
+        ) {
+
+            const campanha =
+                await window.rpgCampaign
+                    .buscarCampanhaPorCodigo(codigo);
+
+            if (campanha) {
+                return campanha;
+            }
+
+        }
+
+
+        /*
+         Fallback direto no Supabase.
+        */
+
+        const supabase = obterSupabase();
+
+        if (!supabase) {
+
+            throw new Error(
+                "Conexão com o Supabase não encontrada."
             );
 
-            return null;
         }
+
+
+        const { data, error } =
+            await supabase
+                .from("campaigns")
+                .select(`
+                    id,
+                    name,
+                    master_id,
+                    codigo_mesa,
+                    created_at
+                `)
+                .eq("codigo_mesa", codigo)
+                .maybeSingle();
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
 
         return data || null;
     }
 
-    /* =====================================================
-       PERSONAGEM CONFIRMADO
-    ===================================================== */
 
-    function personagemEstaConfirmado(personagem) {
-        if (!personagem) {
-            return false;
+
+    /*
+    ========================================================
+     VERIFICAR MEMBRO
+    ========================================================
+    */
+
+    async function usuarioJaEhMembro(
+        supabase,
+        campanhaId,
+        usuarioId
+    ) {
+
+        const { data, error } =
+            await supabase
+                .from("campaign_members")
+                .select("id")
+                .eq("campaign_id", campanhaId)
+                .eq("user_id", usuarioId)
+                .maybeSingle();
+
+
+        if (error) {
+
+            throw error;
+
         }
 
-        /*
-         * O banco não possui uma coluna "confirmed"
-         * atualmente.
-         *
-         * Portanto, consideramos o personagem válido
-         * quando possui os dados básicos necessários.
-         */
 
-        const nomeValido =
-            String(personagem.name || "").trim().length > 0;
+        return Boolean(data);
+    }
 
-        const racaValida =
-            String(personagem.race || "").trim().length > 0;
 
-        const classeValida =
-            String(personagem.class || "").trim().length > 0;
 
-        return (
-            nomeValido &&
-            racaValida &&
-            classeValida
+    /*
+    ========================================================
+     ADICIONAR MEMBRO
+    ========================================================
+    */
+
+    async function adicionarMembro(
+        supabase,
+        campanhaId,
+        usuarioId
+    ) {
+
+        const { error } =
+            await supabase
+                .from("campaign_members")
+                .insert({
+
+                    campaign_id: campanhaId,
+
+                    user_id: usuarioId,
+
+                    role: "player"
+
+                });
+
+
+        if (error) {
+
+            /*
+             Se já existe, não precisamos
+             considerar isso um erro fatal.
+            */
+
+            if (
+                error.code === "23505"
+            ) {
+
+                return;
+
+            }
+
+            throw error;
+        }
+    }
+
+
+
+    /*
+    ========================================================
+     OBTER SLOTS OCUPADOS
+    ========================================================
+    */
+
+    async function obterSlotsOcupados(
+        supabase,
+        campanhaId
+    ) {
+
+        const { data, error } =
+            await supabase
+                .from("characters")
+                .select("slot")
+                .eq("campaign_id", campanhaId)
+                .not("slot", "is", null);
+
+
+        if (error) {
+
+            throw error;
+
+        }
+
+
+        return new Set(
+            (data || [])
+                .map(personagem => personagem.slot)
+                .filter(slot =>
+                    Number.isInteger(slot)
+                )
         );
     }
 
-    /* =====================================================
-       MEMBRO DA CAMPANHA
-    ===================================================== */
 
-    async function verificarMembro(
-        campaignId,
-        userId
+
+    /*
+    ========================================================
+     ENCONTRAR PRIMEIRO SLOT
+    ========================================================
+    */
+
+    function encontrarPrimeiroSlot(
+        slotsOcupados
     ) {
-        if (!window.supabase) {
-            return null;
-        }
-
-        const { data, error } =
-            await window.supabase
-                .from("campaign_members")
-                .select("*")
-                .eq("campaign_id", campaignId)
-                .eq("user_id", userId)
-                .maybeSingle();
-
-        if (error) {
-            console.error(
-                "[Mesa] Erro ao verificar membro:",
-                error
-            );
-
-            return null;
-        }
-
-        return data || null;
-    }
-
-    /* =====================================================
-       ADICIONAR MEMBRO
-    ===================================================== */
-
-    async function adicionarMembro(
-        campaignId,
-        userId
-    ) {
-        if (!window.supabase) {
-            return {
-                sucesso: false,
-                erro: "Supabase não disponível."
-            };
-        }
-
-        const membroExistente =
-            await verificarMembro(
-                campaignId,
-                userId
-            );
-
-        if (membroExistente) {
-            return {
-                sucesso: true,
-                membro: membroExistente
-            };
-        }
-
-        const { data, error } =
-            await window.supabase
-                .from("campaign_members")
-                .insert({
-                    campaign_id: campaignId,
-                    user_id: userId
-                })
-                .select()
-                .single();
-
-        if (error) {
-            console.error(
-                "[Mesa] Erro ao adicionar membro:",
-                error
-            );
-
-            return {
-                sucesso: false,
-                erro: error
-            };
-        }
-
-        return {
-            sucesso: true,
-            membro: data
-        };
-    }
-
-    /* =====================================================
-       ENCONTRAR SLOT LIVRE
-    ===================================================== */
-
-    async function encontrarSlotLivre(campaignId) {
-        if (!window.supabase) {
-            return null;
-        }
-
-        const { data, error } =
-            await window.supabase
-                .from("characters")
-                .select("slot")
-                .eq("campaign_id", campaignId)
-                .not("slot", "is", null);
-
-        if (error) {
-            console.error(
-                "[Mesa] Erro ao verificar slots:",
-                error
-            );
-
-            return null;
-        }
-
-        const ocupados =
-            new Set(
-                (data || [])
-                    .map(personagem =>
-                        Number(personagem.slot)
-                    )
-                    .filter(slot =>
-                        Number.isInteger(slot) &&
-                        slot >= 1 &&
-                        slot <= MAX_JOGADORES
-                    )
-            );
 
         for (
             let slot = 1;
             slot <= MAX_JOGADORES;
             slot++
         ) {
-            if (!ocupados.has(slot)) {
+
+            if (
+                !slotsOcupados.has(slot)
+            ) {
+
                 return slot;
+
             }
+
         }
+
 
         return null;
     }
 
-    /* =====================================================
-       ASSOCIAR PERSONAGEM À MESA
-    ===================================================== */
+
+
+    /*
+    ========================================================
+     ATUALIZAR PERSONAGEM
+    ========================================================
+    */
 
     async function associarPersonagem(
-        personagemId,
-        campaignId,
+        supabase,
+        personagem,
+        campanhaId,
         slot
     ) {
-        if (!window.supabase) {
-            return {
-                sucesso: false,
-                erro: "Supabase não disponível."
-            };
-        }
 
         const { data, error } =
-            await window.supabase
+            await supabase
                 .from("characters")
                 .update({
-                    campaign_id: campaignId,
+
+                    campaign_id: campanhaId,
+
                     slot: slot
+
                 })
-                .eq("id", personagemId)
+                .eq("id", personagem.id)
+                .eq("user_id", personagem.user_id)
                 .select()
                 .single();
 
-        if (error) {
-            console.error(
-                "[Mesa] Erro ao associar personagem:",
-                error
-            );
 
-            return {
-                sucesso: false,
-                erro: error
-            };
+        if (error) {
+
+            throw error;
+
         }
 
-        return {
-            sucesso: true,
-            personagem: data
-        };
+
+        return data;
     }
 
-    /* =====================================================
-       SALVAR CAMPANHA LOCAL
-    ===================================================== */
 
-    function salvarMesaLocal(
+
+    /*
+    ========================================================
+     SALVAR MESA LOCAL
+    ========================================================
+    */
+
+    function salvarMesaAtiva(
         campanha,
         personagem,
         slot
     ) {
-        try {
-            localStorage.setItem(
-                "rpg_mesa_ativa",
-                JSON.stringify({
-                    campaignId: campanha.id,
-                    codigoMesa: campanha.codigo_mesa,
-                    nomeMesa: campanha.name,
-                    personagemId: personagem.id,
-                    slot: slot,
-                    timestamp: Date.now()
-                })
-            );
-        } catch (erro) {
-            console.warn(
-                "[Mesa] Não foi possível salvar sessão local:",
-                erro
-            );
-        }
+
+        const mesa = {
+
+            campaignId:
+                campanha.id,
+
+            campaignName:
+                campanha.name,
+
+            codigoMesa:
+                campanha.codigo_mesa,
+
+            characterId:
+                personagem.id,
+
+            slot:
+
+                slot,
+
+            joinedAt:
+                new Date().toISOString()
+
+        };
+
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(mesa)
+        );
+
+
+        return mesa;
     }
 
-    /* =====================================================
-       ENTRAR NA MESA
-    ===================================================== */
 
-    async function entrarPorCodigo(codigo) {
-        const codigoNormalizado =
-            normalizarCodigo(codigo);
 
-        limparMensagem();
+    /*
+    ========================================================
+     ENTRAR NA MESA
+    ========================================================
+    */
 
-        if (!codigoNormalizado) {
+    async function entrarPorCodigo() {
+
+        const codigo =
+            normalizarCodigo(
+                inputCodigo?.value
+            );
+
+
+        if (!codigo) {
+
             mostrarMensagem(
                 "Digite o código da mesa.",
-                "erro"
+                "error"
             );
-            return false;
+
+            return;
         }
+
 
         const usuario =
             obterUsuario();
 
+
         if (!usuario) {
+
             mostrarMensagem(
-                "Você precisa estar logado para entrar na mesa.",
-                "erro"
+                "Você precisa estar conectado para entrar na mesa.",
+                "error"
             );
-            return false;
+
+            return;
         }
 
-        /*
-         * Busca a campanha através do campaign.js.
-         */
+
+        const supabase =
+            obterSupabase();
+
+
+        if (!supabase) {
+
+            mostrarMensagem(
+                "Não foi possível conectar ao servidor.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        bloquearEntrada(true);
 
         mostrarMensagem(
             "Procurando a mesa...",
-            "info"
+            "loading"
         );
 
-        let campanha = null;
 
-        if (
-            window.rpgCampaign &&
-            typeof window.rpgCampaign.buscarCampanhaPorCodigo ===
-                "function"
-        ) {
-            campanha =
-                await window.rpgCampaign
-                    .buscarCampanhaPorCodigo(
-                        codigoNormalizado
-                    );
-        }
-
-        /*
-         * Compatibilidade direta com Supabase.
-         */
-
-        if (!campanha && window.supabase) {
-            const { data, error } =
-                await window.supabase
-                    .from("campaigns")
-                    .select(`
-                        id,
-                        name,
-                        master_id,
-                        codigo_mesa,
-                        created_at
-                    `)
-                    .eq(
-                        "codigo_mesa",
-                        codigoNormalizado
-                    )
-                    .maybeSingle();
-
-            if (!error) {
-                campanha = data || null;
-            }
-        }
-
-        if (!campanha) {
-            mostrarMensagem(
-                "Código da mesa não encontrado.",
-                "erro"
-            );
-            return false;
-        }
-
-        /*
-         * Evita o próprio mestre entrar como jogador.
-         */
-
-        if (
-            campanha.master_id ===
-            usuario.id
-        ) {
-            if (
-                window.rpgCampaign &&
-                typeof window.rpgCampaign.definirCampanhaAtiva ===
-                    "function"
-            ) {
-                window.rpgCampaign
-                    .definirCampanhaAtiva(
-                        campanha
-                    );
-            }
-
-            salvarMesaLocal(
-                campanha,
-                {
-                    id: null
-                },
-                null
-            );
-
-            window.location.href =
-                "mesa.html";
-
-            return true;
-        }
-
-        /*
-         * Procura o personagem.
-         */
-
-        mostrarMensagem(
-            "Verificando seu personagem...",
-            "info"
-        );
-
-        const personagem =
-            await obterPersonagemDoJogador(
-                usuario.id
-            );
-
-        if (!personagem) {
-            mostrarMensagem(
-                "Você ainda não possui um personagem.",
-                "erro"
-            );
-            return false;
-        }
-
-        if (
-            !personagemEstaConfirmado(
-                personagem
-            )
-        ) {
-            mostrarMensagem(
-                "Confirme seu personagem antes de entrar na mesa.",
-                "erro"
-            );
-            return false;
-        }
-
-        /*
-         * Verifica se já é membro.
-         */
-
-        const membro =
-            await verificarMembro(
-                campanha.id,
-                usuario.id
-            );
-
-        /*
-         * Se já está na mesa, reaproveita o slot.
-         */
-
-        if (membro) {
-            let slotAtual =
-                personagem.slot;
+        try {
 
             /*
-             * Se o personagem já tem slot, entra direto.
-             */
+            ==================================================
+             1. ENCONTRAR CAMPANHA
+            ==================================================
+            */
+
+            const campanha =
+                await buscarCampanha(codigo);
+
+
+            if (!campanha) {
+
+                throw new Error(
+                    "Nenhuma mesa encontrada com esse código."
+                );
+
+            }
+
+
+            /*
+            ==================================================
+             2. MESTRE
+            ==================================================
+            */
 
             if (
-                Number.isInteger(
-                    Number(slotAtual)
-                ) &&
-                Number(slotAtual) >= 1 &&
-                Number(slotAtual) <= MAX_JOGADORES
+                campanha.master_id === usuario.id
             ) {
-                slotAtual =
-                    Number(slotAtual);
-            } else {
-                /*
-                 * Caso seja membro mas ainda não tenha slot,
-                 * encontra uma vaga.
-                 */
 
-                slotAtual =
-                    await encontrarSlotLivre(
+                salvarMesaAtiva(
+                    campanha,
+                    {
+                        id: null
+                    },
+                    null
+                );
+
+
+                mostrarMensagem(
+                    "Mesa encontrada. Entrando como Mestre...",
+                    "success"
+                );
+
+
+                setTimeout(() => {
+
+                    window.location.href =
+                        "mesa.html";
+
+                }, 300);
+
+
+                return;
+            }
+
+
+
+            /*
+            ==================================================
+             3. PERSONAGEM
+            ==================================================
+            */
+
+            mostrarMensagem(
+                "Verificando seu personagem...",
+                "loading"
+            );
+
+
+            const personagem =
+                await encontrarPersonagem(
+                    supabase,
+                    usuario,
+                    campanha.id
+                );
+
+
+            if (!personagem) {
+
+                throw new Error(
+                    "Você ainda não possui um personagem."
+                );
+
+            }
+
+
+            /*
+            ==================================================
+             4. PERSONAGEM CONFIRMADO
+            ==================================================
+            */
+
+            if (
+                !personagemEstaConfirmado(
+                    personagem
+                )
+            ) {
+
+                throw new Error(
+                    "Finalize seu personagem antes de entrar na mesa."
+                );
+
+            }
+
+
+
+            /*
+            ==================================================
+             5. MEMBRO
+            ==================================================
+            */
+
+            const jaEhMembro =
+                await usuarioJaEhMembro(
+                    supabase,
+                    campanha.id,
+                    usuario.id
+                );
+
+
+            if (!jaEhMembro) {
+
+                mostrarMensagem(
+                    "Entrando na mesa...",
+                    "loading"
+                );
+
+
+                await adicionarMembro(
+                    supabase,
+                    campanha.id,
+                    usuario.id
+                );
+
+            }
+
+
+
+            /*
+            ==================================================
+             6. SLOT
+            ==================================================
+            */
+
+            let slot =
+                personagem.slot;
+
+
+            /*
+             Se já possui slot nessa campanha,
+             mantém o mesmo.
+            */
+
+            if (
+                !slot ||
+                slot < 1 ||
+                slot > MAX_JOGADORES
+            ) {
+
+                const slotsOcupados =
+                    await obterSlotsOcupados(
+                        supabase,
                         campanha.id
                     );
 
-                if (!slotAtual) {
-                    mostrarMensagem(
-                        "A mesa está cheia. Existem 8 jogadores.",
-                        "erro"
+
+                slot =
+                    encontrarPrimeiroSlot(
+                        slotsOcupados
                     );
-                    return false;
+
+
+                if (!slot) {
+
+                    throw new Error(
+                        "A mesa já possui os 8 slots ocupados."
+                    );
+
                 }
 
-                const resultado =
-                    await associarPersonagem(
-                        personagem.id,
-                        campanha.id,
-                        slotAtual
-                    );
 
-                if (!resultado.sucesso) {
-                    mostrarMensagem(
-                        "Não foi possível reservar seu lugar na mesa.",
-                        "erro"
-                    );
-                    return false;
-                }
+                mostrarMensagem(
+                    `Reservando o jogador ${slot}...`,
+                    "loading"
+                );
+
+
+                await associarPersonagem(
+                    supabase,
+                    personagem,
+                    campanha.id,
+                    slot
+                );
+
             }
 
-            if (
-                window.rpgCampaign &&
-                typeof window.rpgCampaign.definirCampanhaAtiva ===
-                    "function"
-            ) {
-                window.rpgCampaign
-                    .definirCampanhaAtiva(
-                        campanha
-                    );
-            }
 
-            salvarMesaLocal(
+
+            /*
+            ==================================================
+             7. SALVAR MESA
+            ==================================================
+            */
+
+            salvarMesaAtiva(
                 campanha,
                 personagem,
-                slotAtual
-            );
-
-            mostrarMensagem(
-                `Entrando na mesa... Lugar ${slotAtual}.`,
-                "sucesso"
-            );
-
-            setTimeout(() => {
-                window.location.href =
-                    "mesa.html";
-            }, 300);
-
-            return true;
-        }
-
-        /*
-         * Ainda não é membro.
-         *
-         * Primeiro verifica se existe vaga.
-         */
-
-        mostrarMensagem(
-            "Procurando um lugar na mesa...",
-            "info"
-        );
-
-        const slot =
-            await encontrarSlotLivre(
-                campanha.id
-            );
-
-        if (!slot) {
-            mostrarMensagem(
-                "A mesa está cheia. Existem 8 jogadores.",
-                "erro"
-            );
-            return false;
-        }
-
-        /*
-         * Adiciona o jogador à campanha.
-         */
-
-        const resultadoMembro =
-            await adicionarMembro(
-                campanha.id,
-                usuario.id
-            );
-
-        if (!resultadoMembro.sucesso) {
-            mostrarMensagem(
-                "Não foi possível entrar na mesa.",
-                "erro"
-            );
-            return false;
-        }
-
-        /*
-         * Associa o personagem ao slot.
-         */
-
-        const resultadoPersonagem =
-            await associarPersonagem(
-                personagem.id,
-                campanha.id,
                 slot
             );
 
-        if (!resultadoPersonagem.sucesso) {
+
+            /*
+            ==================================================
+             8. ATUALIZAR AUTH
+            ==================================================
+            */
+
+            if (
+                window.rpgAuth
+            ) {
+
+                window.rpgAuth.campaign =
+                    campanha;
+
+                window.rpgAuth.isMaster =
+                    false;
+
+            }
+
+
+            /*
+            ==================================================
+             9. ENTRAR
+            ==================================================
+            */
+
             mostrarMensagem(
-                "O jogador foi registrado, mas não foi possível reservar o lugar.",
-                "erro"
+                `Mesa encontrada! Você ocupará o jogador ${slot}.`,
+                "success"
             );
-            return false;
+
+
+            setTimeout(() => {
+
+                window.location.href =
+                    "mesa.html";
+
+            }, 500);
+
+
+        } catch (error) {
+
+            console.error(
+                "[Mesa Entrada]",
+                error
+            );
+
+
+            mostrarMensagem(
+                error.message ||
+                "Não foi possível entrar na mesa.",
+                "error"
+            );
+
+
+            bloquearEntrada(false);
+
         }
 
+    }
+
+
+
+    /*
+    ========================================================
+     COPIAR CÓDIGO DO MESTRE
+    ========================================================
+    */
+
+    async function copiarCodigoMesa() {
+
+        let codigo = "";
+
+
         /*
-         * Define campanha ativa.
-         */
+         Primeiro tenta campanha ativa.
+        */
 
         if (
             window.rpgCampaign &&
-            typeof window.rpgCampaign.definirCampanhaAtiva ===
-                "function"
+            typeof window.rpgCampaign.obterCampanhaAtiva === "function"
         ) {
-            window.rpgCampaign
-                .definirCampanhaAtiva(
-                    campanha
-                );
+
+            const campanha =
+                window.rpgCampaign
+                    .obterCampanhaAtiva();
+
+
+            if (campanha) {
+
+                codigo =
+                    campanha.codigo_mesa ||
+                    "";
+
+            }
+
         }
 
-        /*
-         * Salva dados locais.
-         */
-
-        salvarMesaLocal(
-            campanha,
-            personagem,
-            slot
-        );
 
         /*
-         * Entrada concluída.
-         */
-
-        mostrarMensagem(
-            `Tudo certo! Você entrou no lugar ${slot}.`,
-            "sucesso"
-        );
-
-        setTimeout(() => {
-            window.location.href =
-                "mesa.html";
-        }, 400);
-
-        return true;
-    }
-
-    /* =====================================================
-       BOTÃO
-    ===================================================== */
-
-    function configurarBotao() {
-        localizarElementos();
+         Fallback para auth.
+        */
 
         if (
-            !codigoInput ||
-            !entrarButton
+            !codigo &&
+            window.rpgAuth &&
+            window.rpgAuth.campaign
         ) {
+
+            codigo =
+                window.rpgAuth
+                    .campaign
+                    .codigo_mesa ||
+                "";
+
+        }
+
+
+        codigo =
+            normalizarCodigo(codigo);
+
+
+        if (!codigo) {
+
+            mostrarMensagem(
+                "Nenhum código de mesa foi encontrado.",
+                "error"
+            );
+
             return;
         }
 
-        /*
-         * Evita registrar o evento duas vezes.
-         */
 
-        if (
-            entrarButton.dataset.mesaEntradaConfigurado ===
-            "true"
-        ) {
+        try {
+
+            await navigator.clipboard.writeText(
+                codigo
+            );
+
+
+            mostrarMensagem(
+                "Código da mesa copiado!",
+                "success"
+            );
+
+
+        } catch (error) {
+
+            console.error(error);
+
+
+            /*
+             Fallback simples.
+            */
+
+            const area =
+                document.createElement("textarea");
+
+            area.value = codigo;
+
+            area.style.position =
+                "fixed";
+
+            area.style.opacity =
+                "0";
+
+            document.body.appendChild(
+                area
+            );
+
+            area.select();
+
+            document.execCommand(
+                "copy"
+            );
+
+            area.remove();
+
+
+            mostrarMensagem(
+                "Código da mesa copiado!",
+                "success"
+            );
+
+        }
+
+    }
+
+
+
+    /*
+    ========================================================
+     CONTINUAR CAMPANHA
+    ========================================================
+    */
+
+    function continuarCampanha() {
+
+        const usuario =
+            obterUsuario();
+
+
+        if (!usuario) {
+
+            mostrarMensagem(
+                "Você precisa estar conectado.",
+                "error"
+            );
+
             return;
         }
 
-        entrarButton.dataset.mesaEntradaConfigurado =
-            "true";
 
-        entrarButton.addEventListener(
-            "click",
-            async () => {
-
-                if (
-                    entrarButton.disabled
-                ) {
-                    return;
-                }
-
-                entrarButton.disabled =
-                    true;
-
-                const codigo =
-                    codigoInput.value;
-
-                try {
-                    await entrarPorCodigo(
-                        codigo
-                    );
-                } catch (erro) {
-                    console.error(
-                        "[Mesa] Erro ao entrar:",
-                        erro
-                    );
-
-                    mostrarMensagem(
-                        "Ocorreu um erro ao entrar na mesa.",
-                        "erro"
-                    );
-                }
-
-                /*
-                 * Só reativa se ainda estiver
-                 * nesta página.
-                 */
-
-                if (
-                    document.body.contains(
-                        entrarButton
-                    )
-                ) {
-                    entrarButton.disabled =
-                        false;
-                }
-            }
-        );
-
-        /*
-         * Enter no campo do código.
-         */
-
-        codigoInput.addEventListener(
-            "keydown",
-            evento => {
-                if (
-                    evento.key === "Enter"
-                ) {
-                    evento.preventDefault();
-
-                    entrarButton.click();
-                }
-            }
-        );
-
-        /*
-         * Formatação visual.
-         */
-
-        codigoInput.addEventListener(
-            "input",
-            () => {
-                codigoInput.value =
-                    codigoInput.value
-                        .toUpperCase()
-                        .replace(/\s+/g, "");
-            }
-        );
+        window.location.href =
+            "mesa.html";
     }
 
-    /* =====================================================
-       INICIALIZAÇÃO
-    ===================================================== */
+
+
+    /*
+    ========================================================
+     CARREGAR CÓDIGO DO MESTRE
+    ========================================================
+    */
+
+    function atualizarCodigoVisual() {
+
+        const elemento =
+            document.getElementById(
+                "campaign-code-display"
+            );
+
+
+        if (!elemento) {
+            return;
+        }
+
+
+        let codigo = "";
+
+
+        if (
+            window.rpgCampaign &&
+            typeof window.rpgCampaign.obterCampanhaAtiva === "function"
+        ) {
+
+            const campanha =
+                window.rpgCampaign
+                    .obterCampanhaAtiva();
+
+
+            if (campanha) {
+
+                codigo =
+                    campanha.codigo_mesa ||
+                    "";
+
+            }
+
+        }
+
+
+        if (
+            !codigo &&
+            window.rpgAuth &&
+            window.rpgAuth.campaign
+        ) {
+
+            codigo =
+                window.rpgAuth
+                    .campaign
+                    .codigo_mesa ||
+                "";
+
+        }
+
+
+        elemento.textContent =
+            codigo ||
+            "------";
+    }
+
+
+
+    /*
+    ========================================================
+     INICIALIZAÇÃO
+    ========================================================
+    */
 
     function inicializar() {
-        configurarBotao();
+
+        inputCodigo =
+            document.getElementById(
+                "campaign-code-input"
+            );
+
+
+        botaoEntrar =
+            document.getElementById(
+                "join-campaign-button"
+            );
+
+
+        mensagem =
+            document.getElementById(
+                "campaign-join-message"
+            );
+
+
+        if (
+            inputCodigo &&
+            botaoEntrar
+        ) {
+
+            botaoEntrar.addEventListener(
+                "click",
+                entrarPorCodigo
+            );
+
+
+            inputCodigo.addEventListener(
+                "keydown",
+                event => {
+
+                    if (
+                        event.key === "Enter"
+                    ) {
+
+                        event.preventDefault();
+
+                        entrarPorCodigo();
+
+                    }
+
+                }
+            );
+
+
+            inputCodigo.addEventListener(
+                "input",
+                () => {
+
+                    inputCodigo.value =
+                        normalizarCodigo(
+                            inputCodigo.value
+                        );
+
+                }
+            );
+
+        }
+
+
+        const botaoCopiar =
+            document.getElementById(
+                "copy-campaign-code"
+            );
+
+
+        if (botaoCopiar) {
+
+            botaoCopiar.addEventListener(
+                "click",
+                copiarCodigoMesa
+            );
+
+        }
+
+
+        const botaoContinuar =
+            document.getElementById(
+                "continue-campaign-button"
+            );
+
+
+        if (botaoContinuar) {
+
+            botaoContinuar.addEventListener(
+                "click",
+                continuarCampanha
+            );
+
+        }
+
+
+        /*
+         Algumas funções de autenticação/campanha
+         são assíncronas. Por isso atualizamos algumas
+         vezes enquanto a página termina de carregar.
+        */
+
+        atualizarCodigoVisual();
+
+
+        setTimeout(
+            atualizarCodigoVisual,
+            300
+        );
+
+
+        setTimeout(
+            atualizarCodigoVisual,
+            1000
+        );
+
+
+        setTimeout(
+            atualizarCodigoVisual,
+            2000
+        );
+
     }
 
+
+
+    /*
+    ========================================================
+     API
+    ========================================================
+    */
+
+    window.rpgMesaEntrada = {
+
+        entrarPorCodigo,
+
+        copiarCodigoMesa,
+
+        atualizarCodigoVisual,
+
+        normalizarCodigo
+
+    };
+
+
+    /*
+    ========================================================
+     DOM
+    ========================================================
+    */
+
     if (
-        document.readyState ===
-        "loading"
+        document.readyState === "loading"
     ) {
+
         document.addEventListener(
             "DOMContentLoaded",
             inicializar
         );
+
     } else {
+
         inicializar();
+
     }
-
-    /* =====================================================
-       API PÚBLICA
-    ===================================================== */
-
-    window.rpgMesaEntrada = {
-        entrarPorCodigo,
-        normalizarCodigo,
-        encontrarSlotLivre
-    };
-
-    /*
-     * Compatibilidade
-     */
-
-    window.entrarNaMesaPorCodigo =
-        entrarPorCodigo;
 
 })();
