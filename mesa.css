@@ -1,1 +1,1757 @@
+/* =========================================================
+   MESA RPG 2.0
+   CSS EXCLUSIVO DA MESA
+   MOBILE FIRST
+========================================================= */
 
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+
+    width: 100%;
+    min-height: 100%;
+
+    background: #03040a;
+    color: #f5f0ff;
+
+    font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+button,
+input,
+textarea,
+select {
+    font: inherit;
+}
+
+
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
+
+:root {
+
+    --bg-main: #03040a;
+    --bg-panel: #080b16;
+    --bg-card: #0d1020;
+    --bg-soft: #121629;
+
+    --border: #252a40;
+    --border-light: #343a58;
+
+    --primary: #7c3aed;
+    --primary-light: #a78bfa;
+    --primary-soft: rgba(124, 58, 237, 0.15);
+
+    --text: #f5f0ff;
+    --text-soft: #aaa7bd;
+    --text-muted: #68677a;
+
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #eab308;
+    --blue: #3b82f6;
+
+    --radius-small: 10px;
+    --radius: 16px;
+    --radius-large: 22px;
+
+    --shadow:
+        0 12px 35px rgba(0, 0, 0, 0.45);
+
+    --glow:
+        0 0 25px rgba(124, 58, 237, 0.25);
+}
+
+
+/* =========================================================
+   MESA PRINCIPAL
+========================================================= */
+
+#rpg-mesa {
+
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+
+    padding-bottom: 25px;
+
+    background:
+        radial-gradient(
+            circle at top center,
+            #17102b 0%,
+            #080812 32%,
+            #03040a 75%
+        );
+}
+
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+#mesa-header {
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+
+    padding: 16px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    background:
+        rgba(5, 6, 15, 0.92);
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.35);
+
+    backdrop-filter: blur(12px);
+
+    z-index: 10;
+}
+
+
+.mesa-header-info {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 15px;
+}
+
+
+.mesa-campanha,
+.mesa-mestre {
+
+    min-width: 0;
+}
+
+
+.mesa-mestre {
+
+    text-align: right;
+}
+
+
+.mesa-label {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+}
+
+
+.mesa-campanha h1 {
+
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 19px;
+
+    line-height: 1.2;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+.mesa-mestre strong {
+
+    display: block;
+
+    max-width: 130px;
+
+    color: var(--primary-light);
+
+    font-size: 13px;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================================================
+   ESTADO DA MESA
+========================================================= */
+
+#mesa-estado {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    align-self: flex-start;
+
+    gap: 7px;
+
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text-soft);
+
+    font-size: 9px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+}
+
+
+#mesa-estado-indicador {
+
+    width: 7px;
+    height: 7px;
+
+    border-radius: 50%;
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 8px rgba(34, 197, 94, 0.7);
+}
+
+
+.estado-interface #mesa-estado-indicador {
+    background: var(--green);
+}
+
+
+.estado-combate #mesa-estado-indicador {
+    background: var(--red);
+
+    box-shadow:
+        0 0 10px rgba(239, 68, 68, 0.8);
+}
+
+
+.estado-cte #mesa-estado-indicador {
+    background: var(--yellow);
+
+    box-shadow:
+        0 0 10px rgba(234, 179, 8, 0.8);
+}
+
+
+.estado-mapa #mesa-estado-indicador {
+    background: var(--blue);
+
+    box-shadow:
+        0 0 10px rgba(59, 130, 246, 0.8);
+}
+
+
+/* =========================================================
+   LAYOUT DA MESA
+========================================================= */
+
+#mesa-layout {
+
+    display: flex;
+
+    flex-direction: column;
+
+    width: 100%;
+
+    padding: 12px;
+
+    gap: 12px;
+}
+
+
+/* =========================================================
+   JOGADORES
+========================================================= */
+
+.jogadores-container {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    width: 100%;
+}
+
+
+.jogadores-lateral {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    width: 100%;
+}
+
+
+/* =========================================================
+   CARD DO JOGADOR
+   Preparado para elementos criados pelo JS
+========================================================= */
+
+.jogador-card {
+
+    position: relative;
+
+    min-height: 105px;
+
+    padding: 10px;
+
+    overflow: hidden;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius);
+
+    background:
+        linear-gradient(
+            145deg,
+            #111528,
+            #090b15
+        );
+
+    box-shadow:
+        0 7px 20px rgba(0, 0, 0, 0.3);
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+
+.jogador-card:active {
+
+    transform:
+        scale(0.98);
+}
+
+
+.jogador-card.confirmado {
+
+    border-color:
+        rgba(34, 197, 94, 0.45);
+}
+
+
+.jogador-card.vazio {
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    min-height: 75px;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+}
+
+
+.jogador-card .jogador-nome {
+
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: var(--text);
+
+    font-size: 13px;
+
+    font-weight: bold;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+
+.jogador-card .jogador-classe {
+
+    display: block;
+
+    color: var(--primary-light);
+
+    font-size: 9px;
+}
+
+
+.jogador-card .jogador-status {
+
+    display: flex;
+
+    gap: 5px;
+
+    margin-top: 9px;
+}
+
+
+.jogador-card .status-mini {
+
+    padding: 3px 5px;
+
+    border-radius: 5px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: var(--text-soft);
+
+    font-size: 8px;
+}
+
+
+/* =========================================================
+   TELA CENTRAL
+========================================================= */
+
+#tela-mesa {
+
+    position: relative;
+
+    display: flex;
+
+    flex-direction: column;
+
+    width: 100%;
+
+    min-height: 520px;
+
+    overflow: hidden;
+
+    border:
+        1px solid var(--border-light);
+
+    border-radius:
+        var(--radius-large);
+
+    background:
+        linear-gradient(
+            160deg,
+            #0b0e1d,
+            #05060d
+        );
+
+    box-shadow:
+        var(--shadow),
+        var(--glow);
+}
+
+
+/* =========================================================
+   CABEÇALHO DA TELA
+========================================================= */
+
+#tela-mesa-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 12px;
+
+    padding: 13px 15px;
+
+    border-bottom:
+        1px solid var(--border);
+
+    background:
+        rgba(0, 0, 0, 0.2);
+}
+
+
+.tela-label {
+
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+}
+
+
+#tela-mesa-titulo {
+
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 17px;
+}
+
+
+/* =========================================================
+   CONEXÃO
+========================================================= */
+
+#mesa-conexao {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 5px 8px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(255, 255, 255, 0.035);
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+
+    white-space: nowrap;
+}
+
+
+#conexao-indicador {
+
+    width: 6px;
+    height: 6px;
+
+    border-radius: 50%;
+
+    background: var(--yellow);
+}
+
+
+.conexao-conectada #conexao-indicador {
+
+    background: var(--green);
+
+    box-shadow:
+        0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+
+.conexao-desconectada #conexao-indicador {
+
+    background: var(--red);
+}
+
+
+/* =========================================================
+   CONTEÚDO CENTRAL
+========================================================= */
+
+#tela-mesa-conteudo {
+
+    position: relative;
+
+    flex: 1;
+
+    min-height: 400px;
+
+    overflow: auto;
+
+    scrollbar-width: thin;
+
+    scrollbar-color:
+        #373052
+        transparent;
+}
+
+
+.modulo-mesa {
+
+    position: relative;
+
+    width: 100%;
+
+    min-height: 400px;
+
+    padding: 16px;
+}
+
+
+.modulo-mesa[hidden] {
+
+    display: none !important;
+}
+
+
+.modulo-placeholder {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    min-height: 350px;
+
+    padding: 25px;
+
+    text-align: center;
+}
+
+
+.modulo-icone {
+
+    display: block;
+
+    margin-bottom: 12px;
+
+    font-size: 38px;
+
+    filter:
+        drop-shadow(
+            0 0 12px rgba(124, 58, 237, 0.35)
+        );
+}
+
+
+.modulo-placeholder h3 {
+
+    margin: 0 0 6px;
+
+    color: var(--text);
+
+    font-size: 19px;
+}
+
+
+.modulo-placeholder p {
+
+    margin: 0;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   CONTEÚDOS DOS MÓDULOS
+========================================================= */
+
+#personagem-conteudo,
+#status-conteudo,
+#afinidade-conteudo,
+#inventario-conteudo,
+#mapa-conteudo,
+#combate-conteudo {
+
+    width: 100%;
+
+    margin-top: 15px;
+}
+
+
+/* =========================================================
+   NAVEGAÇÃO
+========================================================= */
+
+#mesa-modulos {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+
+    padding: 10px;
+
+    border-top:
+        1px solid var(--border);
+
+    background:
+        rgba(4, 5, 12, 0.95);
+}
+
+
+.modulo-btn {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 3px;
+
+    min-height: 48px;
+
+    padding: 6px 4px;
+
+    border:
+        1px solid transparent;
+
+    border-radius:
+        var(--radius-small);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text-muted);
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.modulo-btn span {
+
+    font-size: 8px;
+
+    line-height: 1.1;
+
+    text-align: center;
+}
+
+
+.modulo-btn:active {
+
+    transform:
+        scale(0.95);
+}
+
+
+.modulo-btn:hover,
+.modulo-btn.ativo {
+
+    border-color:
+        rgba(124, 58, 237, 0.55);
+
+    background:
+        var(--primary-soft);
+
+    color:
+        var(--primary-light);
+
+    box-shadow:
+        0 0 12px rgba(124, 58, 237, 0.12);
+}
+
+
+/* =========================================================
+   CTE
+========================================================= */
+
+#modulo-cte {
+
+    min-height: 100%;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(234, 179, 8, 0.08),
+            transparent 55%
+        );
+}
+
+
+#cte-conteudo {
+
+    width: 100%;
+    min-height: 400px;
+}
+
+
+.cte-placeholder {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    min-height: 400px;
+
+    text-align: center;
+}
+
+
+.cte-placeholder .modulo-icone {
+
+    animation:
+        ctePulse 1.5s infinite ease-in-out;
+}
+
+
+@keyframes ctePulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    50% {
+        transform: scale(1.12);
+        opacity: 1;
+    }
+}
+
+
+/* =========================================================
+   DUNGEON
+========================================================= */
+
+#modulo-dungeon {
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(124, 58, 237, 0.08),
+            transparent 60%
+        );
+}
+
+
+#dungeon-conteudo {
+
+    width: 100%;
+    min-height: 400px;
+}
+
+
+.dungeon-placeholder {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    min-height: 400px;
+
+    text-align: center;
+}
+
+
+/* =========================================================
+   BOSS
+========================================================= */
+
+#modulo-boss {
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    min-height: 400px;
+
+    padding: 20px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(239, 68, 68, 0.22),
+            transparent 65%
+        );
+}
+
+
+#boss-alerta {
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+    align-items: center;
+
+    width: 100%;
+
+    max-width: 420px;
+
+    padding: 30px 20px;
+
+    border:
+        1px solid rgba(239, 68, 68, 0.6);
+
+    border-radius:
+        var(--radius-large);
+
+    background:
+        rgba(30, 4, 8, 0.8);
+
+    box-shadow:
+        0 0 40px rgba(239, 68, 68, 0.25);
+
+    text-align: center;
+
+    animation:
+        bossPulse 1s infinite alternate;
+}
+
+
+.boss-icone {
+
+    font-size: 42px;
+
+    margin-bottom: 8px;
+}
+
+
+.boss-label {
+
+    color: #f87171;
+
+    font-size: 11px;
+
+    font-weight: bold;
+
+    letter-spacing: 4px;
+}
+
+
+#boss-nome {
+
+    margin: 8px 0;
+
+    color: #fff;
+
+    font-size: 25px;
+}
+
+
+#boss-descricao {
+
+    margin: 0;
+
+    color: #c9a8ae;
+
+    font-size: 11px;
+
+    line-height: 1.5;
+}
+
+
+@keyframes bossPulse {
+
+    from {
+
+        box-shadow:
+            0 0 20px rgba(239, 68, 68, 0.15);
+
+        border-color:
+            rgba(239, 68, 68, 0.35);
+    }
+
+    to {
+
+        box-shadow:
+            0 0 50px rgba(239, 68, 68, 0.5);
+
+        border-color:
+            rgba(239, 68, 68, 0.85);
+    }
+}
+
+
+/* =========================================================
+   MODO BOSS NA MESA INTEIRA
+========================================================= */
+
+#rpg-mesa.modo-boss {
+
+    animation:
+        mesaBossPulse 0.8s infinite alternate;
+}
+
+
+@keyframes mesaBossPulse {
+
+    from {
+
+        box-shadow:
+            inset 0 0 0 rgba(239, 68, 68, 0);
+    }
+
+    to {
+
+        box-shadow:
+            inset 0 0 80px rgba(239, 68, 68, 0.22);
+    }
+}
+
+
+/* =========================================================
+   PAINEL DO MESTRE
+========================================================= */
+
+#painel-mestre {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 100;
+
+    padding: 15px;
+
+    overflow-y: auto;
+
+    background:
+        rgba(2, 3, 8, 0.92);
+
+    backdrop-filter:
+        blur(10px);
+}
+
+
+#painel-mestre[hidden] {
+
+    display: none !important;
+}
+
+
+.painel-header {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 15px;
+
+    padding: 15px;
+
+    border:
+        1px solid var(--border-light);
+
+    border-radius:
+        var(--radius);
+
+    background:
+        var(--bg-panel);
+
+    box-shadow:
+        var(--shadow);
+}
+
+
+.painel-header h2 {
+
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 19px;
+}
+
+
+#fechar-painel-mestre {
+
+    width: 38px;
+    height: 38px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: var(--text-soft);
+
+    font-size: 25px;
+
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+#fechar-painel-mestre:active {
+
+    transform:
+        scale(0.92);
+}
+
+
+/* =========================================================
+   GRUPOS DE FERRAMENTAS
+========================================================= */
+
+.ferramenta-grupo {
+
+    margin-bottom: 12px;
+
+    padding: 14px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius);
+
+    background:
+        var(--bg-panel);
+}
+
+
+.ferramenta-grupo h3 {
+
+    margin: 0 0 10px;
+
+    color: var(--primary-light);
+
+    font-size: 11px;
+
+    letter-spacing: 1px;
+}
+
+
+.ferramenta-acoes {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+}
+
+
+.ferramenta-grupo button {
+
+    min-height: 42px;
+
+    padding: 8px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius:
+        var(--radius-small);
+
+    background:
+        var(--bg-soft);
+
+    color: var(--text-soft);
+
+    font-size: 10px;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        transform 0.2s ease;
+}
+
+
+.ferramenta-grupo button:hover {
+
+    border-color:
+        rgba(124, 58, 237, 0.65);
+
+    background:
+        var(--primary-soft);
+
+    color:
+        var(--primary-light);
+}
+
+
+.ferramenta-grupo button:active {
+
+    transform:
+        scale(0.96);
+}
+
+
+/* =========================================================
+   BOTÃO MESTRE
+========================================================= */
+
+#abrir-painel-mestre {
+
+    position: fixed;
+
+    right: 14px;
+    bottom: 14px;
+
+    z-index: 80;
+
+    min-height: 42px;
+
+    padding: 9px 14px;
+
+    border:
+        1px solid rgba(124, 58, 237, 0.65);
+
+    border-radius:
+        999px;
+
+    background:
+        rgba(23, 13, 45, 0.95);
+
+    color:
+        var(--primary-light);
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 20px rgba(0, 0, 0, 0.4),
+        0 0 15px rgba(124, 58, 237, 0.15);
+
+    backdrop-filter:
+        blur(10px);
+}
+
+
+#abrir-painel-mestre:active {
+
+    transform:
+        scale(0.94);
+}
+
+
+#abrir-painel-mestre[hidden] {
+
+    display: none !important;
+}
+
+
+/* =========================================================
+   NOTIFICAÇÕES
+========================================================= */
+
+#mesa-notificacoes {
+
+    position: fixed;
+
+    left: 50%;
+
+    bottom: 18px;
+
+    z-index: 200;
+
+    width:
+        min(
+            calc(100% - 30px),
+            420px
+        );
+
+    transform:
+        translateX(-50%);
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 8px;
+
+    pointer-events: none;
+}
+
+
+.mesa-notificacao {
+
+    padding: 11px 14px;
+
+    border:
+        1px solid var(--border-light);
+
+    border-radius:
+        var(--radius-small);
+
+    background:
+        rgba(12, 14, 26, 0.96);
+
+    color: var(--text-soft);
+
+    font-size: 10px;
+
+    text-align: center;
+
+    box-shadow:
+        var(--shadow);
+
+    animation:
+        notificacaoEntrada 0.25s ease;
+}
+
+
+@keyframes notificacaoEntrada {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(10px);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0);
+    }
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.mesa-modal {
+
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 300;
+
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    padding: 15px;
+
+    background:
+        rgba(0, 0, 0, 0.78);
+
+    backdrop-filter:
+        blur(8px);
+}
+
+
+.mesa-modal[hidden] {
+
+    display: none !important;
+}
+
+
+.mesa-modal-conteudo {
+
+    position: relative;
+
+    width: 100%;
+
+    max-width: 480px;
+
+    max-height: 85vh;
+
+    overflow-y: auto;
+
+    padding: 20px;
+
+    border:
+        1px solid var(--border-light);
+
+    border-radius:
+        var(--radius-large);
+
+    background:
+        linear-gradient(
+            150deg,
+            #111427,
+            #080a13
+        );
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.65),
+        0 0 30px rgba(124, 58, 237, 0.15);
+
+    animation:
+        modalEntrada 0.2s ease;
+}
+
+
+@keyframes modalEntrada {
+
+    from {
+
+        opacity: 0;
+
+        transform:
+            translateY(12px)
+            scale(0.97);
+    }
+
+    to {
+
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+.mesa-modal-fechar {
+
+    position: absolute;
+
+    top: 10px;
+    right: 10px;
+
+    width: 34px;
+    height: 34px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 50%;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: var(--text-soft);
+
+    font-size: 22px;
+
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+
+#mesa-modal-body {
+
+    padding-top: 10px;
+}
+
+
+/* =========================================================
+   ESTADOS VISUAIS DA TELA
+========================================================= */
+
+#rpg-mesa.modo-combate #tela-mesa {
+
+    border-color:
+        rgba(239, 68, 68, 0.4);
+
+    box-shadow:
+        var(--shadow),
+        0 0 30px rgba(239, 68, 68, 0.12);
+}
+
+
+#rpg-mesa.modo-cte #tela-mesa {
+
+    border-color:
+        rgba(234, 179, 8, 0.45);
+
+    box-shadow:
+        var(--shadow),
+        0 0 30px rgba(234, 179, 8, 0.12);
+}
+
+
+#rpg-mesa.modo-mapa #tela-mesa {
+
+    border-color:
+        rgba(59, 130, 246, 0.4);
+
+    box-shadow:
+        var(--shadow),
+        0 0 30px rgba(59, 130, 246, 0.12);
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (min-width: 600px) {
+
+    #mesa-layout {
+
+        padding: 18px;
+
+        gap: 15px;
+    }
+
+
+    #mesa-header {
+
+        padding:
+            18px 22px;
+    }
+
+
+    .jogadores-container,
+    .jogadores-lateral {
+
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+    }
+
+
+    #mesa-modulos {
+
+        grid-template-columns:
+            repeat(5, minmax(0, 1fr));
+    }
+
+
+    #tela-mesa {
+
+        min-height: 600px;
+    }
+
+
+    .modulo-mesa {
+
+        min-height: 480px;
+    }
+
+
+    #tela-mesa-conteudo {
+
+        min-height: 480px;
+    }
+}
+
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media (min-width: 900px) {
+
+    #rpg-mesa {
+
+        max-width: 1400px;
+
+        margin: 0 auto;
+    }
+
+
+    #mesa-layout {
+
+        display: grid;
+
+        grid-template-columns:
+            170px
+            minmax(0, 1fr)
+            170px;
+
+        grid-template-rows:
+            auto
+            minmax(650px, 1fr)
+            auto;
+
+        align-items: stretch;
+
+        min-height: calc(100vh - 90px);
+
+        padding: 20px;
+    }
+
+
+    #jogadores-topo {
+
+        grid-column:
+            1 / 4;
+
+        grid-row:
+            1;
+    }
+
+
+    #jogadores-esquerda {
+
+        grid-column:
+            1;
+
+        grid-row:
+            2;
+
+        display: flex;
+
+        flex-direction: column;
+    }
+
+
+    #tela-mesa {
+
+        grid-column:
+            2;
+
+        grid-row:
+            2;
+    }
+
+
+    #jogadores-direita {
+
+        grid-column:
+            3;
+
+        grid-row:
+            2;
+
+        display: flex;
+
+        flex-direction: column;
+    }
+
+
+    #jogadores-base {
+
+        grid-column:
+            1 / 4;
+
+        grid-row:
+            3;
+    }
+
+
+    .jogadores-container,
+    .jogadores-lateral {
+
+        grid-template-columns:
+            1fr;
+    }
+
+
+    #mesa-modulos {
+
+        grid-template-columns:
+            repeat(9, minmax(0, 1fr));
+    }
+
+
+    #painel-mestre {
+
+        left: auto;
+
+        width: 390px;
+
+        border-left:
+            1px solid var(--border-light);
+    }
+}
+
+
+/* =========================================================
+   ACESSIBILIDADE
+========================================================= */
+
+button:focus-visible {
+
+    outline:
+        2px solid var(--primary-light);
+
+    outline-offset:
+        2px;
+}
+
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+
+        animation-duration:
+            0.01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        transition-duration:
+            0.01ms !important;
+
+        scroll-behavior:
+            auto !important;
+    }
+}
