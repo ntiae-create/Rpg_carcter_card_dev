@@ -1224,11 +1224,27 @@ function obterDuracaoCTE(
 
 function criarCTEVisual() {
 
-    if (
-        !MesaUI.screenContent
-    ) {
+    if (!MesaUI.screen) {
 
         return;
+
+    }
+
+
+    /*
+        Remove qualquer CTE visual antigo,
+        sem tocar no conteúdo normal da mesa.
+    */
+
+    const antigo =
+        document.getElementById(
+            "cte-overlay"
+        );
+
+
+    if (antigo) {
+
+        antigo.remove();
 
     }
 
@@ -1237,8 +1253,7 @@ function criarCTEVisual() {
         Escolhemos uma posição aleatória
         dentro do palco.
 
-        Mantemos uma margem para que
-        o alvo nunca apareça grudado
+        O alvo nunca fica grudado
         nas bordas.
     */
 
@@ -1250,65 +1265,114 @@ function criarCTEVisual() {
         posicao;
 
 
-    MesaUI.screenContent.innerHTML =
+    /*
+        IMPORTANTE:
+
+        O CTE é criado diretamente dentro
+        da tela da mesa como OVERLAY.
+
+        Ele não substitui:
+            mesa-screen-content
+
+        Assim podemos ter:
+
+            MAPA
+              ↓
+             CTE
+              ↓
+            MAPA
+
+        ou:
+
+            COMBATE
+              ↓
+             CTE
+              ↓
+            COMBATE
+    */
+
+    const overlay =
+        document.createElement(
+            "div"
+        );
+
+
+    overlay.id =
+        "cte-overlay";
+
+
+    overlay.className =
+        "cte-overlay";
+
+
+    overlay.innerHTML =
 
         `
-        <div
-            class="cte-overlay"
-            id="cte-overlay"
-        >
+        <div class="cte-info">
 
-            <div class="cte-info">
+            <span class="cte-label">
+                ⚡ CTE
+            </span>
 
-                <span class="cte-label">
-                    ⚡ CTE
-                </span>
-
-                <span
-                    class="cte-timer"
-                    id="cte-timer"
-                >
-                    2.00
-                </span>
-
-            </div>
-
-
-            <button
-                type="button"
-                id="cte-target"
-                class="cte-target"
-                aria-label="Acertar CTE"
-                style="
-                    left:${posicao.x}%;
-                    top:${posicao.y}%;
-                "
+            <span
+                class="cte-timer"
+                id="cte-timer"
             >
-
-                <span>
-                    TAP!
-                </span>
-
-            </button>
+                2.00
+            </span>
 
         </div>
+
+
+        <button
+            type="button"
+            id="cte-target"
+            class="cte-target"
+            aria-label="Acertar CTE"
+        >
+
+            <span>
+                TAP!
+            </span>
+
+        </button>
         `;
 
 
+    MesaUI.screen.appendChild(
+        overlay
+    );
+
+
+    /*
+        Posiciona o alvo depois que
+        ele já está dentro da tela.
+    */
+
     const alvo =
-        document.getElementById(
-            "cte-target"
+        overlay.querySelector(
+            "#cte-target"
         );
 
 
     if (alvo) {
 
-        /*
-            pointerdown funciona tanto
-            com toque quanto com mouse.
+        alvo.style.left =
+            `${posicao.x}%`;
 
-            Isso é importante porque a
-            aplicação será usada no celular.
+
+        alvo.style.top =
+            `${posicao.y}%`;
+
+
+        /*
+            pointerdown funciona com:
+
+            • toque
+            • mouse
+            • caneta
+
+            Ideal para celular.
         */
 
         alvo.addEventListener(
@@ -1679,14 +1743,16 @@ function finalizarCTE(
    RESULTADO VISUAL DO CTE
 ============================================================ */
 
+/* ============================================================
+   RESULTADO VISUAL DO CTE
+============================================================ */
+
 function mostrarResultadoCTE(
     resultado,
     motivo
 ) {
 
-    if (
-        !MesaUI.screenContent
-    ) {
+    if (!MesaUI.screen) {
 
         return;
 
@@ -1697,7 +1763,45 @@ function mostrarResultadoCTE(
         resultado === "sucesso";
 
 
-    MesaUI.screenContent.innerHTML =
+    /*
+        Procuramos o overlay existente.
+    */
+
+    let overlay =
+        document.getElementById(
+            "cte-overlay"
+        );
+
+
+    /*
+        Caso o overlay tenha desaparecido,
+        recriamos apenas a camada visual.
+    */
+
+    if (!overlay) {
+
+        overlay =
+            document.createElement(
+                "div"
+            );
+
+
+        overlay.id =
+            "cte-overlay";
+
+
+        overlay.className =
+            "cte-overlay";
+
+
+        MesaUI.screen.appendChild(
+            overlay
+        );
+
+    }
+
+
+    overlay.innerHTML =
 
         `
         <div
@@ -1720,6 +1824,7 @@ function mostrarResultadoCTE(
 
             </div>
 
+
             <h2>
 
                 ${
@@ -1729,6 +1834,7 @@ function mostrarResultadoCTE(
                 }
 
             </h2>
+
 
             <p>
 
@@ -1745,7 +1851,6 @@ function mostrarResultadoCTE(
 
 }
 
-
 /* ============================================================
    LIMPAR CTE
 ============================================================ */
@@ -1760,15 +1865,35 @@ function limparCTE() {
 
 
     /*
-        Guardamos o resultado até o
-        próximo CTE para permitir que
-        outros sistemas o consultem.
+        Remove SOMENTE o overlay do CTE.
+
+        A tela que estava por baixo permanece
+        exatamente como estava.
     */
 
-    restaurarTelaAnterior();
+    const overlay =
+        document.getElementById(
+            "cte-overlay"
+        );
+
+
+    if (overlay) {
+
+        overlay.remove();
+
+    }
+
+
+    /*
+        NÃO chamamos mais:
+
+            restaurarTelaAnterior()
+
+        porque agora o CTE nunca destrói
+        a tela anterior.
+    */
 
 }
-
 
 /* ============================================================
    LIMPAR TIMER
