@@ -37,7 +37,106 @@
     ================================== -->
 
     <nav class="dimension-nav">
+<!-- =================================
+     CAMPANHA
+================================== -->
 
+<section id="campaign-panel" class="campaign-panel">
+
+    <div class="campaign-panel-header">
+
+        <div>
+            <span class="campaign-label">
+                🎲 CAMPANHA
+            </span>
+
+            <h2 id="campaign-name">
+                Nenhuma campanha
+            </h2>
+        </div>
+
+    </div>
+
+
+    <!-- =============================
+         CAMPANHA DO MESTRE
+    ============================== -->
+
+    <div
+        id="campaign-master-area"
+        class="campaign-area">
+
+        <div class="campaign-code-box">
+
+            <span>
+                CÓDIGO DA CAMPANHA
+            </span>
+
+            <strong id="campaign-invite-code">
+                ----
+            </strong>
+
+        </div>
+
+
+        <button
+            id="copy-campaign-code"
+            class="campaign-button"
+            type="button">
+
+            📋 COPIAR CÓDIGO
+
+        </button>
+
+    </div>
+
+
+    <!-- =============================
+         ENTRAR EM CAMPANHA
+    ============================== -->
+
+    <div
+        id="campaign-join-area"
+        class="campaign-area">
+
+        <h3>
+            🎲 ENTRAR EM UMA CAMPANHA
+        </h3>
+
+        <p>
+            Digite o código recebido do Mestre.
+        </p>
+
+
+        <div class="campaign-join-form">
+
+            <input
+                id="campaign-code-input"
+                type="text"
+                maxlength="9"
+                placeholder="XXXX-XXXX"
+                autocomplete="off">
+
+            <button
+                id="join-campaign-button"
+                class="campaign-button"
+                type="button">
+
+                ENTRAR
+
+            </button>
+
+        </div>
+
+
+        <p
+            id="campaign-join-message"
+            class="campaign-message">
+        </p>
+
+    </div>
+
+</section>
         <button
             class="dimension-button active"
             data-dimension="character">
