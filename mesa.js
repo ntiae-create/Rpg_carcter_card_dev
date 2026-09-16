@@ -3,6 +3,7 @@
 // ==========================================
 
 (function () {
+
     "use strict";
 
 
@@ -172,7 +173,7 @@
 
 
         // --------------------------------------
-        // MOSTRAR MESA
+        // CRIAR MESA
         // --------------------------------------
 
         criarInterfaceMesa();
@@ -223,7 +224,9 @@
 
     function criarInterfaceMesa() {
 
-        // Evitar duplicação
+        // --------------------------------------
+        // EVITAR DUPLICAÇÃO
+        // --------------------------------------
 
         if (
             document.getElementById(
@@ -242,6 +245,15 @@
 
         painel.id =
             "online-table-panel";
+
+
+        // --------------------------------------
+        // CLASSES PRINCIPAIS DA MESA
+        // --------------------------------------
+
+        painel.classList.add(
+            "mesa-fullscreen"
+        );
 
 
         painel.innerHTML = `
@@ -478,6 +490,30 @@
         `;
 
 
+        // --------------------------------------
+        // PREPARAÇÃO PARA TELA CHEIA
+        // --------------------------------------
+
+        painel.style.width =
+            "100%";
+
+        painel.style.minWidth =
+            "100%";
+
+        painel.style.minHeight =
+            "100%";
+
+        painel.style.margin =
+            "0";
+
+        painel.style.boxSizing =
+            "border-box";
+
+
+        // --------------------------------------
+        // ADICIONAR AO BODY
+        // --------------------------------------
+
         document.body.appendChild(
             painel
         );
@@ -547,11 +583,6 @@
                     window.rpgAuth.campaignCharacters
                 )
             ) {
-
-                /*
-                    O auth.js já criou o array.
-                    Agora podemos utilizá-lo.
-                */
 
                 if (
                     window.rpgAuth.campaignCharacters.length > 0 ||
