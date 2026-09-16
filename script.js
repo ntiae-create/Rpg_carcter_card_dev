@@ -662,21 +662,358 @@ function aplicarBloqueioDefinicoes() {
 
 
 /* =========================================================
+   TELA DE TRANSIÇÃO PARA A MESA
+========================================================= */
+
+function criarTransicaoMesa() {
+
+    let tela =
+        get("rpg-table-transition");
+
+
+    if (tela) {
+
+        return tela;
+
+    }
+
+
+    tela =
+        document.createElement(
+            "div"
+        );
+
+
+    tela.id =
+        "rpg-table-transition";
+
+
+    Object.assign(
+        tela.style,
+        {
+            position: "fixed",
+            inset: "0",
+            zIndex: "99999",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "25px",
+            background:
+                "radial-gradient(circle at center, #241044 0%, #0a0712 45%, #030208 100%)",
+            color: "#f5f0ff",
+            fontFamily: "Arial, sans-serif",
+            textAlign: "center",
+            opacity: "0",
+            transition: "opacity 0.45s ease"
+        }
+    );
+
+
+    tela.innerHTML = `
+
+        <div
+            style="
+                width:min(90vw,420px);
+            "
+        >
+
+            <div
+                style="
+                    font-size:52px;
+                    margin-bottom:20px;
+                    animation:rpgTablePulse 1.5s ease-in-out infinite;
+                "
+            >
+                🎲
+            </div>
+
+            <div
+                style="
+                    font-size:19px;
+                    font-weight:bold;
+                    letter-spacing:2px;
+                    color:#c084fc;
+                "
+            >
+                PERSONAGEM CONFIRMADO
+            </div>
+
+            <div
+                style="
+                    margin-top:12px;
+                    font-size:13px;
+                    color:#b9a9c8;
+                "
+            >
+                Preparando a mesa...
+            </div>
+
+            <div
+                style="
+                    margin-top:22px;
+                    width:100%;
+                    height:4px;
+                    overflow:hidden;
+                    border-radius:10px;
+                    background:rgba(255,255,255,0.08);
+                "
+            >
+
+                <div
+                    style="
+                        width:35%;
+                        height:100%;
+                        border-radius:10px;
+                        background:linear-gradient(
+                            90deg,
+                            transparent,
+                            #a855f7,
+                            #e9d5ff,
+                            #a855f7,
+                            transparent
+                        );
+                        animation:rpgTableLoading 1.4s linear infinite;
+                    "
+                ></div>
+
+            </div>
+
+            <div
+                style="
+                    margin-top:18px;
+                    font-size:9px;
+                    letter-spacing:2px;
+                    color:#75687f;
+                "
+            >
+                CONECTANDO À MESA ONLINE
+            </div>
+
+        </div>
+
+    `;
+
+
+    const style =
+        document.createElement(
+            "style"
+        );
+
+
+    style.id =
+        "rpg-table-transition-style";
+
+
+    style.textContent = `
+
+        @keyframes rpgTablePulse {
+
+            0%,
+            100% {
+                transform:scale(1);
+                opacity:0.75;
+            }
+
+            50% {
+                transform:scale(1.12);
+                opacity:1;
+            }
+
+        }
+
+
+        @keyframes rpgTableLoading {
+
+            from {
+                transform:translateX(-180%);
+            }
+
+            to {
+                transform:translateX(380%);
+            }
+
+        }
+
+
+        @keyframes rpgTableScreenIn {
+
+            from {
+                opacity:0;
+                transform:scale(1.015);
+            }
+
+            to {
+                opacity:1;
+                transform:scale(1);
+            }
+
+        }
+
+    `;
+
+
+    document.head.appendChild(
+        style
+    );
+
+
+    document.body.appendChild(
+        tela
+    );
+
+
+    requestAnimationFrame(
+        function () {
+
+            tela.style.opacity =
+                "1";
+
+        }
+    );
+
+
+    return tela;
+
+}
+
+
+/* =========================================================
+   CRIAR TELA DA MESA
+========================================================= */
+
+function criarTelaMesa() {
+
+    let tela =
+        get("rpg-table-screen");
+
+
+    if (tela) {
+
+        return tela;
+
+    }
+
+
+    tela =
+        document.createElement(
+            "div"
+        );
+
+
+    tela.id =
+        "rpg-table-screen";
+
+
+    Object.assign(
+        tela.style,
+        {
+            position: "fixed",
+            inset: "0",
+            zIndex: "99990",
+            display: "none",
+            overflow: "auto",
+            background:
+                "#030208",
+            opacity: "0"
+        }
+    );
+
+
+    document.body.appendChild(
+        tela
+    );
+
+
+    return tela;
+
+}
+
+
+/* =========================================================
+   MOSTRAR MESA COMO NOVA TELA
+========================================================= */
+
+function mostrarMesaComoTela() {
+
+    const mesa =
+        get(
+            "online-table-panel"
+        );
+
+
+    if (!mesa) {
+
+        return false;
+
+    }
+
+
+    const tela =
+        criarTelaMesa();
+
+
+    /*
+       A Mesa é movida para dentro
+       da tela exclusiva.
+
+       Isso NÃO destrói a Mesa.
+       Apenas muda o elemento de lugar.
+    */
+
+    tela.appendChild(
+        mesa
+    );
+
+
+    mesa.style.animation =
+        "rpgTableScreenIn 0.45s ease";
+
+
+    tela.style.display =
+        "block";
+
+
+    requestAnimationFrame(
+        function () {
+
+            tela.style.opacity =
+                "1";
+
+        }
+    );
+
+
+    document.body.style.overflow =
+        "hidden";
+
+
+    return true;
+
+}
+
+
+/* =========================================================
    IR PARA A MESA
 ========================================================= */
 
 function irParaMesa() {
 
+    const transicao =
+        criarTransicaoMesa();
+
+
+    let tentativas =
+        0;
+
+
+    const limite =
+        40;
+
+
     /*
-       A Mesa é criada pelo mesa.js.
-       Como os scripts são carregados separadamente,
-       pode haver alguns instantes de espera.
+       Espera a Mesa ser criada
+       pelo mesa.js.
     */
-
-    let tentativas = 0;
-
-    const limite = 40;
-
 
     const procurarMesa =
         setInterval(
@@ -699,36 +1036,51 @@ function irParaMesa() {
 
 
                     /*
-                       Garante que a Mesa fique
-                       visível para o jogador.
+                       Mantém a tela de carregamento
+                       por um pequeno instante para
+                       a transição ficar perceptível.
                     */
-
-                    mesa.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start"
-                    });
-
-
-                    /*
-                       Pequeno destaque visual
-                       para deixar claro que o
-                       jogador foi enviado para a Mesa.
-                    */
-
-                    mesa.classList.add(
-                        "rpg-table-arrived"
-                    );
-
 
                     setTimeout(
                         function () {
 
-                            mesa.classList.remove(
-                                "rpg-table-arrived"
+                            const sucesso =
+                                mostrarMesaComoTela();
+
+
+                            if (!sucesso) {
+
+                                return;
+
+                            }
+
+
+                            /*
+                               Retira a tela
+                               de carregamento.
+                            */
+
+                            transicao.style.opacity =
+                                "0";
+
+
+                            setTimeout(
+                                function () {
+
+                                    if (
+                                        transicao.parentNode
+                                    ) {
+
+                                        transicao.remove();
+
+                                    }
+
+                                },
+                                500
                             );
 
                         },
-                        1200
+                        900
                     );
 
 
@@ -746,12 +1098,89 @@ function irParaMesa() {
                     );
 
 
-                    console.warn(
-                        "⚠️ Mesa ainda não foi encontrada."
-                    );
+                    transicao.innerHTML = `
+
+                        <div
+                            style="
+                                width:min(90vw,420px);
+                            "
+                        >
+
+                            <div
+                                style="
+                                    font-size:42px;
+                                    margin-bottom:15px;
+                                "
+                            >
+                                ⚠️
+                            </div>
+
+                            <div
+                                style="
+                                    color:#fca5a5;
+                                    font-weight:bold;
+                                    font-size:15px;
+                                "
+                            >
+                                A MESA AINDA NÃO ESTÁ PRONTA
+                            </div>
+
+                            <div
+                                style="
+                                    margin-top:10px;
+                                    color:#8f839d;
+                                    font-size:11px;
+                                    line-height:1.6;
+                                "
+                            >
+                                O personagem foi confirmado,
+                                mas a Mesa não respondeu a tempo.
+                            </div>
+
+                            <button
+                                id="retry-table-button"
+                                type="button"
+                                style="
+                                    margin-top:20px;
+                                    width:100%;
+                                    padding:12px;
+                                    border:1px solid #8b5cf6;
+                                    border-radius:11px;
+                                    background:#1b1424;
+                                    color:#e9d5ff;
+                                    font-weight:bold;
+                                    cursor:pointer;
+                                "
+                            >
+                                TENTAR NOVAMENTE
+                            </button>
+
+                        </div>
+
+                    `;
 
 
-                    return;
+                    const retry =
+                        get(
+                            "retry-table-button"
+                        );
+
+
+                    if (retry) {
+
+                        retry.addEventListener(
+                            "click",
+                            function () {
+
+                                transicao.remove();
+
+                                irParaMesa();
+
+                            }
+                        );
+
+                    }
+
 
                 }
 
@@ -839,7 +1268,7 @@ function confirmarPersonagem() {
     ) {
 
         mostrarResultadoSupabase(
-            "✓ PERSONAGEM CONFIRMADO — ENVIANDO PARA A MESA...",
+            "✓ PERSONAGEM CONFIRMADO — PREPARANDO A MESA...",
             "sucesso"
         );
 
@@ -849,13 +1278,13 @@ function confirmarPersonagem() {
     /*
        =====================================================
        PASSO 3
-       ENVIAR AUTOMATICAMENTE PARA A MESA
+       TRANSIÇÃO PARA A MESA
        =====================================================
     */
 
     setTimeout(
         irParaMesa,
-        350
+        250
     );
 
 }
