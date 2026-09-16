@@ -24,19 +24,20 @@ window.obterNomeMestre = obterNomeMestre;
 function criarAssento(numero) {
     const assento = document.createElement("div");
 
-    assento.className = "mesa-seat";
+    assento.className = "table-seat";
     assento.dataset.seat = numero;
 
     assento.innerHTML = `
-        <div class="mesa-seat-number">${numero}</div>
-        <div class="mesa-seat-content">
-            <div class="mesa-seat-icon">👤</div>
-            <div class="mesa-seat-name">Aguardando jogador</div>
+        <div class="table-seat-number">${numero}</div>
+        <div class="table-seat-content">
+            <div class="table-seat-icon">👤</div>
+            <div class="table-seat-name">Aguardando jogador</div>
         </div>
     `;
 
     return assento;
 }
+
 function atualizarListaJogadores() {
     const jogadores = window.rpgMesa?.players || [];
 
