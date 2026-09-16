@@ -2018,3 +2018,23 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
+/* ==========================================
+   CORREÇÃO — MENU DO MESTRE
+========================================== */
+
+.master-menu[hidden] {
+    display: none !important;
+}
+
+.master-menu {
+    z-index: 9999;
+}
+
+.master-menu-content {
+    position: relative;
+}
+
+.mesa-settings-btn {
+    position: relative;
+    z-index: 10000;
+}
