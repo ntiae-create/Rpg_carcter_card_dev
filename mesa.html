@@ -1,8 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -12,1085 +10,518 @@
 
     <title>Mesa RPG</title>
 
-   <link rel="stylesheet" href="mesa.css?v=2">
-
+    <!-- CSS principal da Mesa -->
+    <link rel="stylesheet" href="mesa.css">
 </head>
-
 
 <body>
 
-
-<main id="rpg-mesa">
-
-
     <!-- =====================================================
-         CABEÇALHO
-    ====================================================== -->
+         MESA RPG
+         ===================================================== -->
 
-    <header id="mesa-header">
-
-        <div class="mesa-header-info">
-
-            <div class="mesa-campanha">
-
-                <span class="mesa-label">
-                    CAMPANHA
-                </span>
-
-                <h1 id="mesa-campanha-nome">
-                    Carregando...
-                </h1>
-
-            </div>
-
-
-            <div class="mesa-mestre">
-
-                <span class="mesa-label">
-                    MESTRE
-                </span>
-
-                <strong id="mesa-mestre-nome">
-                    Carregando...
-                </strong>
-
-            </div>
-
-        </div>
-
-
-        <div
-            id="mesa-estado"
-            class="estado-interface"
-        >
-
-            <span id="mesa-estado-indicador"></span>
-
-            <span id="mesa-estado-texto">
-                INTERFACE
-            </span>
-
-        </div>
-
-    </header>
-
-
-
-    <!-- =====================================================
-         MESA
-    ====================================================== -->
-
-    <section id="mesa-layout">
-
+    <main id="online-table-panel" class="mesa-container">
 
         <!-- =================================================
-             JOGADORES
-             
-             EXISTEM EXATAMENTE 8 ASSENTOS.
-             
-             O mesa.js apenas preenche estes cards.
-        ================================================== -->
+             CABEÇALHO
+             ================================================= -->
 
-        <section
-            id="assentos-jogadores"
-            aria-label="Assentos dos jogadores"
-        >
+        <header class="mesa-header">
 
-
-            <!-- =============================================
-                 JOGADOR 1
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="1"
-                id="jogador-slot-1"
-            >
-
-                <span class="jogador-numero">
-                    01
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 1
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 2
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="2"
-                id="jogador-slot-2"
-            >
-
-                <span class="jogador-numero">
-                    02
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 2
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 3
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="3"
-                id="jogador-slot-3"
-            >
-
-                <span class="jogador-numero">
-                    03
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 3
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 4
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="4"
-                id="jogador-slot-4"
-            >
-
-                <span class="jogador-numero">
-                    04
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 4
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 5
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="5"
-                id="jogador-slot-5"
-            >
-
-                <span class="jogador-numero">
-                    05
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 5
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 6
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="6"
-                id="jogador-slot-6"
-            >
-
-                <span class="jogador-numero">
-                    06
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 6
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 7
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="7"
-                id="jogador-slot-7"
-            >
-
-                <span class="jogador-numero">
-                    07
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 7
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-
-            <!-- =============================================
-                 JOGADOR 8
-            ============================================== -->
-
-            <article
-                class="jogador-card vazio"
-                data-slot="8"
-                id="jogador-slot-8"
-            >
-
-                <span class="jogador-numero">
-                    08
-                </span>
-
-                <div class="jogador-card-conteudo">
-
-                    <strong class="jogador-nome">
-                        VAGA 8
-                    </strong>
-
-                    <span class="jogador-classe">
-                        Aguardando jogador
-                    </span>
-
-                    <div class="jogador-status">
-
-                        <span class="status-mini">
-                            ❤️ —
-                        </span>
-
-                        <span class="status-mini">
-                            💧 —
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </article>
-
-
-        </section>
-
-
-
-        <!-- =====================================================
-             TELA CENTRAL
-        ====================================================== -->
-
-        <section id="tela-mesa">
-
-
-            <header id="tela-mesa-header">
-
-                <div>
-
-                    <span class="tela-label">
-                        TELA DA MESA
-                    </span>
-
-                    <h2 id="tela-mesa-titulo">
-                        Interface
-                    </h2>
-
-                </div>
-
-
-                <div
-                    id="mesa-conexao"
-                    class="conexao-desconectada"
-                >
-
-                    <span id="conexao-indicador"></span>
-
-                    <span id="conexao-texto">
-                        Conectando...
-                    </span>
-
-                </div>
-
-            </header>
-
-
-
-            <!-- =================================================
-                 CONTEÚDO DOS MÓDULOS
-            ================================================== -->
-
-            <div id="tela-mesa-conteudo">
-
-
-                <!-- INTERFACE -->
-
-                <section
-                    id="modulo-interface"
-                    class="modulo-mesa modulo-ativo"
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            🎲
-                        </span>
-
-                        <h3>
-                            Mesa de RPG
-                        </h3>
-
-                        <p>
-                            Aguardando o Mestre...
-                        </p>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- PERSONAGEM -->
-
-                <section
-                    id="modulo-personagem"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            👤
-                        </span>
-
-                        <h3>
-                            Personagem
-                        </h3>
-
-                        <div id="personagem-conteudo"></div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- STATUS -->
-
-                <section
-                    id="modulo-status"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            ❤️
-                        </span>
-
-                        <h3>
-                            Status
-                        </h3>
-
-                        <div id="status-conteudo"></div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- AFINIDADE -->
-
-                <section
-                    id="modulo-afinidade"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            ✨
-                        </span>
-
-                        <h3>
-                            Afinidade
-                        </h3>
-
-                        <div id="afinidade-conteudo"></div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- INVENTÁRIO -->
-
-                <section
-                    id="modulo-inventario"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            🎒
-                        </span>
-
-                        <h3>
-                            Inventário
-                        </h3>
-
-                        <div id="inventario-conteudo"></div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- MAPA -->
-
-                <section
-                    id="modulo-mapa"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            🗺️
-                        </span>
-
-                        <h3>
-                            Mapa
-                        </h3>
-
-                        <div id="mapa-conteudo"></div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- COMBATE -->
-
-                <section
-                    id="modulo-combate"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div class="modulo-placeholder">
-
-                        <span class="modulo-icone">
-                            ⚔️
-                        </span>
-
-                        <h3>
-                            Combate
-                        </h3>
-
-                        <div id="combate-conteudo"></div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- CTE -->
-
-                <section
-                    id="modulo-cte"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div id="cte-conteudo">
-
-                        <div class="cte-placeholder">
-
-                            <span class="modulo-icone">
-                                ⚡
-                            </span>
-
-                            <h3>
-                                CTE
-                            </h3>
-
-                            <p>
-                                Nenhum evento em andamento.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- DUNGEON -->
-
-                <section
-                    id="modulo-dungeon"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div id="dungeon-conteudo">
-
-                        <div class="dungeon-placeholder">
-
-                            <span class="modulo-icone">
-                                🏰
-                            </span>
-
-                            <h3>
-                                Dungeon
-                            </h3>
-
-                            <p>
-                                Nenhuma dungeon ativa.
-                            </p>
-
-                        </div>
-
-                    </div>
-
-                </section>
-
-
-
-                <!-- BOSS -->
-
-                <section
-                    id="modulo-boss"
-                    class="modulo-mesa"
-                    hidden
-                >
-
-                    <div id="boss-alerta">
-
-                        <span class="boss-icone">
-                            🚨
-                        </span>
-
-                        <span class="boss-label">
-                            BOSS
-                        </span>
-
-                        <h2 id="boss-nome">
-                            —
-                        </h2>
-
-                        <p id="boss-descricao">
-                            —
-                        </p>
-
-                    </div>
-
-                </section>
-
-
+            <div class="mesa-title">
+                <h1>🎲 Mesa RPG</h1>
+                <span id="nome-campanha">Campanha</span>
             </div>
 
-
-
-            <!-- =================================================
-                 NAVEGAÇÃO
-            ================================================== -->
-
-            <nav
-                id="mesa-modulos"
-                aria-label="Módulos da Mesa"
-            >
-
-                <button
-                    type="button"
-                    data-modulo="interface"
-                    class="modulo-btn ativo"
-                >
-                    🎲
-                    <span>Interface</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="personagem"
-                    class="modulo-btn"
-                >
-                    👤
-                    <span>Personagem</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="status"
-                    class="modulo-btn"
-                >
-                    ❤️
-                    <span>Status</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="afinidade"
-                    class="modulo-btn"
-                >
-                    ✨
-                    <span>Afinidade</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="inventario"
-                    class="modulo-btn"
-                >
-                    🎒
-                    <span>Inventário</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="mapa"
-                    class="modulo-btn"
-                >
-                    🗺️
-                    <span>Mapa</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="combate"
-                    class="modulo-btn"
-                >
-                    ⚔️
-                    <span>Combate</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="cte"
-                    class="modulo-btn"
-                >
-                    ⚡
-                    <span>CTE</span>
-                </button>
-
-
-                <button
-                    type="button"
-                    data-modulo="dungeon"
-                    class="modulo-btn"
-                >
-                    🏰
-                    <span>Dungeon</span>
-                </button>
-
-            </nav>
-
-
-        </section>
-
-
-
-    </section>
-
-
-
-    <!-- =====================================================
-         PAINEL DO MESTRE
-    ====================================================== -->
-
-    <section
-        id="painel-mestre"
-        class="painel-administrativo"
-        hidden
-    >
-
-        <header class="painel-header">
-
-            <div>
-
-                <span class="mesa-label">
-                    CONTROLE
-                </span>
-
-                <h2>
-                    Ferramentas do Mestre
-                </h2>
-
-            </div>
-
-
+            <!-- Configurações / Mestre -->
             <button
+                id="btn-configuracoes"
+                class="mesa-settings-btn"
                 type="button"
-                id="fechar-painel-mestre"
-                aria-label="Fechar painel"
+                aria-label="Configurações do Mestre"
             >
-                ×
+                ⚙️
             </button>
 
         </header>
 
 
+        <!-- =================================================
+             ÁREA PRINCIPAL DA MESA
+             ================================================= -->
 
-        <!-- ESTADO -->
-
-        <section class="ferramenta-grupo">
-
-            <h3>
-                Estado da Mesa
-            </h3>
+        <section class="mesa-layout">
 
 
-            <div class="ferramenta-acoes">
+            <!-- =============================================
+                 8 PLAYERS
+                 ============================================= -->
 
-                <button
-                    type="button"
-                    data-estado="interface"
+            <section
+                id="jogadores"
+                class="jogadores-grid"
+                aria-label="Jogadores da Mesa"
+            >
+
+                <!-- PLAYER 1 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="1"
+                    data-seat="1"
                 >
-                    🟢 Interface
-                </button>
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">
+                                👤
+                            </div>
+
+                            <div class="player-name">
+                                Player 1
+                            </div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
 
 
-                <button
-                    type="button"
-                    data-estado="combat"
+                <!-- PLAYER 2 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="2"
+                    data-seat="2"
                 >
-                    🔴 Combate
-                </button>
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 2</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
 
 
-                <button
-                    type="button"
-                    data-estado="cte"
+                <!-- PLAYER 3 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="3"
+                    data-seat="3"
                 >
-                    🟡 CTE
-                </button>
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 3</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
 
 
-                <button
-                    type="button"
-                    data-estado="map"
+                <!-- PLAYER 4 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="4"
+                    data-seat="4"
                 >
-                    🔵 Mapa
-                </button>
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 4</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
 
 
-                <button
-                    type="button"
-                    data-estado="boss"
+                <!-- PLAYER 5 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="5"
+                    data-seat="5"
                 >
-                    🚨 Boss
-                </button>
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 5</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
+
+
+                <!-- PLAYER 6 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="6"
+                    data-seat="6"
+                >
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 6</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
+
+
+                <!-- PLAYER 7 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="7"
+                    data-seat="7"
+                >
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 7</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
+
+
+                <!-- PLAYER 8 -->
+                <article
+                    class="jogador-card player-card"
+                    data-player="8"
+                    data-seat="8"
+                >
+                    <div class="player-card-content">
+
+                        <div class="player-card-header">
+                            <div class="player-avatar">👤</div>
+                            <div class="player-name">Player 8</div>
+                        </div>
+
+                        <div class="player-info">
+                            <span class="player-raca">Raça</span>
+                            <span class="player-classe">Classe</span>
+                        </div>
+
+                        <div class="player-bars">
+
+                            <div class="status-values">
+                                <span>❤️ HP</span>
+                                <span class="hp-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar hp-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                            <div class="status-values">
+                                <span>💙 Mana</span>
+                                <span class="mana-value">100/100</span>
+                            </div>
+
+                            <div class="status-bar mana-bar">
+                                <span style="width:100%"></span>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </article>
+
+            </section>
+
+
+            <!-- =============================================
+                 PALCO CENTRAL
+                 ============================================= -->
+
+            <section
+                id="mesa-stage"
+                class="mesa-main mesa-center mesa-stage"
+            >
+
+                <div
+                    id="mesa-screen"
+                    class="mesa-screen mesa-display"
+                >
+
+                    <!--
+                        Este é o espaço principal da Mesa.
+
+                        Pode receber:
+                        🗺️ Mapa
+                        🏰 Dungeon
+                        ⚔️ Combate
+                        👹 Boss
+                        🎲 CTE
+                        📢 Eventos
+                        💬 Chat
+                        etc.
+                    -->
+
+                    <div
+                        id="mesa-screen-content"
+                        class="mesa-screen-content"
+                    >
+
+                        <h2>🎲 Mesa de RPG</h2>
+
+                        <p>
+                            Aguardando o início da aventura...
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </section>
+
+
+        <!-- =================================================
+             PAINEL DO MESTRE
+             ================================================= -->
+
+        <aside
+            id="master-menu"
+            class="master-menu"
+            hidden
+        >
+
+            <div class="master-menu-content">
+
+                <h2>⚙️ Mestre</h2>
+
+                <div class="master-controls">
+
+                    <button type="button" data-master-action="mapa">
+                        🗺️ Mapa
+                    </button>
+
+                    <button type="button" data-master-action="dungeon">
+                        🏰 Dungeon
+                    </button>
+
+                    <button type="button" data-master-action="combate">
+                        ⚔️ Combate
+                    </button>
+
+                    <button type="button" data-master-action="boss">
+                        👹 Boss
+                    </button>
+
+                    <button type="button" data-master-action="cte">
+                        🎲 CTE
+                    </button>
+
+                </div>
 
             </div>
 
-        </section>
+        </aside>
 
 
-
-        <!-- CTE -->
-
-        <section class="ferramenta-grupo">
-
-            <h3>
-                CTE
-            </h3>
-
-            <button
-                type="button"
-                id="criar-cte"
-            >
-                ⚡ Criar CTE
-            </button>
-
-        </section>
-
-
-
-        <!-- DUNGEON -->
-
-        <section class="ferramenta-grupo">
-
-            <h3>
-                Dungeon
-            </h3>
-
-            <button
-                type="button"
-                id="criar-dungeon"
-            >
-                🏰 Criar Dungeon
-            </button>
-
-        </section>
-
-
-
-        <!-- BOSS -->
-
-        <section class="ferramenta-grupo">
-
-            <h3>
-                Boss
-            </h3>
-
-            <button
-                type="button"
-                id="alertar-boss"
-            >
-                🚨 Alertar Boss
-            </button>
-
-        </section>
-
-
-    </section>
-
+    </main>
 
 
     <!-- =====================================================
-         BOTÃO MESTRE
-    ====================================================== -->
+         JAVASCRIPT
+         ===================================================== -->
 
-    <button
-        type="button"
-        id="abrir-painel-mestre"
-        class="botao-mestre"
-        hidden
-    >
-        ⚙️ Mestre
-    </button>
-
-
-
-    <!-- =====================================================
-         NOTIFICAÇÕES
-    ====================================================== -->
-
-    <div
-        id="mesa-notificacoes"
-        aria-live="polite"
-        aria-atomic="true"
-    ></div>
-
-
-
-    <!-- =====================================================
-         MODAL
-    ====================================================== -->
-
-    <div
-        id="mesa-modal"
-        class="mesa-modal"
-        hidden
-        role="dialog"
-        aria-modal="true"
-    >
-
-        <div class="mesa-modal-conteudo">
-
-            <button
-                type="button"
-                id="fechar-mesa-modal"
-                class="mesa-modal-fechar"
-                aria-label="Fechar"
-            >
-                ×
-            </button>
-
-            <div id="mesa-modal-body"></div>
-
-        </div>
-
-    </div>
-
-
-
-</main>
-
-
-
-<script src="mesa.js"></script>
-
+    <script src="mesa.js" defer></script>
 
 </body>
-
 </html>
