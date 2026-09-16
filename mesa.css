@@ -963,10 +963,454 @@ body {
 
 
 /* ============================================================
-   ANIMAÇÕES
+   CTE — INDICADOR
 ============================================================ */
 
-@keyframes masterOverlayIn {
+.cte-indicator {
+    position: absolute;
+
+    top: 14px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 8;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 7px;
+
+    padding:
+        6px
+        13px;
+
+    border-radius: 999px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(37, 24, 50, 0.96),
+            rgba(12, 8, 18, 0.96)
+        );
+
+    border:
+        1px solid rgba(201, 164, 91, 0.42);
+
+    color: #ead9b5;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size: 10px;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+
+    box-shadow:
+        0 6px 18px rgba(0, 0, 0, 0.45);
+
+    pointer-events: none;
+}
+
+.cte-indicator-icon {
+    font-size: 13px;
+
+    filter:
+        drop-shadow(
+            0 0 5px rgba(201, 164, 91, 0.55)
+        );
+}
+
+
+/* ============================================================
+   CTE — OVERLAY
+============================================================ */
+
+.cte-overlay {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 50;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
+
+    padding: 25px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(86, 46, 118, 0.30),
+            rgba(4, 3, 8, 0.82) 72%
+        );
+
+    backdrop-filter: blur(3px);
+
+    animation:
+        cteOverlayIn 0.18s ease;
+
+    cursor: crosshair;
+}
+
+
+/* ============================================================
+   CTE — BRILHO DE FUNDO
+============================================================ */
+
+.cte-overlay::before {
+    content: "";
+
+    position: absolute;
+
+    width: 75%;
+    height: 75%;
+
+    left: 12.5%;
+    top: 12.5%;
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(168, 121, 223, 0.12),
+            transparent 68%
+        );
+
+    pointer-events: none;
+
+    animation:
+        ctePulse 1.2s ease-in-out infinite;
+}
+
+
+/* ============================================================
+   CTE — PAINEL INFORMATIVO
+============================================================ */
+
+.cte-info {
+    position: absolute;
+
+    top: 30px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    z-index: 3;
+
+    width: min(90%, 360px);
+
+    text-align: center;
+
+    pointer-events: none;
+}
+
+.cte-info h2 {
+    font-size: clamp(22px, 4vw, 32px);
+
+    letter-spacing: 2px;
+
+    color: #f0dfbd;
+
+    text-shadow:
+        0 3px 10px rgba(0, 0, 0, 0.95),
+        0 0 18px rgba(201, 164, 91, 0.20);
+}
+
+.cte-info p {
+    margin-top: 7px;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size: clamp(10px, 1.7vw, 13px);
+
+    color: rgba(236, 227, 242, 0.68);
+}
+
+
+/* ============================================================
+   CTE — CONTADOR
+============================================================ */
+
+.cte-timer {
+    position: absolute;
+
+    left: 50%;
+    bottom: 27px;
+
+    transform: translateX(-50%);
+
+    z-index: 5;
+
+    min-width: 78px;
+
+    padding:
+        7px
+        14px;
+
+    border-radius: 10px;
+
+    background:
+        rgba(7, 5, 11, 0.90);
+
+    border:
+        1px solid rgba(201, 164, 91, 0.40);
+
+    color: #f0dfbd;
+
+    font-family:
+        "Courier New",
+        monospace;
+
+    font-size: clamp(17px, 3vw, 24px);
+
+    font-weight: bold;
+
+    text-align: center;
+
+    letter-spacing: 1px;
+
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.55);
+}
+
+.cte-timer.warning {
+    border-color:
+        rgba(201, 164, 91, 0.80);
+
+    animation:
+        cteTimerWarning 0.25s ease-in-out infinite alternate;
+}
+
+.cte-timer.danger {
+    border-color:
+        rgba(183, 45, 59, 0.90);
+
+    color: #ff8791;
+
+    animation:
+        cteTimerDanger 0.16s ease-in-out infinite alternate;
+}
+
+
+/* ============================================================
+   CTE — ALVO
+============================================================ */
+
+.cte-target {
+    position: absolute;
+
+    z-index: 6;
+
+    width: clamp(62px, 10vw, 94px);
+    height: clamp(62px, 10vw, 94px);
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border:
+        2px solid rgba(239, 209, 138, 0.95);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(239, 209, 138, 0.20) 0%,
+            rgba(126, 72, 177, 0.25) 35%,
+            rgba(15, 8, 25, 0.90) 72%
+        );
+
+    color: #f3dfae;
+
+    font-size: clamp(19px, 4vw, 29px);
+
+    cursor: pointer;
+
+    user-select: none;
+    -webkit-user-select: none;
+
+    touch-action: manipulation;
+
+    box-shadow:
+        0 0 0 5px rgba(201, 164, 91, 0.06),
+        0 0 22px rgba(201, 164, 91, 0.35),
+        0 0 50px rgba(126, 72, 177, 0.20);
+
+    animation:
+        cteTargetAppear 0.20s ease,
+        cteTargetPulse 0.75s ease-in-out infinite;
+
+    transition:
+        transform 0.12s ease,
+        box-shadow 0.12s ease;
+}
+
+.cte-target::before {
+    content: "";
+
+    position: absolute;
+
+    inset: -9px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(239, 209, 138, 0.25);
+
+    animation:
+        cteTargetRing 1s linear infinite;
+
+    pointer-events: none;
+}
+
+.cte-target::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 10px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.20);
+
+    pointer-events: none;
+}
+
+.cte-target:hover {
+    transform: scale(1.08);
+
+    box-shadow:
+        0 0 0 7px rgba(201, 164, 91, 0.08),
+        0 0 30px rgba(201, 164, 91, 0.55),
+        0 0 65px rgba(126, 72, 177, 0.30);
+}
+
+.cte-target:active {
+    transform: scale(0.90);
+}
+
+
+/* ============================================================
+   CTE — ESTADOS
+============================================================ */
+
+.cte-success {
+    animation:
+        cteSuccess 0.45s ease forwards;
+}
+
+.cte-failure {
+    animation:
+        cteFailure 0.45s ease forwards;
+}
+
+
+/* ============================================================
+   CTE — MENSAGEM DE RESULTADO
+============================================================ */
+
+.cte-result {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%)
+        scale(0.85);
+
+    z-index: 10;
+
+    min-width: min(80%, 310px);
+
+    padding:
+        18px
+        24px;
+
+    border-radius: 16px;
+
+    text-align: center;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(28, 18, 39, 0.98),
+            rgba(8, 6, 12, 0.98)
+        );
+
+    border:
+        1px solid rgba(201, 164, 91, 0.55);
+
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.75);
+
+    pointer-events: none;
+
+    animation:
+        cteResultIn 0.25s ease forwards;
+}
+
+.cte-result h3 {
+    font-size: clamp(19px, 4vw, 27px);
+
+    color: #ead9b5;
+}
+
+.cte-result p {
+    margin-top: 6px;
+
+    font-family:
+        Arial,
+        sans-serif;
+
+    font-size: 11px;
+
+    color: rgba(235, 225, 241, 0.65);
+}
+
+
+/* ============================================================
+   CTE — ESTADO ATIVO NA MESA
+============================================================ */
+
+.mesa-screen.cte-active {
+    border-color:
+        rgba(239, 209, 138, 0.65);
+
+    box-shadow:
+        inset 0 0 50px rgba(0, 0, 0, 0.78),
+        inset 0 0 25px rgba(126, 72, 177, 0.18),
+        0 0 35px rgba(201, 164, 91, 0.18);
+}
+
+.mesa-screen.cte-active .mesa-screen-content {
+    filter: blur(1px);
+}
+
+
+/* ============================================================
+   ANIMAÇÕES DO CTE
+============================================================ */
+
+@keyframes cteOverlayIn {
+
     from {
         opacity: 0;
     }
@@ -976,18 +1420,156 @@ body {
     }
 }
 
-@keyframes masterPanelIn {
+@keyframes ctePulse {
+
+    0%,
+    100% {
+        transform: scale(0.92);
+        opacity: 0.55;
+    }
+
+    50% {
+        transform: scale(1.04);
+        opacity: 1;
+    }
+}
+
+@keyframes cteTargetAppear {
+
     from {
         opacity: 0;
-        transform:
-            translateY(-10px)
-            scale(0.97);
+        transform: scale(0.35);
     }
 
     to {
         opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes cteTargetPulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 0 5px rgba(201, 164, 91, 0.06),
+            0 0 22px rgba(201, 164, 91, 0.35),
+            0 0 50px rgba(126, 72, 177, 0.20);
+    }
+
+    50% {
+        box-shadow:
+            0 0 0 9px rgba(201, 164, 91, 0.09),
+            0 0 34px rgba(201, 164, 91, 0.55),
+            0 0 65px rgba(126, 72, 177, 0.30);
+    }
+}
+
+@keyframes cteTargetRing {
+
+    from {
+        transform: scale(0.85);
+        opacity: 0.7;
+    }
+
+    to {
+        transform: scale(1.25);
+        opacity: 0;
+    }
+}
+
+@keyframes cteTimerWarning {
+
+    from {
         transform:
-            translateY(0)
+            translateX(-50%)
+            scale(1);
+    }
+
+    to {
+        transform:
+            translateX(-50%)
+            scale(1.04);
+    }
+}
+
+@keyframes cteTimerDanger {
+
+    from {
+        transform:
+            translateX(-50%)
+            scale(1);
+    }
+
+    to {
+        transform:
+            translateX(-50%)
+            scale(1.07);
+    }
+}
+
+@keyframes cteSuccess {
+
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    40% {
+        transform: scale(1.20);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(0.65);
+        opacity: 0;
+    }
+}
+
+@keyframes cteFailure {
+
+    0% {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    20% {
+        transform: translateX(-8px);
+    }
+
+    40% {
+        transform: translateX(8px);
+    }
+
+    60% {
+        transform: translateX(-6px);
+    }
+
+    80% {
+        transform: translateX(6px);
+    }
+
+    100% {
+        transform: translateX(0);
+        opacity: 0;
+    }
+}
+
+@keyframes cteResultIn {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.82);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
             scale(1);
     }
 }
@@ -1019,6 +1601,14 @@ body {
     .player-card[data-seat="6"],
     .player-card[data-seat="7"] {
         bottom: 9%;
+    }
+
+    .cte-info {
+        top: 24px;
+    }
+
+    .cte-timer {
+        bottom: 22px;
     }
 }
 
@@ -1248,6 +1838,84 @@ body {
 
         font-size: 11px;
     }
+
+
+    /* --------------------------------
+       CTE MOBILE
+    -------------------------------- */
+
+    .cte-indicator {
+        top: 9px;
+
+        padding:
+            5px
+            10px;
+
+        font-size: 8px;
+    }
+
+    .cte-indicator-icon {
+        font-size: 11px;
+    }
+
+    .cte-overlay {
+        padding: 12px;
+    }
+
+    .cte-info {
+        top: 18px;
+
+        width: 90%;
+    }
+
+    .cte-info h2 {
+        font-size: 20px;
+
+        letter-spacing: 1.5px;
+    }
+
+    .cte-info p {
+        margin-top: 5px;
+
+        font-size: 9px;
+    }
+
+    .cte-target {
+        width: 66px;
+        height: 66px;
+
+        font-size: 20px;
+    }
+
+    .cte-timer {
+        bottom: 15px;
+
+        min-width: 65px;
+
+        padding:
+            5px
+            10px;
+
+        font-size: 17px;
+    }
+
+    .cte-result {
+        min-width: 75%;
+
+        padding:
+            14px
+            18px;
+
+        border-radius: 13px;
+    }
+
+    .cte-result h3 {
+        font-size: 20px;
+    }
+
+    .cte-result p {
+        font-size: 9px;
+    }
 }
 
 
@@ -1306,6 +1974,32 @@ body {
     .player-card[data-seat="6"],
     .player-card[data-seat="7"] {
         bottom: 10%;
+    }
+
+
+    /* --------------------------------
+       CTE MUITO PEQUENO
+    -------------------------------- */
+
+    .cte-info h2 {
+        font-size: 17px;
+    }
+
+    .cte-info p {
+        font-size: 8px;
+    }
+
+    .cte-target {
+        width: 58px;
+        height: 58px;
+
+        font-size: 17px;
+    }
+
+    .cte-timer {
+        bottom: 11px;
+
+        font-size: 15px;
     }
 }
 
