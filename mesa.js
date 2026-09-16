@@ -2,6 +2,19 @@
    MESA RPG ONLINE
    mesa.js
    PARTE 1/3
+   ---------------------------------------------------------
+   Núcleo da Mesa
+   - Estado
+   - Usuário / Mestre
+   - Campanha
+   - Jogadores
+   - Interface
+   - Assentos
+   - Cards
+   - Personagem
+   - Status
+   - Afinidade
+   - Inventário
 ========================================================= */
 
 (() => {
@@ -14,17 +27,19 @@
     const mesa = {
         campanha: null,
         mestre: null,
+
         jogadores: [],
 
         maxJogadores: 8,
 
-        modo: "interface",
         telaAtual: "inicio",
+        modo: "interface",
 
         cte: null,
         cteTimer: null,
 
         combate: null,
+
         boss: null,
         bossTimer: null,
 
@@ -40,38 +55,31 @@
             animacoes: true
         },
 
-        inicializada: false,
+        elementos: {},
 
-        elementos: {}
+        inicializada: false
     };
-
-
-    /* =====================================================
-       ESTADO GLOBAL
-    ===================================================== */
 
     window.rpgMesa = mesa;
 
 
     /* =====================================================
-       UTILIDADES
+       UTILITÁRIOS
     ===================================================== */
 
-    function qs(seletor, raiz = document) {
-        return raiz.querySelector(seletor);
+    function qs(seletor, origem = document) {
+        return origem.querySelector(seletor);
     }
 
-    function qsa(seletor, raiz = document) {
-        return [...raiz.querySelectorAll(seletor)];
+    function qsa(seletor, origem = document) {
+        return [...origem.querySelectorAll(seletor)];
     }
 
-    function criarElemento(tag, classes = [], texto = "") {
+    function criarElemento(tag, classe = "", texto = "") {
         const elemento = document.createElement(tag);
 
-        if (Array.isArray(classes)) {
-            elemento.classList.add(...classes.filter(Boolean));
-        } else if (classes) {
-            elemento.className = classes;
+        if (classe) {
+            elemento.className = classe;
         }
 
         if (texto !== "") {
@@ -89,55 +97,116 @@
         }
     }
 
-    function obterNome(objeto, padrao = "Jogador") {
-        if (!objeto) return padrao;
-
-        return (
-            objeto.nome ||
-            objeto.name ||
-            objeto.username ||
-            objeto.display_name ||
-            objeto.displayName ||
-            objeto.nickname ||
-            padrao
-        );
-    }
-
-    function obterId(objeto) {
-        if (!objeto) return null;
-
-        return (
-            objeto.id ||
-            objeto.user_id ||
-            objeto.userId ||
-            objeto.uid ||
-            objeto.player_id ||
-            null
-        );
-    }
-
     function escaparHTML(valor) {
-        return String(valor ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
+        const div = document.createElement("div");
+        div.textContent = valor ?? "";
+        return div.innerHTML;
     }
 
     window.escaparHTML = escaparHTML;
 
 
     /* =====================================================
-       USUÁRIO
+       LEITURA FLEXÍVEL DE DADOS
+       -----------------------------------------------------
+       Permite que a Mesa funcione mesmo que o personagem
+       tenha sido salvo com nomes de propriedades diferentes.
+    ===================================================== */
+
+    function primeiroValor(obj, campos, padrao = null) {
+        if (!obj) return padrao;
+
+        for (const campo of campos) {
+            const valor = obj[campo];
+
+            if (
+                valor !== undefined &&
+                valor !== null &&
+                valor !== ""
+            ) {
+                return valor;
+            }
+        }
+
+        return padrao;
+    }
+
+    function obterId(obj) {
+        return primeiroValor(
+            obj,
+            [
+                "id",
+                "uid",
+                "user_id",
+                "userId",
+                "player_id",
+                "playerId"
+            ],
+            null
+        );
+    }
+
+    function obterNome(obj) {
+        return primeiroValor(
+            obj,
+            [
+                "name",
+                "nome",
+                "username",
+                "displayName",
+                "display_name"
+            ],
+            "Jogador"
+        );
+    }
+
+    function obterNomeUsuario(obj) {
+        return primeiroValor(
+            obj,
+            [
+                "name",
+                "nome",
+                "username",
+                "displayName",
+                "display_name"
+            ],
+            "Jogador"
+        );
+    }
+
+
+    /* =====================================================
+       USUÁRIO ATUAL
     ===================================================== */
 
     function obterUsuarioAtual() {
-        return window.rpgAuth?.user ||
-               window.rpgAuth?.usuario ||
-               window.usuarioAtual ||
-               null;
+        const auth = window.rpgAuth;
+
+        if (auth?.user) {
+            return auth.user;
+        }
+
+        if (auth?.usuario) {
+            return auth.usuario;
+        }
+
+        if (window.usuarioAtual) {
+            return window.usuarioAtual;
+        }
+
+        if (window.usuario) {
+            return window.usuario;
+        }
+
+        return null;
     }
+
+    window.obterUsuarioAtual = obterUsuarioAtual;
+
+
+    /* =====================================================
+       MESTRE
+    ===================================================== */
 
     function usuarioEhMestre() {
         const usuario = obterUsuarioAtual();
@@ -150,14 +219,35 @@
 
         const idUsuario = obterId(usuario);
 
-        const idMestre =
-            mesa.campanha?.master_id ||
-            mesa.campanha?.masterId ||
-            mesa.campanha?.mestre_id ||
-            mesa.campanha?.mestreId;
+        const idMestre = primeiroValor(
+            mesa.campanha,
+            [
+                "master_id",
+                "masterId",
+                "mestre_id",
+                "mestreId"
+            ],
+            null
+        );
 
-        if (idUsuario && idMestre) {
-            return String(idUsuario) === String(idMestre);
+        if (
+            idUsuario !== null &&
+            idMestre !== null &&
+            String(idUsuario) === String(idMestre)
+        ) {
+            return true;
+        }
+
+        if (mesa.mestre) {
+            const idMestreObjeto = obterId(mesa.mestre);
+
+            if (
+                idUsuario !== null &&
+                idMestreObjeto !== null &&
+                String(idUsuario) === String(idMestreObjeto)
+            ) {
+                return true;
+            }
         }
 
         return false;
@@ -166,46 +256,42 @@
     window.usuarioEhMestre = usuarioEhMestre;
 
 
-    /* =====================================================
-       NOME DO MESTRE
-    ===================================================== */
-
     function obterNomeMestre() {
         if (mesa.mestre) {
-            return obterNome(mesa.mestre, "Mestre");
+            return obterNome(mesa.mestre);
         }
 
-        if (mesa.campanha) {
-            return (
-                mesa.campanha.master_name ||
-                mesa.campanha.masterName ||
-                mesa.campanha.mestre_nome ||
-                mesa.campanha.mestreNome ||
-                "Mestre"
-            );
-        }
-
-        return "Mestre";
+        return primeiroValor(
+            mesa.campanha,
+            [
+                "master_name",
+                "masterName",
+                "mestre_nome",
+                "mestreNome"
+            ],
+            "Mestre"
+        );
     }
-
-    window.obterNomeMestre = obterNomeMestre;
 
 
     /* =====================================================
        CAMPANHA
     ===================================================== */
 
-    async function obterCampanha() {
-        try {
-            if (typeof window.obterCampanhaAtiva === "function") {
-                const campanha = await window.obterCampanhaAtiva();
+    function obterCampanha() {
+        if (typeof window.obterCampanhaAtiva === "function") {
+            try {
+                const campanha = window.obterCampanhaAtiva();
 
                 if (campanha) {
                     return campanha;
                 }
+            } catch (erro) {
+                console.warn(
+                    "Não foi possível obter campanha ativa:",
+                    erro
+                );
             }
-        } catch (erro) {
-            console.warn("Não foi possível obter campanha ativa:", erro);
         }
 
         if (window.rpgAuth?.campaign) {
@@ -216,6 +302,10 @@
             return window.rpgAuth.campanha;
         }
 
+        if (window.campanhaAtual) {
+            return window.campanhaAtual;
+        }
+
         return null;
     }
 
@@ -224,507 +314,1561 @@
        JOGADORES
     ===================================================== */
 
-    async function carregarJogadoresMesa() {
-        try {
-            const campanha = mesa.campanha;
-
-            if (!campanha) {
-                mesa.jogadores = [];
-                return;
-            }
-
-            const jogadores =
-                campanha.players ||
-                campanha.jogadores ||
-                campanha.members ||
-                campanha.membros ||
-                campanha.participantes ||
-                [];
-
-            mesa.jogadores = Array.isArray(jogadores)
-                ? jogadores.slice(0, mesa.maxJogadores)
-                : [];
-
-        } catch (erro) {
-            console.error("Erro ao carregar jogadores:", erro);
-            mesa.jogadores = [];
+    function obterListaBrutaJogadores(campanha) {
+        if (!campanha) {
+            return [];
         }
+
+        return primeiroValor(
+            campanha,
+            [
+                "players",
+                "jogadores",
+                "members",
+                "membros",
+                "participantes"
+            ],
+            []
+        );
     }
 
-    window.carregarJogadoresMesa = carregarJogadoresMesa;
 
+    function normalizarJogador(jogador) {
+        if (!jogador) {
+            return null;
+        }
 
-    function atualizarListaJogadores() {
-        renderizarAssentos();
-        renderizarCardsJogadores();
+        const personagem =
+            jogador.character ||
+            jogador.personagem ||
+            jogador.characterData ||
+            jogador.personagemData ||
+            {};
+
+        const status =
+            jogador.status ||
+            personagem.status ||
+            {};
+
+        const habilidades =
+            primeiroValor(
+                jogador,
+                [
+                    "abilities",
+                    "habilidades",
+                    "skills",
+                    "skillsData"
+                ],
+                null
+            ) ||
+            primeiroValor(
+                personagem,
+                [
+                    "abilities",
+                    "habilidades",
+                    "skills",
+                    "skillsData"
+                ],
+                []
+            ) ||
+            [];
+
+        const passiva =
+            primeiroValor(
+                jogador,
+                [
+                    "passive",
+                    "passiva"
+                ],
+                null
+            ) ||
+            primeiroValor(
+                personagem,
+                [
+                    "passive",
+                    "passiva"
+                ],
+                null
+            );
+
+        return {
+            ...jogador,
+
+            character: personagem,
+
+            status,
+
+            abilities: Array.isArray(habilidades)
+                ? habilidades.slice(0, 3)
+                : [],
+
+            passive: passiva || null
+        };
     }
 
-    window.atualizarListaJogadores = atualizarListaJogadores;
+
+    function carregarJogadoresMesa() {
+        const lista = obterListaBrutaJogadores(
+            mesa.campanha
+        );
+
+        if (!Array.isArray(lista)) {
+            mesa.jogadores = [];
+            return;
+        }
+
+        mesa.jogadores = lista
+            .map(normalizarJogador)
+            .filter(Boolean)
+            .slice(0, mesa.maxJogadores);
+    }
+
+
+    function encontrarJogador(id) {
+        if (id === null || id === undefined) {
+            return null;
+        }
+
+        return mesa.jogadores.find(jogador => {
+            const jogadorId = obterId(jogador);
+
+            return (
+                jogadorId !== null &&
+                String(jogadorId) === String(id)
+            );
+        }) || null;
+    }
+
+
+    function obterNomePersonagem(jogador) {
+        if (!jogador) {
+            return "Personagem";
+        }
+
+        const personagem =
+            jogador.character ||
+            jogador.personagem ||
+            {};
+
+        return primeiroValor(
+            jogador,
+            [
+                "character_name",
+                "characterName",
+                "personagem_nome",
+                "personagemNome"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "name",
+                    "nome"
+                ],
+                "Personagem"
+            )
+        );
+    }
+
+
+    function obterRaca(jogador) {
+        const personagem =
+            jogador?.character ||
+            jogador?.personagem ||
+            {};
+
+        return primeiroValor(
+            jogador,
+            [
+                "race",
+                "raca"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "race",
+                    "raca"
+                ],
+                "—"
+            )
+        );
+    }
+
+
+    function obterClasse(jogador) {
+        const personagem =
+            jogador?.character ||
+            jogador?.personagem ||
+            {};
+
+        return primeiroValor(
+            jogador,
+            [
+                "class",
+                "classe"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "class",
+                    "classe"
+                ],
+                "—"
+            )
+        );
+    }
+
+
+    function obterAfinidade(jogador) {
+        const personagem =
+            jogador?.character ||
+            jogador?.personagem ||
+            {};
+
+        return primeiroValor(
+            jogador,
+            [
+                "affinity",
+                "afinidade"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "affinity",
+                    "afinidade"
+                ],
+                "—"
+            )
+        );
+    }
 
 
     /* =====================================================
-       LOCALIZAR PAINEL
+       STATUS
+    ===================================================== */
+
+    function obterHP(jogador) {
+        const status = jogador?.status || {};
+
+        const atual = Number(
+            primeiroValor(
+                status,
+                [
+                    "hp",
+                    "vida",
+                    "currentHp",
+                    "currentHP",
+                    "vidaAtual"
+                ],
+                primeiroValor(
+                    jogador,
+                    [
+                        "hp",
+                        "vida"
+                    ],
+                    0
+                )
+            )
+        );
+
+        const maximo = Number(
+            primeiroValor(
+                status,
+                [
+                    "maxHp",
+                    "maxHP",
+                    "hpMax",
+                    "vidaMaxima",
+                    "vidaMax"
+                ],
+                primeiroValor(
+                    jogador,
+                    [
+                        "maxHp",
+                        "maxHP"
+                    ],
+                    atual
+                )
+            )
+        );
+
+        return {
+            atual: Number.isFinite(atual)
+                ? Math.max(0, atual)
+                : 0,
+
+            maximo: Number.isFinite(maximo)
+                ? Math.max(1, maximo)
+                : 1
+        };
+    }
+
+
+    function obterRecurso(jogador, tipo) {
+        const status = jogador?.status || {};
+
+        if (tipo === "mana") {
+            return {
+                atual: Number(
+                    primeiroValor(
+                        status,
+                        [
+                            "mana",
+                            "manaAtual",
+                            "currentMana"
+                        ],
+                        0
+                    )
+                ),
+
+                maximo: Number(
+                    primeiroValor(
+                        status,
+                        [
+                            "maxMana",
+                            "manaMax",
+                            "manaMaxima"
+                        ],
+                        0
+                    )
+                )
+            };
+        }
+
+        if (tipo === "energia") {
+            return {
+                atual: Number(
+                    primeiroValor(
+                        status,
+                        [
+                            "energy",
+                            "energia",
+                            "energiaAtual",
+                            "currentEnergy"
+                        ],
+                        0
+                    )
+                ),
+
+                maximo: Number(
+                    primeiroValor(
+                        status,
+                        [
+                            "maxEnergy",
+                            "maxEnergia",
+                            "energiaMax"
+                        ],
+                        0
+                    )
+                )
+            };
+        }
+
+        return {
+            atual: 0,
+            maximo: 0
+        };
+    }
+
+
+    function calcularPercentual(atual, maximo) {
+        if (!maximo || maximo <= 0) {
+            return 0;
+        }
+
+        return Math.max(
+            0,
+            Math.min(
+                100,
+                (atual / maximo) * 100
+            )
+        );
+    }
+
+
+    /* =====================================================
+       ELEMENTOS PRINCIPAIS DA MESA
     ===================================================== */
 
     function obterPainelMesa() {
-        let painel = document.getElementById("online-table-panel");
+        let painel = document.querySelector(
+            "#online-table-panel"
+        );
 
-        if (painel) {
-            return painel;
+        if (!painel) {
+            painel = criarElemento(
+                "section",
+                "online-table-panel"
+            );
+
+            painel.id = "online-table-panel";
+
+            document.body.appendChild(painel);
         }
-
-        painel = criarElemento("section");
-        painel.id = "online-table-panel";
-
-        document.body.appendChild(painel);
 
         return painel;
     }
 
-
-    /* =====================================================
-       CRIAÇÃO DA INTERFACE
-    ===================================================== */
 
     function criarInterfaceMesa() {
         const painel = obterPainelMesa();
 
         limparElemento(painel);
 
-        const header = criarElemento("header", ["online-table-header"]);
+        /* -------------------------------------------------
+           HEADER
+        ------------------------------------------------- */
 
-        const tituloArea = criarElemento("div");
+        const header = criarElemento(
+            "header",
+            "online-table-header"
+        );
 
-        const label = criarElemento(
+        const tituloArea = criarElemento(
+            "div",
+            "online-table-title-area"
+        );
+
+        const etiqueta = criarElemento(
             "span",
-            ["online-table-label"],
+            "online-table-label",
             "MESA ONLINE"
         );
 
         const titulo = criarElemento(
-            "h2",
-            [],
-            mesa.campanha?.name ||
-            mesa.campanha?.nome ||
-            "Mesa de RPG"
+            "h1",
+            "online-table-title",
+            primeiroValor(
+                mesa.campanha,
+                [
+                    "name",
+                    "nome",
+                    "title",
+                    "titulo"
+                ],
+                "Mesa de RPG"
+            )
         );
 
-        tituloArea.appendChild(label);
-        tituloArea.appendChild(titulo);
-
-        const status = criarElemento(
-            "div",
-            ["online-table-status"],
+        const statusMesa = criarElemento(
+            "span",
+            "online-table-status",
             "🟢 INTERFACE"
         );
 
-        status.id = "mesa-status";
+        statusMesa.id = "mesa-mode-status";
 
-        header.appendChild(tituloArea);
-        header.appendChild(status);
+        tituloArea.append(
+            etiqueta,
+            titulo
+        );
 
-        painel.appendChild(header);
+        header.append(
+            tituloArea,
+            statusMesa
+        );
 
+        /* -------------------------------------------------
+           ÁREA PRINCIPAL
+        ------------------------------------------------- */
 
-        /* -----------------------------------------------
-           MESA
-        ------------------------------------------------ */
+        const mesaArea = criarElemento(
+            "main",
+            "rpg-table"
+        );
 
-        const rpgTable = criarElemento("div", ["rpg-table"]);
-        rpgTable.id = "rpg-table";
+        mesaArea.id = "rpg-table";
 
-
-        /* -----------------------------------------------
+        /* -------------------------------------------------
            MESTRE
-        ------------------------------------------------ */
+        ------------------------------------------------- */
 
-        const mestre = criarElemento("div", ["table-head"]);
+        const areaMestre = criarElemento(
+            "section",
+            "table-master"
+        );
 
-        const mestreSmall = criarElemento(
-            "small",
-            [],
-            "👑 MESTRE"
+        const mestreIcone = criarElemento(
+            "div",
+            "table-master-icon",
+            "♛"
+        );
+
+        const mestreInfo = criarElemento(
+            "div",
+            "table-master-info"
+        );
+
+        const mestreLabel = criarElemento(
+            "span",
+            "table-master-label",
+            "MESTRE"
         );
 
         const mestreNome = criarElemento(
             "strong",
-            [],
+            "table-master-name",
             obterNomeMestre()
         );
 
-        mestre.appendChild(mestreSmall);
-        mestre.appendChild(mestreNome);
+        mestreInfo.append(
+            mestreLabel,
+            mestreNome
+        );
 
-        rpgTable.appendChild(mestre);
+        areaMestre.append(
+            mestreIcone,
+            mestreInfo
+        );
 
+        /* -------------------------------------------------
+           CORPO DA MESA
+        ------------------------------------------------- */
 
-        /* -----------------------------------------------
-           LADO ESQUERDO
-        ------------------------------------------------ */
+        const corpoMesa = criarElemento(
+            "div",
+            "table-body"
+        );
+
+        /* LADO ESQUERDO */
 
         const ladoEsquerdo = criarElemento(
             "div",
-            ["table-side", "left"]
+            "table-side left"
         );
 
         ladoEsquerdo.id = "mesa-seats-left";
 
-        for (let i = 1; i <= 4; i++) {
-            ladoEsquerdo.appendChild(criarAssento(i));
-        }
-
-        rpgTable.appendChild(ladoEsquerdo);
-
-
-        /* -----------------------------------------------
-           LADO DIREITO
-        ------------------------------------------------ */
+        /* LADO DIREITO */
 
         const ladoDireito = criarElemento(
             "div",
-            ["table-side", "right"]
+            "table-side right"
         );
 
         ladoDireito.id = "mesa-seats-right";
 
-        for (let i = 5; i <= 8; i++) {
-            ladoDireito.appendChild(criarAssento(i));
-        }
+        /* CENTRO */
 
-        rpgTable.appendChild(ladoDireito);
+        const centro = criarElemento(
+            "section",
+            "table-center"
+        );
 
+        const tela = criarElemento(
+            "div",
+            "mesa-screen"
+        );
 
-        /* -----------------------------------------------
-           CENTRO
-        ------------------------------------------------ */
-
-        const centro = criarElemento("div", ["table-center"]);
-        centro.id = "mesa-center";
-
-        const tela = criarElemento("div", ["mesa-screen"]);
         tela.id = "mesa-screen";
 
-        centro.appendChild(tela);
+        centro.append(tela);
 
-        rpgTable.appendChild(centro);
+        for (let i = 1; i <= 4; i++) {
+            ladoEsquerdo.append(
+                criarAssento(i)
+            );
+        }
 
+        for (let i = 5; i <= 8; i++) {
+            ladoDireito.append(
+                criarAssento(i)
+            );
+        }
 
-        /* -----------------------------------------------
-           MESA
-        ------------------------------------------------ */
+        corpoMesa.append(
+            ladoEsquerdo,
+            centro,
+            ladoDireito
+        );
 
-        painel.appendChild(rpgTable);
+        /* -------------------------------------------------
+           ÁREA DE CARDS
+        ------------------------------------------------- */
 
-
-        /* -----------------------------------------------
-           CARDS
-        ------------------------------------------------ */
-
-        const cardsArea = criarElemento(
+        const jogadoresArea = criarElemento(
             "section",
-            ["online-table-players"]
+            "online-table-players"
         );
 
-        cardsArea.id = "mesa-players-area";
+        jogadoresArea.id = "mesa-players-area";
 
-        const tituloJogadores = criarElemento(
+        const jogadoresHeader = criarElemento(
             "div",
-            ["online-table-section-title"]
+            "mesa-players-header"
         );
 
-        const textoJogadores = criarElemento(
-            "span",
-            [],
+        const jogadoresTitulo = criarElemento(
+            "h2",
+            "",
             "JOGADORES"
         );
 
         const contador = criarElemento(
-            "strong",
-            [],
-            `0/${mesa.maxJogadores}`
+            "span",
+            "mesa-player-count",
+            "0/8"
         );
 
         contador.id = "mesa-player-count";
 
-        tituloJogadores.appendChild(textoJogadores);
-        tituloJogadores.appendChild(contador);
-
-        cardsArea.appendChild(tituloJogadores);
+        jogadoresHeader.append(
+            jogadoresTitulo,
+            contador
+        );
 
         const cards = criarElemento(
             "div",
-            ["mesa-player-cards"]
+            "mesa-player-cards"
         );
 
         cards.id = "mesa-player-cards";
 
-        cardsArea.appendChild(cards);
+        jogadoresArea.append(
+            jogadoresHeader,
+            cards
+        );
 
-        painel.appendChild(cardsArea);
-
-
-        /* -----------------------------------------------
+        /* -------------------------------------------------
            NOTIFICAÇÃO
-        ------------------------------------------------ */
+        ------------------------------------------------- */
 
-        criarSistemaNotificacao();
+        const notificacao = criarElemento(
+            "div",
+            "mesa-notificacao"
+        );
 
+        notificacao.id = "mesa-notificacao";
 
-        /* -----------------------------------------------
-           ELEMENTOS
-        ------------------------------------------------ */
+        notificacao.setAttribute(
+            "aria-live",
+            "polite"
+        );
+
+        painel.append(
+            header,
+            mesaArea,
+            jogadoresArea,
+            notificacao
+        );
+
+        /* -------------------------------------------------
+           REFERÊNCIAS
+        ------------------------------------------------- */
 
         mesa.elementos = {
             painel,
-            rpgTable,
-            centro,
+            header,
+            mesaArea,
             tela,
-            status,
-            cardsArea,
+            statusMesa,
+            mestreNome,
+            ladoEsquerdo,
+            ladoDireito,
             cards,
-            mestreNome
+            contador,
+            notificacao
         };
-
-
-        /* -----------------------------------------------
-           TELA INICIAL
-        ------------------------------------------------ */
-
-        renderizarTelaInicial();
-
-        atualizarListaJogadores();
     }
 
 
     /* =====================================================
-       ASSENTO
+       ASSENTOS
     ===================================================== */
 
     function criarAssento(numero) {
         const assento = criarElemento(
-            "div",
-            ["table-seat"]
+            "button",
+            "table-seat"
         );
+
+        assento.type = "button";
 
         assento.dataset.seat = String(numero);
 
-        const conteudo = criarElemento(
-            "div",
-            ["table-seat-content"]
-        );
-
         const icone = criarElemento(
             "div",
-            ["table-seat-icon"],
+            "table-seat-icon",
             "👤"
         );
 
         const nome = criarElemento(
-            "div",
-            ["table-seat-name"],
+            "span",
+            "table-seat-name",
             "Aguardando jogador"
         );
 
-        const numeroElemento = criarElemento(
-            "div",
-            ["table-seat-number"],
-            String(numero)
+        const numeroAssento = criarElemento(
+            "span",
+            "table-seat-number",
+            `S${numero}`
         );
 
-        conteudo.appendChild(icone);
-        conteudo.appendChild(nome);
+        assento.append(
+            icone,
+            nome,
+            numeroAssento
+        );
 
-        assento.appendChild(numeroElemento);
-        assento.appendChild(conteudo);
+        assento.addEventListener(
+            "click",
+            () => {
+                const jogador = mesa.jogadores.find(
+                    item =>
+                        Number(item.seat) === numero ||
+                        Number(item.assento) === numero
+                );
 
-        assento.addEventListener("click", () => {
-            const jogador = mesa.jogadores[numero - 1];
-
-            if (jogador) {
-                abrirJogador(jogador);
+                if (jogador) {
+                    abrirJogador(jogador);
+                }
             }
-        });
+        );
 
         return assento;
     }
 
 
-    /* =====================================================
-       RENDERIZAR ASSENTOS
-    ===================================================== */
-
     function renderizarAssentos() {
-        const assentos = qsa(
-            "#rpg-table .table-seat"
-        );
+        const esquerda =
+            mesa.elementos.ladoEsquerdo;
 
-        assentos.forEach((assento, index) => {
-            const jogador = mesa.jogadores[index];
+        const direita =
+            mesa.elementos.ladoDireito;
 
-            const nome = qs(
-                ".table-seat-name",
-                assento
+        if (!esquerda || !direita) {
+            return;
+        }
+
+        const assentos = [
+            ...qsa(".table-seat", esquerda),
+            ...qsa(".table-seat", direita)
+        ];
+
+        assentos.forEach(assento => {
+            const numero = Number(
+                assento.dataset.seat
             );
+
+            const jogador =
+                mesa.jogadores.find(item => {
+                    const assentoJogador =
+                        Number(
+                            primeiroValor(
+                                item,
+                                [
+                                    "seat",
+                                    "assento",
+                                    "slot"
+                                ],
+                                0
+                            )
+                        );
+
+                    return (
+                        assentoJogador === numero
+                    );
+                }) ||
+                mesa.jogadores[numero - 1];
 
             const icone = qs(
                 ".table-seat-icon",
                 assento
             );
 
-            if (!jogador) {
-                if (nome) {
-                    nome.textContent = "Aguardando jogador";
+            const nome = qs(
+                ".table-seat-name",
+                assento
+            );
+
+            if (jogador) {
+                assento.classList.add(
+                    "occupied"
+                );
+
+                if (icone) {
+                    icone.textContent =
+                        primeiroValor(
+                            jogador,
+                            [
+                                "avatar",
+                                "icone",
+                                "emoji"
+                            ],
+                            "🧙"
+                        );
                 }
+
+                if (nome) {
+                    nome.textContent =
+                        obterNomePersonagem(
+                            jogador
+                        );
+                }
+
+                assento.title =
+                    obterNomeUsuario(jogador);
+            } else {
+                assento.classList.remove(
+                    "occupied"
+                );
 
                 if (icone) {
                     icone.textContent = "👤";
                 }
 
-                assento.classList.remove("occupied");
-                assento.removeAttribute("data-player-id");
+                if (nome) {
+                    nome.textContent =
+                        "Aguardando jogador";
+                }
 
-                return;
-            }
-
-            const nomeJogador = obterNome(
-                jogador,
-                "Jogador"
-            );
-
-            if (nome) {
-                nome.textContent = nomeJogador;
-            }
-
-            if (icone) {
-                icone.textContent =
-                    jogador.avatar ||
-                    jogador.icone ||
-                    "🧙";
-            }
-
-            assento.classList.add("occupied");
-
-            const id = obterId(jogador);
-
-            if (id) {
-                assento.dataset.playerId = String(id);
+                assento.removeAttribute(
+                    "title"
+                );
             }
         });
 
-        const contador = qs("#mesa-player-count");
+        atualizarContadorJogadores();
+    }
 
-        if (contador) {
-            contador.textContent =
-                `${mesa.jogadores.length}/${mesa.maxJogadores}`;
-        }
+
+    function atualizarContadorJogadores() {
+        const contador =
+            mesa.elementos.contador;
+
+        if (!contador) return;
+
+        contador.textContent =
+            `${mesa.jogadores.length}/${mesa.maxJogadores}`;
     }
 
 
     /* =====================================================
        CARDS DOS JOGADORES
+       -----------------------------------------------------
+       IMPORTANTE:
+       Cada card possui:
+       - Nome do jogador
+       - Nome do personagem
+       - Raça
+       - Classe
+       - Afinidade
+       - HP
+       - Recursos
+       - 3 habilidades
+       - 1 passiva
     ===================================================== */
 
     function renderizarCardsJogadores() {
-        const container = mesa.elementos.cards;
+        const container =
+            mesa.elementos.cards;
 
-        if (!container) return;
-
-        limparElemento(container);
-
-        if (!mesa.jogadores.length) {
-            const vazio = criarElemento(
-                "div",
-                ["online-table-empty"],
-                "Nenhum jogador conectado."
-            );
-
-            container.appendChild(vazio);
+        if (!container) {
             return;
         }
 
-        mesa.jogadores.forEach((jogador, index) => {
-            const card = criarElemento(
+        limparElemento(container);
+
+        if (
+            !mesa.configuracoes.mostrarCards
+        ) {
+            return;
+        }
+
+        if (mesa.jogadores.length === 0) {
+            const vazio = criarElemento(
                 "div",
-                ["mesa-player-card"]
+                "mesa-cards-empty"
             );
 
-            card.dataset.playerIndex = String(index);
+            vazio.textContent =
+                "Nenhum jogador conectado à mesa.";
 
-            const nome = criarElemento(
-                "strong",
-                [],
-                obterNome(jogador, `Jogador ${index + 1}`)
-            );
+            container.appendChild(vazio);
 
-            const personagem = criarElemento(
-                "small",
-                [],
-                obterNomePersonagem(jogador)
-            );
+            atualizarContadorJogadores();
 
-            const status = criarElemento(
-                "small",
-                [],
-                obterStatusResumo(jogador)
-            );
+            return;
+        }
 
-            card.appendChild(nome);
-            card.appendChild(personagem);
-            card.appendChild(status);
+        mesa.jogadores.forEach(
+            (jogador, indice) => {
+                container.appendChild(
+                    criarCardJogador(
+                        jogador,
+                        indice
+                    )
+                );
+            }
+        );
 
-            card.addEventListener("click", () => {
-                abrirJogador(jogador);
-            });
-
-            container.appendChild(card);
-        });
+        atualizarContadorJogadores();
     }
 
 
-    function obterNomePersonagem(jogador) {
-        if (!jogador) return "Sem personagem";
+    function criarCardJogador(
+        jogador,
+        indice
+    ) {
+        const card = criarElemento(
+            "article",
+            "mesa-player-card"
+        );
 
-        return (
-            jogador.character_name ||
-            jogador.characterName ||
-            jogador.personagem_nome ||
-            jogador.personagemNome ||
-            jogador.character?.name ||
-            jogador.personagem?.nome ||
-            "Sem personagem"
+        const id =
+            obterId(jogador) ??
+            `player-${indice + 1}`;
+
+        card.dataset.playerId =
+            String(id);
+
+        /* -------------------------------------------------
+           CABEÇALHO
+        ------------------------------------------------- */
+
+        const header = criarElemento(
+            "div",
+            "player-card-header"
+        );
+
+        const avatar = criarElemento(
+            "div",
+            "player-card-avatar",
+            primeiroValor(
+                jogador,
+                [
+                    "avatar",
+                    "icone",
+                    "emoji"
+                ],
+                "🧙"
+            )
+        );
+
+        const identidade = criarElemento(
+            "div",
+            "player-card-identity"
+        );
+
+        const personagem = criarElemento(
+            "strong",
+            "player-card-character",
+            obterNomePersonagem(jogador)
+        );
+
+        const jogadorNome = criarElemento(
+            "span",
+            "player-card-player",
+            obterNomeUsuario(jogador)
+        );
+
+        identidade.append(
+            personagem,
+            jogadorNome
+        );
+
+        const slot = criarElemento(
+            "span",
+            "player-card-slot",
+            `S${indice + 1}`
+        );
+
+        header.append(
+            avatar,
+            identidade,
+            slot
+        );
+
+
+        /* -------------------------------------------------
+           INFORMAÇÕES
+        ------------------------------------------------- */
+
+        const informacoes = criarElemento(
+            "div",
+            "player-card-info"
+        );
+
+        informacoes.append(
+            criarInfoCard(
+                "RAÇA",
+                obterRaca(jogador)
+            ),
+
+            criarInfoCard(
+                "CLASSE",
+                obterClasse(jogador)
+            ),
+
+            criarInfoCard(
+                "AFINIDADE",
+                obterAfinidade(jogador)
+            )
+        );
+
+
+        /* -------------------------------------------------
+           HP
+        ------------------------------------------------- */
+
+        const hp = obterHP(jogador);
+
+        const hpArea = criarElemento(
+            "div",
+            "player-card-resource hp-resource"
+        );
+
+        const hpHeader = criarElemento(
+            "div",
+            "resource-header"
+        );
+
+        const hpNome = criarElemento(
+            "span",
+            "",
+            "HP"
+        );
+
+        const hpValor = criarElemento(
+            "strong",
+            "",
+            `${hp.atual}/${hp.maximo}`
+        );
+
+        hpHeader.append(
+            hpNome,
+            hpValor
+        );
+
+        const hpBarra = criarElemento(
+            "div",
+            "resource-bar"
+        );
+
+        const hpPreenchimento = criarElemento(
+            "div",
+            "resource-fill"
+        );
+
+        hpPreenchimento.style.width =
+            `${calcularPercentual(
+                hp.atual,
+                hp.maximo
+            )}%`;
+
+        hpBarra.append(
+            hpPreenchimento
+        );
+
+        hpArea.append(
+            hpHeader,
+            hpBarra
+        );
+
+
+        /* -------------------------------------------------
+           MANA / ENERGIA
+        ------------------------------------------------- */
+
+        const recursos =
+            criarElemento(
+                "div",
+                "player-card-resources"
+            );
+
+        const mana =
+            obterRecurso(
+                jogador,
+                "mana"
+            );
+
+        const energia =
+            obterRecurso(
+                jogador,
+                "energia"
+            );
+
+        if (mana.maximo > 0) {
+            recursos.append(
+                criarRecursoMini(
+                    "MANA",
+                    mana
+                )
+            );
+        }
+
+        if (energia.maximo > 0) {
+            recursos.append(
+                criarRecursoMini(
+                    "ENERGIA",
+                    energia
+                )
+            );
+        }
+
+
+        /* -------------------------------------------------
+           HABILIDADES
+        ------------------------------------------------- */
+
+        const habilidadesTitulo =
+            criarElemento(
+                "span",
+                "player-card-section-title",
+                "HABILIDADES"
+            );
+
+        const habilidades =
+            criarElemento(
+                "div",
+                "player-card-abilities"
+            );
+
+        const listaHabilidades =
+            Array.isArray(
+                jogador.abilities
+            )
+                ? jogador.abilities
+                : [];
+
+        for (let i = 0; i < 3; i++) {
+            const habilidade =
+                listaHabilidades[i] ||
+                null;
+
+            habilidades.append(
+                criarSlotHabilidade(
+                    habilidade,
+                    i + 1
+                )
+            );
+        }
+
+
+        /* -------------------------------------------------
+           PASSIVA
+        ------------------------------------------------- */
+
+        const passivaTitulo =
+            criarElemento(
+                "span",
+                "player-card-section-title",
+                "PASSIVA"
+            );
+
+        const passiva =
+            criarSlotPassiva(
+                jogador.passive
+            );
+
+
+        /* -------------------------------------------------
+           MONTAGEM
+        ------------------------------------------------- */
+
+        card.append(
+            header,
+            informacoes,
+            hpArea,
+            recursos,
+            habilidadesTitulo,
+            habilidades,
+            passivaTitulo,
+            passiva
+        );
+
+
+        /* -------------------------------------------------
+           ABRIR DETALHES
+        ------------------------------------------------- */
+
+        card.addEventListener(
+            "click",
+            evento => {
+                if (
+                    evento.target.closest(
+                        "button"
+                    )
+                ) {
+                    return;
+                }
+
+                abrirJogador(jogador);
+            }
+        );
+
+        return card;
+    }
+
+
+    function criarInfoCard(
+        titulo,
+        valor
+    ) {
+        const area = criarElemento(
+            "div",
+            "player-card-info-item"
+        );
+
+        const label = criarElemento(
+            "span",
+            "",
+            titulo
+        );
+
+        const texto = criarElemento(
+            "strong",
+            "",
+            valor ?? "—"
+        );
+
+        area.append(
+            label,
+            texto
+        );
+
+        return area;
+    }
+
+
+    function criarRecursoMini(
+        nome,
+        recurso
+    ) {
+        const area = criarElemento(
+            "div",
+            "resource-mini"
+        );
+
+        const header = criarElemento(
+            "div",
+            "resource-mini-header"
+        );
+
+        const titulo = criarElemento(
+            "span",
+            "",
+            nome
+        );
+
+        const valor = criarElemento(
+            "strong",
+            "",
+            `${recurso.atual}/${recurso.maximo}`
+        );
+
+        header.append(
+            titulo,
+            valor
+        );
+
+        const barra = criarElemento(
+            "div",
+            "resource-bar mini"
+        );
+
+        const preenchimento =
+            criarElemento(
+                "div",
+                "resource-fill"
+            );
+
+        preenchimento.style.width =
+            `${calcularPercentual(
+                recurso.atual,
+                recurso.maximo
+            )}%`;
+
+        barra.append(
+            preenchimento
+        );
+
+        area.append(
+            header,
+            barra
+        );
+
+        return area;
+    }
+
+
+    function criarSlotHabilidade(
+        habilidade,
+        numero
+    ) {
+        const slot = criarElemento(
+            "div",
+            "ability-slot"
+        );
+
+        slot.dataset.slot =
+            String(numero);
+
+        const numeroElemento =
+            criarElemento(
+                "span",
+                "ability-slot-number",
+                String(numero)
+            );
+
+        const nome =
+            criarElemento(
+                "strong",
+                "ability-slot-name",
+                habilidade
+                    ? obterNomeHabilidade(
+                        habilidade
+                    )
+                    : "Vazio"
+            );
+
+        const detalhe =
+            criarElemento(
+                "span",
+                "ability-slot-detail",
+                habilidade
+                    ? obterDetalheHabilidade(
+                        habilidade
+                    )
+                    : "Nenhuma habilidade"
+            );
+
+        slot.append(
+            numeroElemento,
+            nome,
+            detalhe
+        );
+
+        if (!habilidade) {
+            slot.classList.add(
+                "empty"
+            );
+        }
+
+        return slot;
+    }
+
+
+    function criarSlotPassiva(
+        passiva
+    ) {
+        const slot = criarElemento(
+            "div",
+            "passive-slot"
+        );
+
+        const icone =
+            criarElemento(
+                "span",
+                "passive-icon",
+                "✦"
+            );
+
+        const conteudo =
+            criarElemento(
+                "div",
+                "passive-content"
+            );
+
+        const nome =
+            criarElemento(
+                "strong",
+                "",
+                passiva
+                    ? obterNomeHabilidade(
+                        passiva
+                    )
+                    : "Nenhuma passiva"
+            );
+
+        const descricao =
+            criarElemento(
+                "span",
+                "",
+                passiva
+                    ? obterDetalheHabilidade(
+                        passiva
+                    )
+                    : "Passiva não definida"
+            );
+
+        conteudo.append(
+            nome,
+            descricao
+        );
+
+        slot.append(
+            icone,
+            conteudo
+        );
+
+        if (!passiva) {
+            slot.classList.add(
+                "empty"
+            );
+        }
+
+        return slot;
+    }
+
+
+    function obterNomeHabilidade(
+        habilidade
+    ) {
+        if (
+            typeof habilidade === "string"
+        ) {
+            return habilidade;
+        }
+
+        return primeiroValor(
+            habilidade,
+            [
+                "name",
+                "nome",
+                "title",
+                "titulo"
+            ],
+            "Habilidade"
         );
     }
 
 
-    function obterStatusResumo(jogador) {
+    function obterDetalheHabilidade(
+        habilidade
+    ) {
+        if (
+            typeof habilidade === "string"
+        ) {
+            return "";
+        }
+
+        return primeiroValor(
+            habilidade,
+            [
+                "description",
+                "descricao",
+                "detail",
+                "detalhe",
+                "effect",
+                "efeito"
+            ],
+            ""
+        );
+    }
+
+
+    /* =====================================================
+       ATUALIZAÇÃO GERAL
+    ===================================================== */
+
+    function atualizarListaJogadores() {
+        renderizarAssentos();
+
+        renderizarCardsJogadores();
+    }
+
+
+    /* =====================================================
+       NOTIFICAÇÕES
+    ===================================================== */
+
+    function notificar(
+        mensagem,
+        duracao = 3000,
+        tipo = "normal"
+    ) {
+        const elemento =
+            mesa.elementos.notificacao;
+
+        if (!elemento) {
+            return;
+        }
+
+        elemento.textContent =
+            mensagem;
+
+        elemento.className =
+            "mesa-notificacao";
+
+        elemento.classList.add(
+            `notification-${tipo}`
+        );
+
+        elemento.classList.add(
+            "visible"
+        );
+
+        clearTimeout(
+            mesa._notificacaoTimer
+        );
+
+        mesa._notificacaoTimer =
+            setTimeout(
+                () => {
+                    elemento.classList.remove(
+                        "visible"
+                    );
+                },
+                duracao
+            );
+    }
+
+    window.notificarMesa = notificar;
+
+
+    /* =====================================================
+       MODO DA MESA
+    ===================================================== */
+
+    function definirModo(modo) {
+        mesa.modo = modo;
+
+        const area =
+            mesa.elementos.mesaArea;
+
         const status =
-            jogador.status ||
-            jogador.character?.status ||
-            jogador.personagem?.status;
+            mesa.elementos.statusMesa;
 
-        if (!status) {
-            return "Status disponível";
+        if (area) {
+            area.classList.remove(
+                "mesa-state-interface",
+                "mesa-state-combat",
+                "mesa-state-cte",
+                "mesa-state-map",
+                "mesa-state-boss",
+                "mesa-state-campaign"
+            );
+
+            area.classList.add(
+                `mesa-state-${modo}`
+            );
         }
 
-        if (typeof status === "string") {
-            return status;
+        if (status) {
+            const nomes = {
+                interface: "🟢 INTERFACE",
+                combat: "⚔️ COMBATE",
+                cte: "🎭 CTE",
+                map: "🗺️ MAPA",
+                boss: "👹 BOSS",
+                campaign: "📖 CAMPANHA"
+            };
+
+            status.textContent =
+                nomes[modo] ||
+                "🟢 INTERFACE";
         }
 
-        const hp =
-            status.hp ??
-            status.vida ??
-            status.health;
-
-        const maxHp =
-            status.maxHp ??
-            status.max_hp ??
-            status.vidaMaxima;
-
-        if (hp != null && maxHp != null) {
-            return `HP ${hp}/${maxHp}`;
-        }
-
-        return "Status disponível";
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:modo",
+                {
+                    detail: {
+                        modo
+                    }
+                }
+            )
+        );
     }
 
 
@@ -733,94 +1877,168 @@
     ===================================================== */
 
     function renderizarTelaInicial() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
 
         if (!tela) return;
 
         limparElemento(tela);
 
-        const icone = criarElemento(
-            "div",
-            [],
-            "🎲"
+        mesa.telaAtual =
+            "inicio";
+
+        definirModo(
+            "interface"
         );
 
-        icone.style.fontSize = "42px";
+        const conteudo =
+            criarElemento(
+                "div",
+                "mesa-home"
+            );
 
-        const titulo = criarElemento(
-            "h3",
-            [],
-            "MESA DE RPG"
+        const icone =
+            criarElemento(
+                "div",
+                "mesa-home-icon",
+                "🎲"
+            );
+
+        const titulo =
+            criarElemento(
+                "h2",
+                "",
+                "MESA DE RPG"
+            );
+
+        const descricao =
+            criarElemento(
+                "p",
+                "",
+                "Escolha uma área da mesa para continuar."
+            );
+
+        const botoes =
+            criarBotoesModulos();
+
+        conteudo.append(
+            icone,
+            titulo,
+            descricao,
+            botoes
         );
 
-        const texto = criarElemento(
-            "p",
-            [],
-            "Aguardando uma ação do Mestre ou a escolha de um módulo."
+        tela.appendChild(
+            conteudo
         );
-
-        tela.appendChild(icone);
-        tela.appendChild(titulo);
-        tela.appendChild(texto);
-
-        criarBotoesModulos(tela);
-
-        mesa.telaAtual = "inicio";
     }
 
 
-    /* =====================================================
-       BOTÕES DE MÓDULOS
-    ===================================================== */
-
-    function criarBotoesModulos(container) {
-        const area = criarElemento(
-            "div",
-            ["table-modules"]
-        );
+    function criarBotoesModulos() {
+        const area =
+            criarElemento(
+                "div",
+                "mesa-module-buttons"
+            );
 
         const modulos = [
-            ["🎭", "Personagem", "character"],
-            ["❤️", "Status", "status"],
-            ["✨", "Afinidade", "affinity"],
-            ["🎒", "Inventário", "inventory"],
-            ["🗺️", "Mapa", "map"],
-            ["⚔️", "Combate", "combat"],
-            ["⚡", "CTE", "cte"],
-            ["💬", "Interface", "interface"]
+            {
+                id: "personagem",
+                icone: "🧙",
+                nome: "Personagem"
+            },
+            {
+                id: "status",
+                icone: "❤️",
+                nome: "Status"
+            },
+            {
+                id: "afinidade",
+                icone: "✦",
+                nome: "Afinidade"
+            },
+            {
+                id: "inventario",
+                icone: "🎒",
+                nome: "Inventário"
+            },
+            {
+                id: "necessidades",
+                icone: "🍖",
+                nome: "Necessidades"
+            },
+            {
+                id: "mapa",
+                icone: "🗺️",
+                nome: "Mapa"
+            },
+            {
+                id: "combate",
+                icone: "⚔️",
+                nome: "Combate"
+            },
+            {
+                id: "cte",
+                icone: "🎭",
+                nome: "CTE"
+            },
+            {
+                id: "interface",
+                icone: "💬",
+                nome: "Interface"
+            },
+            {
+                id: "configuracoes",
+                icone: "⚙️",
+                nome: "Configurações"
+            }
         ];
 
-        modulos.forEach(([icone, nome, id]) => {
-            const botao = criarElemento(
-                "button",
-                ["table-module"]
-            );
+        modulos.forEach(
+            modulo => {
+                const botao =
+                    criarElemento(
+                        "button",
+                        "mesa-module-button"
+                    );
 
-            botao.type = "button";
+                botao.type = "button";
 
-            const span = criarElemento(
-                "span",
-                [],
-                icone
-            );
+                const icone =
+                    criarElemento(
+                        "span",
+                        "module-icon",
+                        modulo.icone
+                    );
 
-            const small = criarElemento(
-                "small",
-                [],
-                nome
-            );
+                const nome =
+                    criarElemento(
+                        "span",
+                        "module-name",
+                        modulo.nome
+                    );
 
-            botao.appendChild(span);
-            botao.appendChild(small);
+                botao.append(
+                    icone,
+                    nome
+                );
 
-            botao.addEventListener("click", () => {
-                abrirModulo(id);
-            });
+                botao.addEventListener(
+                    "click",
+                    () => {
+                        abrirModulo(
+                            modulo.id
+                        );
+                    }
+                );
 
-            area.appendChild(botao);
-        });
+                area.appendChild(
+                    botao
+                );
+            }
+        );
 
-        container.appendChild(area);
+        return area;
     }
 
 
@@ -829,10 +2047,9 @@
     ===================================================== */
 
     function abrirModulo(modulo) {
-        if (!mesa.elementos.tela) return;
-
         switch (modulo) {
-            case "character":
+
+            case "personagem":
                 renderizarPersonagem();
                 break;
 
@@ -840,205 +2057,105 @@
                 renderizarStatus();
                 break;
 
-            case "affinity":
+            case "afinidade":
                 renderizarAfinidade();
                 break;
 
-            case "inventory":
+            case "inventario":
                 renderizarInventario();
                 break;
 
-            case "map":
-                renderizarMapa();
-                definirModo("map");
+            case "necessidades":
+                if (
+                    typeof renderizarNecessidades ===
+                    "function"
+                ) {
+                    renderizarNecessidades();
+                }
                 break;
 
-            case "combat":
-                renderizarCombate();
-                definirModo("combat");
+            case "mapa":
+                if (
+                    typeof renderizarMapa ===
+                    "function"
+                ) {
+                    renderizarMapa();
+                }
+                break;
+
+            case "combate":
+                if (
+                    typeof renderizarCombate ===
+                    "function"
+                ) {
+                    renderizarCombate();
+                }
                 break;
 
             case "cte":
-                renderizarCTE();
-                definirModo("cte");
+                if (
+                    typeof renderizarCTE ===
+                    "function"
+                ) {
+                    renderizarCTE();
+                }
                 break;
 
             case "interface":
-                renderizarInterface();
-                definirModo("interface");
+                if (
+                    typeof renderizarInterface ===
+                    "function"
+                ) {
+                    renderizarInterface();
+                } else {
+                    renderizarTelaInicial();
+                }
                 break;
 
-            case "players":
-                renderizarJogadores();
-                break;
-
-            case "needs":
-                renderizarNecessidades();
-                break;
-
-            case "help":
-                renderizarAjuda();
+            case "configuracoes":
+                if (
+                    typeof abrirConfiguracoesMesa ===
+                    "function"
+                ) {
+                    abrirConfiguracoesMesa();
+                }
                 break;
 
             default:
                 renderizarTelaInicial();
-                definirModo("interface");
+                break;
         }
-
-        mesa.telaAtual = modulo;
     }
 
-    window.abrirModuloMesa = abrirModulo;
-    window.rpgMesa.abrirModulo = abrirModulo;
+    window.abrirModuloMesa =
+        abrirModulo;
+
+    mesa.abrirModulo =
+        abrirModulo;
 
 
     /* =====================================================
-       MODO DA MESA
+       BOTÃO VOLTAR
     ===================================================== */
 
-    function definirModo(modo) {
-        const painel = mesa.elementos.painel;
-
-        if (!painel) return;
-
-        const modos = [
-            "mesa-state-interface",
-            "mesa-state-combat",
-            "mesa-state-cte",
-            "mesa-state-map",
-            "mesa-state-boss",
-            "mesa-state-campaign"
-        ];
-
-        painel.classList.remove(...modos);
-
-        let classe = "mesa-state-interface";
-        let texto = "🟢 INTERFACE";
-
-        switch (modo) {
-            case "combat":
-                classe = "mesa-state-combat";
-                texto = "🔴 COMBATE";
-                break;
-
-            case "cte":
-                classe = "mesa-state-cte";
-                texto = "🟡 CTE";
-                break;
-
-            case "map":
-                classe = "mesa-state-map";
-                texto = "🔵 MAPA";
-                break;
-
-            case "boss":
-                classe = "mesa-state-boss";
-                texto = "🚨 BOSS";
-                break;
-
-            case "campaign":
-                classe = "mesa-state-campaign";
-                texto = "🟢 CAMPANHA";
-                break;
-
-            default:
-                classe = "mesa-state-interface";
-                texto = "🟢 INTERFACE";
-        }
-
-        painel.classList.add(classe);
-
-        if (mesa.elementos.status) {
-            mesa.elementos.status.textContent = texto;
-        }
-
-        mesa.modo = modo;
-
-        window.dispatchEvent(
-            new CustomEvent("rpg:mesa:modo", {
-                detail: { modo }
-            })
-        );
-    }
-
-    window.definirModoMesa = definirModo;
-    window.rpgMesa.definirModo = definirModo;
-
-
-    /* =====================================================
-       NOTIFICAÇÕES
-    ===================================================== */
-
-    function criarSistemaNotificacao() {
-        let notificacao = document.getElementById(
-            "mesa-notificacao"
-        );
-
-        if (notificacao) return;
-
-        notificacao = criarElemento(
-            "div",
-            []
-        );
-
-        notificacao.id = "mesa-notificacao";
-
-        notificacao.hidden = true;
-
-        document.body.appendChild(notificacao);
-    }
-
-    function notificar(mensagem, duracao = 2500) {
-        let notificacao = document.getElementById(
-            "mesa-notificacao"
-        );
-
-        if (!notificacao) {
-            criarSistemaNotificacao();
-
-            notificacao = document.getElementById(
-                "mesa-notificacao"
+    function criarBotaoVoltar(
+        destino = renderizarTelaInicial
+    ) {
+        const botao =
+            criarElemento(
+                "button",
+                "mesa-back-button",
+                "← Voltar"
             );
-        }
 
-        notificacao.textContent = mensagem;
-        notificacao.hidden = false;
+        botao.type = "button";
 
-        clearTimeout(
-            notificacao._timer
+        botao.addEventListener(
+            "click",
+            destino
         );
 
-        notificacao._timer = setTimeout(() => {
-            notificacao.hidden = true;
-        }, duracao);
-    }
-
-    window.notificarMesa = notificar;
-
-
-    /* =====================================================
-       VOLTAR
-    ===================================================== */
-
-    function criarBotaoVoltar(container) {
-        const voltar = criarElemento(
-            "button",
-            [],
-            "← Voltar"
-        );
-
-        voltar.type = "button";
-
-        voltar.style.marginBottom = "12px";
-
-        voltar.addEventListener("click", () => {
-            definirModo("interface");
-            renderizarTelaInicial();
-        });
-
-        container.appendChild(voltar);
-
-        return voltar;
+        return botao;
     }
 
 
@@ -1047,225 +2164,291 @@
     ===================================================== */
 
     function renderizarPersonagem() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "personagem";
 
-        const titulo = criarElemento(
-            "h3",
-            [],
-            "🎭 PERSONAGEM"
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        const titulo =
+            criarElemento(
+                "h2",
+                "",
+                "🧙 PERSONAGENS"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+            titulo
         );
 
-        tela.appendChild(titulo);
+        conteudo.append(
+            header
+        );
 
-        const jogadores = mesa.jogadores;
+        mesa.jogadores.forEach(
+            jogador => {
+                const bloco =
+                    criarElemento(
+                        "article",
+                        "character-panel"
+                    );
 
-        if (!jogadores.length) {
-            tela.appendChild(
+                const nome =
+                    criarElemento(
+                        "h3",
+                        "",
+                        obterNomePersonagem(
+                            jogador
+                        )
+                    );
+
+                const jogadorNome =
+                    criarElemento(
+                        "p",
+                        "",
+                        `Jogador: ${obterNomeUsuario(
+                            jogador
+                        )}`
+                    );
+
+                const dados =
+                    criarElemento(
+                        "div",
+                        "character-data-grid"
+                    );
+
+                dados.append(
+                    criarInfoCard(
+                        "RAÇA",
+                        obterRaca(jogador)
+                    ),
+
+                    criarInfoCard(
+                        "CLASSE",
+                        obterClasse(jogador)
+                    ),
+
+                    criarInfoCard(
+                        "AFINIDADE",
+                        obterAfinidade(jogador)
+                    )
+                );
+
+                bloco.append(
+                    nome,
+                    jogadorNome,
+                    dados
+                );
+
+                conteudo.append(
+                    bloco
+                );
+            }
+        );
+
+        if (
+            mesa.jogadores.length === 0
+        ) {
+            conteudo.append(
                 criarElemento(
                     "p",
-                    [],
+                    "mesa-empty-message",
                     "Nenhum personagem disponível."
                 )
             );
-            return;
         }
 
-        jogadores.forEach((jogador, index) => {
-            const bloco = criarElemento("div");
+        tela.appendChild(
+            conteudo
+        );
 
-            bloco.style.width = "100%";
-            bloco.style.maxWidth = "600px";
-            bloco.style.padding = "12px";
-            bloco.style.marginBottom = "8px";
-            bloco.style.border = "1px solid rgba(134,239,172,.15)";
-            bloco.style.borderRadius = "12px";
-
-            const nome = criarElemento(
-                "strong",
-                [],
-                obterNomePersonagem(jogador)
-            );
-
-            const jogadorNome = criarElemento(
-                "small",
-                [],
-                obterNome(jogador, `Jogador ${index + 1}`)
-            );
-
-            const raca = obterCampoPersonagem(
-                jogador,
-                ["race", "raca", "raça"]
-            );
-
-            const classe = obterCampoPersonagem(
-                jogador,
-                ["class", "classe"]
-            );
-
-            const afinidade = obterCampoPersonagem(
-                jogador,
-                ["affinity", "afinidade"]
-            );
-
-            bloco.appendChild(nome);
-            bloco.appendChild(document.createElement("br"));
-            bloco.appendChild(jogadorNome);
-
-            bloco.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `Raça: ${raca || "—"}`
-                )
-            );
-
-            bloco.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `Classe: ${classe || "—"}`
-                )
-            );
-
-            bloco.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `Afinidade: ${afinidade || "—"}`
-                )
-            );
-
-            tela.appendChild(bloco);
-        });
-    }
-
-
-    function obterCampoPersonagem(jogador, campos) {
-        for (const campo of campos) {
-            if (jogador?.[campo] != null) {
-                return jogador[campo];
-            }
-
-            if (jogador?.character?.[campo] != null) {
-                return jogador.character[campo];
-            }
-
-            if (jogador?.personagem?.[campo] != null) {
-                return jogador.personagem[campo];
-            }
-        }
-
-        return "";
+        definirModo(
+            "interface"
+        );
     }
 
 
     /* =====================================================
        STATUS
+       -----------------------------------------------------
+       SOMENTE LEITURA
     ===================================================== */
 
     function renderizarStatus() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "status";
 
-        tela.appendChild(
+        const conteudo =
             criarElemento(
-                "h3",
-                [],
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
                 "❤️ STATUS"
             )
         );
 
-        if (!mesa.jogadores.length) {
-            tela.appendChild(
+        conteudo.append(
+            header
+        );
+
+        mesa.jogadores.forEach(
+            jogador => {
+                const card =
+                    criarElemento(
+                        "article",
+                        "status-panel"
+                    );
+
+                const titulo =
+                    criarElemento(
+                        "h3",
+                        "",
+                        obterNomePersonagem(
+                            jogador
+                        )
+                    );
+
+                const hp =
+                    obterHP(jogador);
+
+                const hpTexto =
+                    criarElemento(
+                        "p",
+                        "",
+                        `HP: ${hp.atual}/${hp.maximo}`
+                    );
+
+                const hpBarra =
+                    criarElemento(
+                        "div",
+                        "resource-bar large"
+                    );
+
+                const hpFill =
+                    criarElemento(
+                        "div",
+                        "resource-fill"
+                    );
+
+                hpFill.style.width =
+                    `${calcularPercentual(
+                        hp.atual,
+                        hp.maximo
+                    )}%`;
+
+                hpBarra.append(
+                    hpFill
+                );
+
+                const recursos =
+                    criarElemento(
+                        "div",
+                        "status-resource-grid"
+                    );
+
+                const mana =
+                    obterRecurso(
+                        jogador,
+                        "mana"
+                    );
+
+                const energia =
+                    obterRecurso(
+                        jogador,
+                        "energia"
+                    );
+
+                if (
+                    mana.maximo > 0
+                ) {
+                    recursos.append(
+                        criarInfoCard(
+                            "MANA",
+                            `${mana.atual}/${mana.maximo}`
+                        )
+                    );
+                }
+
+                if (
+                    energia.maximo > 0
+                ) {
+                    recursos.append(
+                        criarInfoCard(
+                            "ENERGIA",
+                            `${energia.atual}/${energia.maximo}`
+                        )
+                    );
+                }
+
+                card.append(
+                    titulo,
+                    hpTexto,
+                    hpBarra,
+                    recursos
+                );
+
+                conteudo.append(
+                    card
+                );
+            }
+        );
+
+        if (
+            mesa.jogadores.length === 0
+        ) {
+            conteudo.append(
                 criarElemento(
                     "p",
-                    [],
-                    "Nenhum jogador disponível."
+                    "mesa-empty-message",
+                    "Nenhum status disponível."
                 )
             );
-            return;
         }
 
-        mesa.jogadores.forEach((jogador, index) => {
-            const bloco = criarElemento("div");
+        tela.appendChild(
+            conteudo
+        );
 
-            bloco.style.width = "100%";
-            bloco.style.maxWidth = "600px";
-            bloco.style.padding = "12px";
-            bloco.style.marginBottom = "8px";
-            bloco.style.border = "1px solid rgba(255,255,255,.1)";
-            bloco.style.borderRadius = "12px";
-
-            const status =
-                jogador.status ||
-                jogador.character?.status ||
-                jogador.personagem?.status ||
-                {};
-
-            bloco.appendChild(
-                criarElemento(
-                    "strong",
-                    [],
-                    obterNomePersonagem(jogador)
-                )
-            );
-
-            const hp =
-                status.hp ??
-                status.vida ??
-                status.health ??
-                "—";
-
-            const maxHp =
-                status.maxHp ??
-                status.max_hp ??
-                status.vidaMaxima ??
-                status.maxHealth ??
-                "—";
-
-            const mana =
-                status.mana ??
-                status.mp ??
-                "—";
-
-            const energia =
-                status.energy ??
-                status.energia ??
-                "—";
-
-            bloco.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `❤️ Vida: ${hp}/${maxHp}`
-                )
-            );
-
-            bloco.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `💧 Mana: ${mana}`
-                )
-            );
-
-            bloco.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `⚡ Energia: ${energia}`
-                )
-            );
-
-            tela.appendChild(bloco);
-        });
+        definirModo(
+            "interface"
+        );
     }
 
 
@@ -1274,51 +2457,92 @@
     ===================================================== */
 
     function renderizarAfinidade() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "afinidade";
 
-        tela.appendChild(
+        const conteudo =
             criarElemento(
-                "h3",
-                [],
-                "✨ AFINIDADES"
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
+                "✦ AFINIDADES"
             )
         );
 
-        mesa.jogadores.forEach((jogador, index) => {
-            const afinidade = obterCampoPersonagem(
-                jogador,
-                ["affinity", "afinidade"]
-            );
+        conteudo.append(
+            header
+        );
 
-            const bloco = criarElemento(
-                "div",
-                [],
-                `${obterNomePersonagem(jogador)} — ${afinidade || "Sem afinidade"}`
-            );
+        mesa.jogadores.forEach(
+            jogador => {
+                const bloco =
+                    criarElemento(
+                        "article",
+                        "affinity-panel"
+                    );
 
-            bloco.style.width = "100%";
-            bloco.style.maxWidth = "500px";
-            bloco.style.padding = "12px";
-            bloco.style.marginBottom = "8px";
-            bloco.style.border = "1px solid rgba(255,255,255,.1)";
-            bloco.style.borderRadius = "10px";
+                bloco.append(
+                    criarElemento(
+                        "h3",
+                        "",
+                        obterNomePersonagem(
+                            jogador
+                        )
+                    ),
 
-            tela.appendChild(bloco);
-        });
+                    criarInfoCard(
+                        "AFINIDADE",
+                        obterAfinidade(
+                            jogador
+                        )
+                    )
+                );
 
-        if (!mesa.jogadores.length) {
-            tela.appendChild(
+                conteudo.append(
+                    bloco
+                );
+            }
+        );
+
+        if (
+            mesa.jogadores.length === 0
+        ) {
+            conteudo.append(
                 criarElemento(
                     "p",
-                    [],
-                    "Nenhum jogador disponível."
+                    "mesa-empty-message",
+                    "Nenhuma afinidade disponível."
                 )
             );
         }
+
+        tela.appendChild(
+            conteudo
+        );
+
+        definirModo(
+            "interface"
+        );
     }
 
 
@@ -1326,171 +2550,753 @@
        INVENTÁRIO
     ===================================================== */
 
+    function obterInventario(jogador) {
+        const personagem =
+            jogador?.character ||
+            jogador?.personagem ||
+            {};
+
+        return primeiroValor(
+            jogador,
+            [
+                "inventory",
+                "inventario"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "inventory",
+                    "inventario"
+                ],
+                []
+            )
+        );
+    }
+
+
+    function obterNomeItem(item) {
+        if (
+            typeof item === "string"
+        ) {
+            return item;
+        }
+
+        return primeiroValor(
+            item,
+            [
+                "name",
+                "nome",
+                "itemName",
+                "item_name"
+            ],
+            "Item"
+        );
+    }
+
+
+    function obterQuantidadeItem(item) {
+        if (
+            typeof item === "string"
+        ) {
+            return 1;
+        }
+
+        const quantidade =
+            Number(
+                primeiroValor(
+                    item,
+                    [
+                        "quantity",
+                        "quantidade",
+                        "amount",
+                        "qtd"
+                    ],
+                    1
+                )
+            );
+
+        return Number.isFinite(
+            quantidade
+        )
+            ? quantidade
+            : 1;
+    }
+
+
     function renderizarInventario() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "inventario";
 
-        tela.appendChild(
+        const conteudo =
             criarElemento(
-                "h3",
-                [],
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
                 "🎒 INVENTÁRIO"
             )
         );
 
-        if (!mesa.jogadores.length) {
-            tela.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    "Nenhum inventário disponível."
-                )
-            );
-            return;
-        }
+        conteudo.append(
+            header
+        );
 
-        mesa.jogadores.forEach((jogador) => {
-            const bloco = criarElemento("div");
-
-            bloco.style.width = "100%";
-            bloco.style.maxWidth = "600px";
-            bloco.style.padding = "12px";
-            bloco.style.marginBottom = "10px";
-            bloco.style.border = "1px solid rgba(255,255,255,.1)";
-            bloco.style.borderRadius = "12px";
-
-            bloco.appendChild(
-                criarElemento(
-                    "strong",
-                    [],
-                    obterNomePersonagem(jogador)
-                )
-            );
-
-            const inventario =
-                jogador.inventory ||
-                jogador.inventario ||
-                jogador.character?.inventory ||
-                jogador.personagem?.inventario ||
-                [];
-
-            if (!Array.isArray(inventario) || !inventario.length) {
-                bloco.appendChild(
+        mesa.jogadores.forEach(
+            jogador => {
+                const bloco =
                     criarElemento(
-                        "p",
-                        [],
-                        "Inventário vazio."
-                    )
-                );
-            } else {
-                const lista = criarElemento("ul");
-
-                inventario.forEach((item) => {
-                    const li = criarElemento(
-                        "li",
-                        [],
-                        typeof item === "string"
-                            ? item
-                            : `${item.name || item.nome || "Item"} × ${item.quantity || item.quantidade || 1}`
+                        "article",
+                        "inventory-panel"
                     );
 
-                    lista.appendChild(li);
-                });
+                bloco.append(
+                    criarElemento(
+                        "h3",
+                        "",
+                        obterNomePersonagem(
+                            jogador
+                        )
+                    )
+                );
 
-                bloco.appendChild(lista);
+                const inventario =
+                    obterInventario(
+                        jogador
+                    );
+
+                const lista =
+                    criarElemento(
+                        "div",
+                        "inventory-grid"
+                    );
+
+                if (
+                    Array.isArray(
+                        inventario
+                    ) &&
+                    inventario.length > 0
+                ) {
+                    inventario.forEach(
+                        item => {
+                            const itemElemento =
+                                criarElemento(
+                                    "div",
+                                    "inventory-item"
+                                );
+
+                            const nome =
+                                criarElemento(
+                                    "strong",
+                                    "",
+                                    obterNomeItem(
+                                        item
+                                    )
+                                );
+
+                            const quantidade =
+                                criarElemento(
+                                    "span",
+                                    "",
+                                    `x${obterQuantidadeItem(
+                                        item
+                                    )}`
+                                );
+
+                            itemElemento.append(
+                                nome,
+                                quantidade
+                            );
+
+                            lista.append(
+                                itemElemento
+                            );
+                        }
+                    );
+                } else {
+                    lista.append(
+                        criarElemento(
+                            "span",
+                            "inventory-empty",
+                            "Inventário vazio."
+                        )
+                    );
+                }
+
+                bloco.append(
+                    lista
+                );
+
+                conteudo.append(
+                    bloco
+                );
             }
+        );
 
-            tela.appendChild(bloco);
-        });
-    }/* =========================================================
-   MESA RPG ONLINE
-   mesa.js
-   PARTE 2/3
-========================================================= */
+        if (
+            mesa.jogadores.length === 0
+        ) {
+            conteudo.append(
+                criarElemento(
+                    "p",
+                    "mesa-empty-message",
+                    "Nenhum jogador disponível."
+                )
+            );
+        }
+
+        tela.appendChild(
+            conteudo
+        );
+
+        definirModo(
+            "interface"
+        );
+    }
 
 
     /* =====================================================
-       INTERFACE
+       EXPORTAÇÕES DA PARTE 1
+    ===================================================== */
+
+    mesa.criarInterfaceMesa =
+        criarInterfaceMesa;
+
+    mesa.carregarJogadoresMesa =
+        carregarJogadoresMesa;
+
+    mesa.atualizarListaJogadores =
+        atualizarListaJogadores;
+
+    mesa.renderizarCardsJogadores =
+        renderizarCardsJogadores;
+
+    mesa.renderizarAssentos =
+        renderizarAssentos;
+
+    mesa.encontrarJogador =
+        encontrarJogador;
+
+    mesa.renderizarPersonagem =
+        renderizarPersonagem;
+
+    mesa.renderizarStatus =
+        renderizarStatus;
+
+    mesa.renderizarAfinidade =
+        renderizarAfinidade;
+
+    mesa.renderizarInventario =
+        renderizarInventario;
+
+    mesa.obterHP =
+        obterHP;
+
+    mesa.obterRecurso =
+        obterRecurso;
+
+    mesa.abrirJogador =
+        abrirJogador;
+
+
+    /* =====================================================
+       NÃO INICIALIZAR AQUI
+       -----------------------------------------------------
+       A inicialização completa ficará na PARTE 3.
+    ===================================================== */
+/* =========================================================
+   MESA RPG ONLINE
+   mesa.js
+   PARTE 2/3
+   ---------------------------------------------------------
+   Interface
+   Chat
+   Necessidades
+   Jogadores
+   Tela individual
+   Inventário avançado
+   Entrega de itens
+   Sistema de troca
+   Mapa
+========================================================= */
+
+(() => {
+    "use strict";
+
+    const mesa = window.rpgMesa;
+
+    if (!mesa) {
+        console.error(
+            "Mesa RPG: a Parte 1 do mesa.js não foi carregada."
+        );
+        return;
+    }
+
+
+    /* =====================================================
+       ATALHOS INTERNOS
+    ===================================================== */
+
+    const qs = (seletor, origem = document) =>
+        origem.querySelector(seletor);
+
+    const qsa = (seletor, origem = document) =>
+        [...origem.querySelectorAll(seletor)];
+
+    const criarElemento = (
+        tag,
+        classe = "",
+        texto = ""
+    ) => {
+        const elemento =
+            document.createElement(tag);
+
+        if (classe) {
+            elemento.className = classe;
+        }
+
+        if (texto !== "") {
+            elemento.textContent = texto;
+        }
+
+        return elemento;
+    };
+
+    const limparElemento = elemento => {
+        if (!elemento) return;
+
+        while (elemento.firstChild) {
+            elemento.removeChild(
+                elemento.firstChild
+            );
+        }
+    };
+
+    const primeiroValor = (
+        objeto,
+        campos,
+        padrao = null
+    ) => {
+        if (!objeto) return padrao;
+
+        for (const campo of campos) {
+            const valor = objeto[campo];
+
+            if (
+                valor !== undefined &&
+                valor !== null &&
+                valor !== ""
+            ) {
+                return valor;
+            }
+        }
+
+        return padrao;
+    };
+
+
+    /* =====================================================
+       DADOS DO PERSONAGEM
+    ===================================================== */
+
+    function obterPersonagem(jogador) {
+        return (
+            jogador?.character ||
+            jogador?.personagem ||
+            jogador?.characterData ||
+            jogador?.personagemData ||
+            {}
+        );
+    }
+
+
+    function obterNecessidades(jogador) {
+        const personagem =
+            obterPersonagem(jogador);
+
+        return primeiroValor(
+            jogador,
+            [
+                "needs",
+                "necessidades"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "needs",
+                    "necessidades"
+                ],
+                []
+            )
+        );
+    }
+
+
+    /* =====================================================
+       INTERFACE DA MESA
     ===================================================== */
 
     function renderizarInterface() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        tela.appendChild(
+        mesa.telaAtual =
+            "interface";
+
+        definirModo(
+            "interface"
+        );
+
+        const conteudo =
             criarElemento(
-                "h3",
-                [],
+                "section",
+                "mesa-interface-screen"
+            );
+
+        const cabecalho =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        cabecalho.append(
+            criarBotaoVoltarMesa(),
+
+            criarElemento(
+                "h2",
+                "",
                 "💬 INTERFACE DA MESA"
             )
         );
 
+        conteudo.append(
+            cabecalho
+        );
+
+
+        /* -------------------------------------------------
+           AÇÕES PRINCIPAIS
+        ------------------------------------------------- */
+
+        const acoes =
+            criarElemento(
+                "div",
+                "mesa-interface-actions"
+            );
+
+        const botoes = [
+            [
+                "🧙",
+                "Personagens",
+                "personagem"
+            ],
+            [
+                "❤️",
+                "Status",
+                "status"
+            ],
+            [
+                "✦",
+                "Afinidades",
+                "afinidade"
+            ],
+            [
+                "🎒",
+                "Inventário",
+                "inventario"
+            ],
+            [
+                "🍖",
+                "Necessidades",
+                "necessidades"
+            ],
+            [
+                "🗺️",
+                "Mapa",
+                "mapa"
+            ],
+            [
+                "⚔️",
+                "Combate",
+                "combate"
+            ],
+            [
+                "🎭",
+                "CTE",
+                "cte"
+            ]
+        ];
+
+        if (
+            typeof window.abrirConfiguracoesMesa ===
+            "function"
+        ) {
+            botoes.push([
+                "⚙️",
+                "Configurações",
+                "configuracoes"
+            ]);
+        }
+
+        botoes.forEach(
+            ([icone, nome, modulo]) => {
+                const botao =
+                    criarElemento(
+                        "button",
+                        "mesa-interface-action"
+                    );
+
+                botao.type = "button";
+
+                botao.append(
+                    criarElemento(
+                        "span",
+                        "action-icon",
+                        icone
+                    ),
+
+                    criarElemento(
+                        "span",
+                        "action-name",
+                        nome
+                    )
+                );
+
+                botao.addEventListener(
+                    "click",
+                    () => abrirModulo(modulo)
+                );
+
+                acoes.appendChild(
+                    botao
+                );
+            }
+        );
+
+        conteudo.append(
+            acoes
+        );
+
+
+        /* -------------------------------------------------
+           CHAT
+        ------------------------------------------------- */
+
+        if (
+            mesa.configuracoes.mostrarChat
+        ) {
+            conteudo.append(
+                criarChat()
+            );
+        }
+
         tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function criarBotaoVoltarMesa() {
+        const botao =
+            criarElemento(
+                "button",
+                "mesa-back-button",
+                "← Voltar"
+            );
+
+        botao.type = "button";
+
+        botao.addEventListener(
+            "click",
+            () => {
+                if (
+                    typeof mesa.renderizarTelaInicial ===
+                    "function"
+                ) {
+                    mesa.renderizarTelaInicial();
+                } else {
+                    renderizarTelaInicialLocal();
+                }
+            }
+        );
+
+        return botao;
+    }
+
+
+    function renderizarTelaInicialLocal() {
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
+
+        limparElemento(tela);
+
+        mesa.telaAtual =
+            "inicio";
+
+        definirModo(
+            "interface"
+        );
+
+        const conteudo =
+            criarElemento(
+                "div",
+                "mesa-home"
+            );
+
+        conteudo.append(
+            criarElemento(
+                "div",
+                "mesa-home-icon",
+                "🎲"
+            ),
+
+            criarElemento(
+                "h2",
+                "",
+                "MESA DE RPG"
+            ),
+
             criarElemento(
                 "p",
-                [],
-                "A Mesa está em modo de interação."
+                "",
+                "Escolha uma área da mesa para continuar."
             )
         );
 
-        const area = criarElemento(
-            "div",
-            ["table-modules"]
+        tela.appendChild(
+            conteudo
         );
+    }
 
-        const botoes = [
-            ["🎭", "Personagem", "character"],
-            ["❤️", "Status", "status"],
-            ["✨", "Afinidade", "affinity"],
-            ["🎒", "Inventário", "inventory"],
-            ["🗺️", "Mapa", "map"],
-            ["⚔️", "Combate", "combat"],
-            ["⚡", "CTE", "cte"],
-            ["⚙️", "Configurações", "settings"]
-        ];
 
-        botoes.forEach(([icone, nome, modulo]) => {
-            const botao = criarElemento(
-                "button",
-                ["table-module"]
+    function definirModo(modo) {
+        mesa.modo = modo;
+
+        const area =
+            mesa.elementos.mesaArea;
+
+        const status =
+            mesa.elementos.statusMesa;
+
+        if (area) {
+            area.classList.remove(
+                "mesa-state-interface",
+                "mesa-state-combat",
+                "mesa-state-cte",
+                "mesa-state-map",
+                "mesa-state-boss",
+                "mesa-state-campaign"
             );
 
-            botao.type = "button";
-
-            botao.appendChild(
-                criarElemento(
-                    "span",
-                    [],
-                    icone
-                )
+            area.classList.add(
+                `mesa-state-${modo}`
             );
+        }
 
-            botao.appendChild(
-                criarElemento(
-                    "small",
-                    [],
-                    nome
-                )
-            );
+        if (status) {
+            const nomes = {
+                interface: "🟢 INTERFACE",
+                combat: "⚔️ COMBATE",
+                cte: "🎭 CTE",
+                map: "🗺️ MAPA",
+                boss: "👹 BOSS",
+                campaign: "📖 CAMPANHA"
+            };
 
-            botao.addEventListener("click", () => {
-                if (modulo === "settings") {
-                    abrirConfiguracoes();
-                } else {
-                    abrirModulo(modulo);
+            status.textContent =
+                nomes[modo] ||
+                "🟢 INTERFACE";
+        }
+    }
+
+
+    function abrirModulo(modulo) {
+        switch (modulo) {
+
+            case "personagem":
+                mesa.renderizarPersonagem();
+                break;
+
+            case "status":
+                mesa.renderizarStatus();
+                break;
+
+            case "afinidade":
+                mesa.renderizarAfinidade();
+                break;
+
+            case "inventario":
+                mesa.renderizarInventario();
+                break;
+
+            case "necessidades":
+                renderizarNecessidades();
+                break;
+
+            case "jogadores":
+                renderizarJogadores();
+                break;
+
+            case "mapa":
+                renderizarMapa();
+                break;
+
+            case "combate":
+                if (
+                    typeof mesa.renderizarCombate ===
+                    "function"
+                ) {
+                    mesa.renderizarCombate();
                 }
-            });
+                break;
 
-            area.appendChild(botao);
-        });
+            case "cte":
+                if (
+                    typeof mesa.renderizarCTE ===
+                    "function"
+                ) {
+                    mesa.renderizarCTE();
+                }
+                break;
 
-        tela.appendChild(area);
+            case "configuracoes":
+                if (
+                    typeof window.abrirConfiguracoesMesa ===
+                    "function"
+                ) {
+                    window.abrirConfiguracoesMesa();
+                }
+                break;
 
-        criarChat(tela);
+            case "interface":
+            default:
+                renderizarInterface();
+                break;
+        }
     }
 
 
@@ -1498,41 +3304,305 @@
        CHAT
     ===================================================== */
 
-    function criarChat(container) {
-        if (!mesa.configuracoes.mostrarChat) {
-            return;
-        }
+    function criarChat() {
+        const chat =
+            criarElemento(
+                "section",
+                "table-chat"
+            );
 
-        const chat = criarElemento(
-            "div",
-            ["table-chat"]
-        );
-
-        const titulo = criarElemento(
-            "div",
-            ["table-chat-title"],
-            "💬 CHAT DA MESA"
-        );
-
-        const mensagens = criarElemento(
-            "div",
-            ["table-chat-messages"]
-        );
-
-        mensagens.id = "mesa-chat-messages";
-
-        mensagens.appendChild(
+        const cabecalho =
             criarElemento(
                 "div",
-                [],
-                "Nenhuma mensagem ainda."
+                "table-chat-header"
+            );
+
+        cabecalho.append(
+            criarElemento(
+                "strong",
+                "",
+                "💬 CHAT"
             )
         );
 
-        chat.appendChild(titulo);
-        chat.appendChild(mensagens);
+        const mensagens =
+            criarElemento(
+                "div",
+                "table-chat-messages"
+            );
 
-        container.appendChild(chat);
+        mensagens.id =
+            "mesa-chat-messages";
+
+        const mensagensSalvas =
+            obterMensagensChat();
+
+        if (
+            mensagensSalvas.length === 0
+        ) {
+            mensagens.append(
+                criarElemento(
+                    "p",
+                    "chat-empty",
+                    "Nenhuma mensagem ainda."
+                )
+            );
+        } else {
+            mensagensSalvas.forEach(
+                mensagem => {
+                    mensagens.append(
+                        criarMensagemChat(
+                            mensagem
+                        )
+                    );
+                }
+            );
+        }
+
+
+        const formulario =
+            criarElemento(
+                "form",
+                "table-chat-form"
+            );
+
+        const entrada =
+            criarElemento(
+                "input",
+                "table-chat-input"
+            );
+
+        entrada.type = "text";
+
+        entrada.placeholder =
+            "Digite uma mensagem...";
+
+        entrada.autocomplete =
+            "off";
+
+        const enviar =
+            criarElemento(
+                "button",
+                "table-chat-send",
+                "Enviar"
+            );
+
+        enviar.type = "submit";
+
+        formulario.append(
+            entrada,
+            enviar
+        );
+
+        formulario.addEventListener(
+            "submit",
+            evento => {
+                evento.preventDefault();
+
+                const texto =
+                    entrada.value.trim();
+
+                if (!texto) return;
+
+                enviarMensagemChat(
+                    texto
+                );
+
+                entrada.value = "";
+
+                entrada.focus();
+            }
+        );
+
+        chat.append(
+            cabecalho,
+            mensagens,
+            formulario
+        );
+
+        return chat;
+    }
+
+
+    function obterMensagensChat() {
+        const campanha =
+            mesa.campanha;
+
+        const mensagens =
+            primeiroValor(
+                campanha,
+                [
+                    "chat",
+                    "mensagens",
+                    "messages"
+                ],
+                []
+            );
+
+        return Array.isArray(
+            mensagens
+        )
+            ? mensagens
+            : [];
+    }
+
+
+    function criarMensagemChat(
+        mensagem
+    ) {
+        const item =
+            criarElement(
+                "div",
+                "chat-message"
+            );
+
+        const autor =
+            primeiroValor(
+                mensagem,
+                [
+                    "authorName",
+                    "author_name",
+                    "autor",
+                    "nome",
+                    "username"
+                ],
+                "Jogador"
+            );
+
+        const texto =
+            primeiroValor(
+                mensagem,
+                [
+                    "text",
+                    "texto",
+                    "message",
+                    "mensagem"
+                ],
+                ""
+            );
+
+        const autorElemento =
+            criarElement(
+                "strong",
+                "chat-message-author",
+                autor
+            );
+
+        const textoElemento =
+            criarElement(
+                "span",
+                "chat-message-text",
+                texto
+            );
+
+        item.append(
+            autorElemento,
+            textoElemento
+        );
+
+        return item;
+    }
+
+
+    function enviarMensagemChat(
+        texto
+    ) {
+        const usuario =
+            obterUsuarioAtualLocal();
+
+        const mensagem = {
+            id:
+                `msg-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .slice(2)}`,
+
+            authorId:
+                obterIdLocal(usuario),
+
+            authorName:
+                obterNomeLocal(usuario),
+
+            text:
+                texto,
+
+            createdAt:
+                new Date().toISOString()
+        };
+
+        if (
+            !Array.isArray(
+                mesa.campanha.chat
+            )
+        ) {
+            mesa.campanha.chat = [];
+        }
+
+        mesa.campanha.chat.push(
+            mensagem
+        );
+
+        renderizarInterface();
+
+        /* Evento para futura sincronização */
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:chat",
+                {
+                    detail: mensagem
+                }
+            )
+        );
+    }
+
+
+    function obterUsuarioAtualLocal() {
+        if (
+            window.rpgAuth?.user
+        ) {
+            return window.rpgAuth.user;
+        }
+
+        if (
+            window.rpgAuth?.usuario
+        ) {
+            return window.rpgAuth.usuario;
+        }
+
+        if (
+            window.usuarioAtual
+        ) {
+            return window.usuarioAtual;
+        }
+
+        return null;
+    }
+
+
+    function obterIdLocal(objeto) {
+        return primeiroValor(
+            objeto,
+            [
+                "id",
+                "uid",
+                "user_id",
+                "userId"
+            ],
+            null
+        );
+    }
+
+
+    function obterNomeLocal(objeto) {
+        return primeiroValor(
+            objeto,
+            [
+                "name",
+                "nome",
+                "username",
+                "displayName"
+            ],
+            "Jogador"
+        );
     }
 
 
@@ -1541,76 +3611,207 @@
     ===================================================== */
 
     function renderizarNecessidades() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "necessidades";
 
-        tela.appendChild(
-            criarElemento(
-                "h3",
-                [],
-                "📋 NECESSIDADES"
-            )
+        definirModo(
+            "interface"
         );
 
-        tela.appendChild(
+        const conteudo =
             criarElemento(
-                "p",
-                [],
-                "Área de gerenciamento das necessidades dos personagens."
-            )
-        );
-
-        mesa.jogadores.forEach((jogador) => {
-            const bloco = criarElemento("div");
-
-            bloco.style.width = "100%";
-            bloco.style.maxWidth = "600px";
-            bloco.style.padding = "12px";
-            bloco.style.marginBottom = "8px";
-            bloco.style.border = "1px solid rgba(255,255,255,.1)";
-            bloco.style.borderRadius = "10px";
-
-            bloco.appendChild(
-                criarElemento(
-                    "strong",
-                    [],
-                    obterNomePersonagem(jogador)
-                )
+                "section",
+                "mesa-module-screen"
             );
 
-            const necessidades =
-                jogador.needs ||
-                jogador.necessidades ||
-                jogador.character?.needs ||
-                [];
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
 
-            if (!Array.isArray(necessidades) || !necessidades.length) {
-                bloco.appendChild(
+        header.append(
+            criarBotaoVoltarMesa(),
+
+            criarElemento(
+                "h2",
+                "",
+                "🍖 NECESSIDADES"
+            )
+        );
+
+        conteudo.append(
+            header
+        );
+
+
+        mesa.jogadores.forEach(
+            jogador => {
+                const painel =
                     criarElemento(
-                        "p",
-                        [],
-                        "Nenhuma necessidade registrada."
+                        "article",
+                        "needs-panel"
+                    );
+
+                painel.append(
+                    criarElemento(
+                        "h3",
+                        "",
+                        obterNomePersonagemLocal(
+                            jogador
+                        )
                     )
                 );
-            } else {
-                necessidades.forEach((necessidade) => {
-                    bloco.appendChild(
+
+                const necessidades =
+                    obterNecessidades(
+                        jogador
+                    );
+
+                const grid =
+                    criarElemento(
+                        "div",
+                        "needs-grid"
+                    );
+
+                if (
+                    Array.isArray(
+                        necessidades
+                    ) &&
+                    necessidades.length
+                ) {
+                    necessidades.forEach(
+                        necessidade => {
+                            grid.append(
+                                criarNecessidade(
+                                    necessidade
+                                )
+                            );
+                        }
+                    );
+                } else if (
+                    necessidades &&
+                    typeof necessidades ===
+                        "object"
+                ) {
+                    Object.entries(
+                        necessidades
+                    ).forEach(
+                        ([chave, valor]) => {
+                            grid.append(
+                                criarNecessidade({
+                                    name: chave,
+                                    value: valor
+                                })
+                            );
+                        }
+                    );
+                } else {
+                    grid.append(
                         criarElemento(
-                            "p",
-                            [],
-                            `• ${typeof necessidade === "string"
-                                ? necessidade
-                                : necessidade.name || necessidade.nome || "Necessidade"}`
+                            "span",
+                            "needs-empty",
+                            "Nenhuma necessidade registrada."
                         )
                     );
-                });
-            }
+                }
 
-            tela.appendChild(bloco);
-        });
+                painel.append(
+                    grid
+                );
+
+                conteudo.append(
+                    painel
+                );
+            }
+        );
+
+
+        if (
+            mesa.jogadores.length === 0
+        ) {
+            conteudo.append(
+                criarElemento(
+                    "p",
+                    "mesa-empty-message",
+                    "Nenhum jogador disponível."
+                )
+            );
+        }
+
+        tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function criarNecessidade(
+        necessidade
+    ) {
+        const item =
+            criarElemento(
+                "div",
+                "need-item"
+            );
+
+        if (
+            typeof necessidade ===
+            "string"
+        ) {
+            item.textContent =
+                necessidade;
+
+            return item;
+        }
+
+        const nome =
+            primeiroValor(
+                necessidade,
+                [
+                    "name",
+                    "nome",
+                    "type",
+                    "tipo"
+                ],
+                "Necessidade"
+            );
+
+        const valor =
+            primeiroValor(
+                necessidade,
+                [
+                    "value",
+                    "valor",
+                    "level",
+                    "nivel",
+                    "amount",
+                    "quantidade"
+                ],
+                "—"
+            );
+
+        item.append(
+            criarElemento(
+                "strong",
+                "",
+                nome
+            ),
+
+            criarElemento(
+                "span",
+                "",
+                String(valor)
+            )
+        );
+
+        return item;
     }
 
 
@@ -1619,573 +3820,1214 @@
     ===================================================== */
 
     function renderizarJogadores() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "jogadores";
 
-        tela.appendChild(
+        const conteudo =
             criarElemento(
-                "h3",
-                [],
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltarMesa(),
+
+            criarElemento(
+                "h2",
+                "",
                 "👥 JOGADORES"
             )
         );
 
-        if (!mesa.jogadores.length) {
-            tela.appendChild(
+        conteudo.append(
+            header
+        );
+
+
+        const lista =
+            criarElemento(
+                "div",
+                "players-list"
+            );
+
+        mesa.jogadores.forEach(
+            jogador => {
+                const botao =
+                    criarElemento(
+                        "button",
+                        "player-list-item"
+                    );
+
+                botao.type = "button";
+
+                botao.append(
+                    criarElemento(
+                        "span",
+                        "player-list-avatar",
+                        primeiroValor(
+                            jogador,
+                            [
+                                "avatar",
+                                "icone",
+                                "emoji"
+                            ],
+                            "🧙"
+                        )
+                    ),
+
+                    criarElemento(
+                        "span",
+                        "player-list-info",
+                        `${obterNomePersonagemLocal(
+                            jogador
+                        )} — ${obterNomeLocal(
+                            jogador
+                        )}`
+                    )
+                );
+
+                botao.addEventListener(
+                    "click",
+                    () => abrirJogador(
+                        jogador
+                    )
+                );
+
+                lista.appendChild(
+                    botao
+                );
+            }
+        );
+
+        if (
+            mesa.jogadores.length === 0
+        ) {
+            lista.append(
                 criarElemento(
                     "p",
-                    [],
+                    "mesa-empty-message",
                     "Nenhum jogador conectado."
                 )
             );
-            return;
         }
 
-        mesa.jogadores.forEach((jogador, index) => {
-            const bloco = criarElemento("button");
+        conteudo.append(
+            lista
+        );
 
-            bloco.type = "button";
+        tela.appendChild(
+            conteudo
+        );
 
-            bloco.style.width = "100%";
-            bloco.style.maxWidth = "600px";
-            bloco.style.padding = "14px";
-            bloco.style.marginBottom = "8px";
-            bloco.style.border = "1px solid rgba(134,239,172,.18)";
-            bloco.style.borderRadius = "12px";
-            bloco.style.background = "rgba(0,0,0,.18)";
-            bloco.style.color = "inherit";
-            bloco.style.textAlign = "left";
-
-            bloco.appendChild(
-                criarElemento(
-                    "strong",
-                    [],
-                    `${index + 1}. ${obterNome(jogador)}`
-                )
-            );
-
-            bloco.appendChild(
-                criarElemento(
-                    "small",
-                    [],
-                    obterNomePersonagem(jogador)
-                )
-            );
-
-            bloco.addEventListener("click", () => {
-                abrirJogador(jogador);
-            });
-
-            tela.appendChild(bloco);
-        });
+        definirModo(
+            "interface"
+        );
     }
 
 
     /* =====================================================
-       JOGADOR SELECIONADO
+       TELA INDIVIDUAL DO JOGADOR
     ===================================================== */
 
-    function abrirJogador(jogador) {
+    function abrirJogador(
+        jogador
+    ) {
         if (!jogador) return;
 
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        criarBotaoVoltar(tela);
+        mesa.telaAtual =
+            "jogador";
 
-        tela.appendChild(
+        definirModo(
+            "interface"
+        );
+
+        const conteudo =
             criarElemento(
-                "h3",
-                [],
-                `👤 ${obterNome(jogador)}`
-            )
-        );
+                "section",
+                "mesa-player-detail"
+            );
 
-        tela.appendChild(
+        const header =
             criarElemento(
-                "p",
-                [],
-                `Personagem: ${obterNomePersonagem(jogador)}`
-            )
-        );
-
-        const info = criarElemento("div");
-
-        info.style.width = "100%";
-        info.style.maxWidth = "600px";
-
-        const campos = [
-            ["Raça", ["race", "raca", "raça"]],
-            ["Classe", ["class", "classe"]],
-            ["Afinidade", ["affinity", "afinidade"]]
-        ];
-
-        campos.forEach(([nome, lista]) => {
-            const valor = obterCampoPersonagem(
-                jogador,
-                lista
+                "div",
+                "module-screen-header"
             );
 
-            info.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    `${nome}: ${valor || "—"}`
-                )
-            );
-        });
+        header.append(
+            criarBotaoVoltarMesa(),
 
-        tela.appendChild(info);
-
-        mesa.telaAtual = "player";
-    }
-
-
-    /* =====================================================
-       COMBATE
-    ===================================================== */
-
-    function renderizarCombate(dados = null) {
-        const tela = mesa.elementos.tela;
-
-        limparElemento(tela);
-
-        criarBotaoVoltar(tela);
-
-        tela.appendChild(
-            criarElemento(
-                "h3",
-                [],
-                "⚔️ COMBATE"
-            )
-        );
-
-        const combate =
-            dados ||
-            mesa.combate;
-
-        if (!combate) {
-            tela.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    usuarioEhMestre()
-                        ? "Nenhum combate ativo. O Mestre pode iniciar um combate pelas configurações."
-                        : "Nenhum combate ativo no momento."
-                )
-            );
-
-            if (usuarioEhMestre()) {
-                const iniciar = criarElemento(
-                    "button",
-                    [],
-                    "⚔️ Iniciar combate"
-                );
-
-                iniciar.type = "button";
-
-                iniciar.addEventListener("click", () => {
-                    iniciarCombate({
-                        nome: "Encontro",
-                        inimigos: []
-                    });
-                });
-
-                tela.appendChild(iniciar);
-            }
-
-            return;
-        }
-
-        const nome = combate.nome ||
-                     combate.title ||
-                     combate.titulo ||
-                     "Combate";
-
-        tela.appendChild(
-            criarElemento(
-                "h3",
-                [],
-                nome
-            )
-        );
-
-        if (combate.descricao) {
-            tela.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    combate.descricao
-                )
-            );
-        }
-
-        const iniciativa = combate.iniciativa || [];
-
-        if (Array.isArray(iniciativa) && iniciativa.length) {
-            const lista = criarElemento("div");
-
-            iniciativa.forEach((participante, index) => {
-                const linha = criarElemento(
-                    "div"
-                );
-
-                linha.style.padding = "8px";
-                linha.style.marginBottom = "5px";
-                linha.style.borderRadius = "8px";
-                linha.style.background = "rgba(0,0,0,.2)";
-
-                linha.textContent =
-                    `${index + 1}. ${obterNome(participante, "Participante")}`;
-
-                lista.appendChild(linha);
-            });
-
-            tela.appendChild(lista);
-        }
-
-        if (usuarioEhMestre()) {
-            const finalizar = criarElemento(
-                "button",
-                [],
-                "🏁 Encerrar combate"
-            );
-
-            finalizar.type = "button";
-
-            finalizar.addEventListener("click", () => {
-                finalizarCombate();
-            });
-
-            tela.appendChild(finalizar);
-        }
-    }
-
-
-    /* =====================================================
-       INICIAR COMBATE
-    ===================================================== */
-
-    function iniciarCombate(dados = {}) {
-        mesa.combate = {
-            ...dados,
-            ativo: true,
-            iniciadoEm: Date.now()
-        };
-
-        definirModo("combat");
-
-        renderizarCombate();
-
-        notificar("⚔️ Combate iniciado!");
-    }
-
-    window.rpgMesa.iniciarCombate = iniciarCombate;
-
-
-    /* =====================================================
-       FINALIZAR COMBATE
-    ===================================================== */
-
-    function finalizarCombate() {
-        mesa.combate = null;
-
-        definirModo("interface");
-
-        renderizarInterface();
-
-        notificar("🏁 Combate encerrado.");
-    }
-
-    window.rpgMesa.finalizarCombate = finalizarCombate;
-
-
-    /* =====================================================
-       CTE
-    ===================================================== */
-
-    function iniciarCTE(dados = {}) {
-        pararTimerCTE();
-
-        const opcoes = Array.isArray(dados.options)
-            ? dados.options
-            : Array.isArray(dados.opcoes)
-                ? dados.opcoes
-                : [];
-
-        mesa.cte = {
-            id: dados.id || `cte-${Date.now()}`,
-
-            title:
-                dados.title ||
-                dados.titulo ||
-                "EVENTO",
-
-            description:
-                dados.description ||
-                dados.descricao ||
-                "Escolha uma ação.",
-
-            timeLimit: Number(
-                dados.timeLimit ??
-                dados.tempo ??
-                dados.tempoLimite ??
-                10
-            ),
-
-            remaining: Number(
-                dados.timeLimit ??
-                dados.tempo ??
-                dados.tempoLimite ??
-                10
-            ),
-
-            options: opcoes,
-
-            active: true,
-
-            startedAt: Date.now(),
-
-            response: null
-        };
-
-        definirModo("cte");
-
-        renderizarCTE();
-
-        iniciarTimerCTE();
-
-        notificar("⚡ CTE iniciado!");
-    }
-
-    window.rpgMesa.iniciarCTE = iniciarCTE;
-
-
-    /* =====================================================
-       RENDERIZAR CTE
-    ===================================================== */
-
-    function renderizarCTE() {
-        const tela = mesa.elementos.tela;
-
-        limparElemento(tela);
-
-        const cte = mesa.cte;
-
-        if (!cte) {
-            tela.appendChild(
-                criarElemento(
-                    "h3",
-                    [],
-                    "⚡ CTE"
-                )
-            );
-
-            tela.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    "Nenhum evento rápido ativo."
-                )
-            );
-
-            return;
-        }
-
-        const box = criarElemento(
-            "div",
-            ["mesa-cte"]
-        );
-
-        box.appendChild(
             criarElemento(
                 "h2",
-                [],
-                `⚡ ${cte.title}`
+                "",
+                "🧙 FICHA DO JOGADOR"
             )
         );
 
-        box.appendChild(
+        conteudo.append(
+            header
+        );
+
+
+        /* -------------------------------------------------
+           IDENTIDADE
+        ------------------------------------------------- */
+
+        const identidade =
+            criarElemento(
+                "article",
+                "player-detail-identity"
+            );
+
+        identidade.append(
+            criarElemento(
+                "div",
+                "player-detail-avatar",
+                primeiroValor(
+                    jogador,
+                    [
+                        "avatar",
+                        "icone",
+                        "emoji"
+                    ],
+                    "🧙"
+                )
+            ),
+
+            criarElemento(
+                "h3",
+                "",
+                obterNomePersonagemLocal(
+                    jogador
+                )
+            ),
+
             criarElemento(
                 "p",
-                [],
-                cte.description
+                "",
+                `Jogador: ${obterNomeLocal(
+                    jogador
+                )}`
             )
         );
 
-        const timer = criarElemento(
-            "div",
-            ["mesa-cte-timer"],
-            String(cte.remaining)
+        conteudo.append(
+            identidade
         );
 
-        timer.id = "mesa-cte-timer";
 
-        box.appendChild(timer);
+        /* -------------------------------------------------
+           DADOS
+        ------------------------------------------------- */
 
-        const opcoes = criarElemento(
-            "div",
-            ["mesa-cte-options"]
+        const dados =
+            criarElemento(
+                "div",
+                "player-detail-grid"
+            );
+
+        dados.append(
+            criarInfoLocal(
+                "RAÇA",
+                obterRacaLocal(
+                    jogador
+                )
+            ),
+
+            criarInfoLocal(
+                "CLASSE",
+                obterClasseLocal(
+                    jogador
+                )
+            ),
+
+            criarInfoLocal(
+                "AFINIDADE",
+                obterAfinidadeLocal(
+                    jogador
+                )
+            )
         );
 
-        if (!cte.options.length) {
-            opcoes.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    "Nenhuma opção configurada."
+        conteudo.append(
+            dados
+        );
+
+
+        /* -------------------------------------------------
+           STATUS
+        ------------------------------------------------- */
+
+        const status =
+            criarElemento(
+                "article",
+                "player-detail-section"
+            );
+
+        status.append(
+            criarElemento(
+                "h3",
+                "",
+                "❤️ STATUS"
+            )
+        );
+
+        const hp =
+            mesa.obterHP(
+                jogador
+            );
+
+        status.append(
+            criarInfoLocal(
+                "HP",
+                `${hp.atual}/${hp.maximo}`
+            )
+        );
+
+        const mana =
+            mesa.obterRecurso(
+                jogador,
+                "mana"
+            );
+
+        const energia =
+            mesa.obterRecurso(
+                jogador,
+                "energia"
+            );
+
+        if (
+            mana.maximo > 0
+        ) {
+            status.append(
+                criarInfoLocal(
+                    "MANA",
+                    `${mana.atual}/${mana.maximo}`
                 )
             );
         }
 
-        cte.options.forEach((opcao, index) => {
-            const id =
-                opcao.id ||
-                opcao.value ||
-                String(index);
+        if (
+            energia.maximo > 0
+        ) {
+            status.append(
+                criarInfoLocal(
+                    "ENERGIA",
+                    `${energia.atual}/${energia.maximo}`
+                )
+            );
+        }
 
-            const label =
-                opcao.label ||
-                opcao.nome ||
-                opcao.text ||
-                `Opção ${index + 1}`;
+        conteudo.append(
+            status
+        );
 
-            const botao = criarElemento(
+
+        /* -------------------------------------------------
+           HABILIDADES
+        ------------------------------------------------- */
+
+        const habilidades =
+            criarElemento(
+                "article",
+                "player-detail-section"
+            );
+
+        habilidades.append(
+            criarElemento(
+                "h3",
+                "",
+                "⚔️ HABILIDADES"
+            )
+        );
+
+        for (
+            let i = 0;
+            i < 3;
+            i++
+        ) {
+            habilidades.append(
+                criarSlotDetalheHabilidade(
+                    jogador.abilities?.[i],
+                    i + 1
+                )
+            );
+        }
+
+        conteudo.append(
+            habilidades
+        );
+
+
+        /* -------------------------------------------------
+           PASSIVA
+        ------------------------------------------------- */
+
+        const passiva =
+            criarElemento(
+                "article",
+                "player-detail-section"
+            );
+
+        passiva.append(
+            criarElemento(
+                "h3",
+                "",
+                "✦ PASSIVA"
+            )
+        );
+
+        passiva.append(
+            criarSlotDetalheHabilidade(
+                jogador.passive,
+                null,
+                true
+            )
+        );
+
+        conteudo.append(
+            passiva
+        );
+
+
+        /* -------------------------------------------------
+           AÇÕES DO MESTRE
+        ------------------------------------------------- */
+
+        if (
+            usuarioEhMestreLocal()
+        ) {
+            conteudo.append(
+                criarAcoesMestreJogador(
+                    jogador
+                )
+            );
+        }
+
+
+        tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function criarInfoLocal(
+        titulo,
+        valor
+    ) {
+        const item =
+            criarElemento(
+                "div",
+                "player-detail-info"
+            );
+
+        item.append(
+            criarElemento(
+                "span",
+                "",
+                titulo
+            ),
+
+            criarElemento(
+                "strong",
+                "",
+                valor ?? "—"
+            )
+        );
+
+        return item;
+    }
+
+
+    function criarSlotDetalheHabilidade(
+        habilidade,
+        numero = null,
+        passiva = false
+    ) {
+        const item =
+            criarElemento(
+                "div",
+                passiva
+                    ? "detail-passive"
+                    : "detail-ability"
+            );
+
+        const nome =
+            obterNomeHabilidadeLocal(
+                habilidade
+            );
+
+        const descricao =
+            obterDescricaoHabilidadeLocal(
+                habilidade
+            );
+
+        if (numero !== null) {
+            item.dataset.slot =
+                String(numero);
+        }
+
+        item.append(
+            criarElemento(
+                "strong",
+                "",
+                passiva
+                    ? nome
+                    : `${numero}. ${nome}`
+            ),
+
+            criarElemento(
+                "span",
+                "",
+                descricao ||
+                    (
+                        habilidade
+                            ? "Sem descrição."
+                            : "Slot vazio."
+                    )
+            )
+        );
+
+        if (!habilidade) {
+            item.classList.add(
+                "empty"
+            );
+        }
+
+        return item;
+    }
+
+
+    function criarAcoesMestreJogador(
+        jogador
+    ) {
+        const area =
+            criarElemento(
+                "section",
+                "master-player-actions"
+            );
+
+        area.append(
+            criarElemento(
+                "h3",
+                "",
+                "👑 AÇÕES DO MESTRE"
+            )
+        );
+
+
+        const botoes =
+            criarElemento(
+                "div",
+                "master-actions-grid"
+            );
+
+
+        const entregar =
+            criarElemento(
                 "button",
-                ["mesa-cte-option"]
+                "master-action-button",
+                "🎁 Entregar item"
             );
 
-            botao.type = "button";
-            botao.textContent = label;
+        entregar.type = "button";
 
-            botao.addEventListener("click", () => {
-                responderCTE(id);
+        entregar.addEventListener(
+            "click",
+            () => abrirEntregaItem(
+                jogador
+            )
+        );
+
+
+        const troca =
+            criarElemento(
+                "button",
+                "master-action-button",
+                "🔄 Trocar item"
+            );
+
+        troca.type = "button";
+
+        troca.addEventListener(
+            "click",
+            () => abrirTroca(
+                jogador
+            )
+        );
+
+
+        botoes.append(
+            entregar,
+            troca
+        );
+
+        area.append(
+            botoes
+        );
+
+        return area;
+    }
+
+
+    /* =====================================================
+       ENTREGA DE ITEM
+    ===================================================== */
+
+    function abrirEntregaItem(
+        jogador
+    ) {
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
+
+        limparElemento(tela);
+
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltarMesa(),
+
+            criarElemento(
+                "h2",
+                "",
+                "🎁 ENTREGAR ITEM"
+            )
+        );
+
+        conteudo.append(
+            header
+        );
+
+
+        const formulario =
+            criarElemento(
+                "form",
+                "item-delivery-form"
+            );
+
+        const nome =
+            criarElemento(
+                "input",
+                "mesa-form-input"
+            );
+
+        nome.type = "text";
+        nome.placeholder =
+            "Nome do item";
+        nome.required = true;
+
+
+        const quantidade =
+            criarElemento(
+                "input",
+                "mesa-form-input"
+            );
+
+        quantidade.type =
+            "number";
+
+        quantidade.min = "1";
+        quantidade.value = "1";
+
+
+        const descricao =
+            criarElemento(
+                "textarea",
+                "mesa-form-textarea"
+            );
+
+        descricao.placeholder =
+            "Descrição do item (opcional)...";
+
+
+        const confirmar =
+            criarElemento(
+                "button",
+                "mesa-primary-button",
+                "🎁 Entregar"
+            );
+
+        confirmar.type =
+            "submit";
+
+
+        formulario.append(
+            criarLabelLocal(
+                "Item",
+                nome
+            ),
+
+            criarLabelLocal(
+                "Quantidade",
+                quantidade
+            ),
+
+            criarLabelLocal(
+                "Descrição",
+                descricao
+            ),
+
+            confirmar
+        );
+
+
+        formulario.addEventListener(
+            "submit",
+            evento => {
+                evento.preventDefault();
+
+                entregarItem(
+                    jogador,
+                    {
+                        name:
+                            nome.value.trim(),
+
+                        quantity:
+                            Math.max(
+                                1,
+                                Number(
+                                    quantidade.value
+                                ) || 1
+                            ),
+
+                        description:
+                            descricao.value.trim()
+                    }
+                );
+            }
+        );
+
+
+        conteudo.append(
+            formulario
+        );
+
+        tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function criarLabelLocal(
+        texto,
+        input
+    ) {
+        const label =
+            criarElement(
+                "label",
+                "mesa-form-label"
+            );
+
+        label.append(
+            criarElemento(
+                "span",
+                "",
+                texto
+            ),
+            input
+        );
+
+        return label;
+    }
+
+
+    function entregarItem(
+        jogador,
+        item
+    ) {
+        const inventario =
+            obterInventarioLocal(
+                jogador
+            );
+
+        if (
+            !Array.isArray(
+                inventario
+            )
+        ) {
+            jogador.inventory = [];
+        }
+
+        const lista =
+            Array.isArray(
+                jogador.inventory
+            )
+                ? jogador.inventory
+                : [];
+
+
+        const existente =
+            lista.find(
+                atual => {
+                    const nome =
+                        typeof atual ===
+                        "string"
+                            ? atual
+                            : primeiroValor(
+                                atual,
+                                [
+                                    "name",
+                                    "nome"
+                                ],
+                                ""
+                            );
+
+                    return (
+                        String(nome)
+                            .toLowerCase() ===
+                        String(item.name)
+                            .toLowerCase()
+                    );
+                }
+            );
+
+
+        if (existente) {
+            if (
+                typeof existente ===
+                "object"
+            ) {
+                existente.quantity =
+                    Number(
+                        existente.quantity ||
+                        existente.quantidade ||
+                        0
+                    ) +
+                    item.quantity;
+            }
+        } else {
+            lista.push({
+                ...item
             });
-
-            opcoes.appendChild(botao);
-        });
-
-        box.appendChild(opcoes);
-
-        tela.appendChild(box);
-    }
-
-
-    /* =====================================================
-       TIMER DO CTE
-    ===================================================== */
-
-    function iniciarTimerCTE() {
-        pararTimerCTE();
-
-        if (!mesa.cte) return;
-
-        mesa.cteTimer = setInterval(() => {
-            if (!mesa.cte || !mesa.cte.active) {
-                pararTimerCTE();
-                return;
-            }
-
-            mesa.cte.remaining -= 1;
-
-            const timer = document.getElementById(
-                "mesa-cte-timer"
-            );
-
-            if (timer) {
-                timer.textContent =
-                    String(Math.max(0, mesa.cte.remaining));
-            }
-
-            if (mesa.cte.remaining <= 0) {
-                finalizarCTE("tempo");
-            }
-        }, 1000);
-    }
-
-
-    function pararTimerCTE() {
-        if (mesa.cteTimer) {
-            clearInterval(mesa.cteTimer);
-            mesa.cteTimer = null;
-        }
-    }
-
-
-    /* =====================================================
-       RESPONDER CTE
-    ===================================================== */
-
-    function responderCTE(id) {
-        if (!mesa.cte || !mesa.cte.active) {
-            return;
         }
 
-        const opcao = mesa.cte.options.find(
-            (item, index) =>
-                String(
-                    item.id ??
-                    item.value ??
-                    index
-                ) === String(id)
+
+        jogador.inventory =
+            lista;
+
+
+        notificarLocal(
+            `${item.quantity}x ${item.name} entregue para ${obterNomePersonagemLocal(
+                jogador
+            )}.`,
+            3500,
+            "success"
         );
 
-        mesa.cte.response = opcao || {
-            id
-        };
-
-        mesa.cte.active = false;
-
-        notificar(
-            `⚡ Escolha: ${
-                opcao?.label ||
-                opcao?.nome ||
-                opcao?.text ||
-                id
-            }`
-        );
-
-        finalizarCTE("resposta");
-    }
-
-    window.rpgMesa.responderCTE = responderCTE;
-
-
-    /* =====================================================
-       FINALIZAR CTE
-    ===================================================== */
-
-    function finalizarCTE(motivo = "finalizado") {
-        pararTimerCTE();
-
-        const resultado = mesa.cte
-            ? {
-                ...mesa.cte,
-                motivo
-            }
-            : null;
-
-        mesa.cte = null;
-
-        definirModo("interface");
-
-        renderizarInterface();
 
         window.dispatchEvent(
             new CustomEvent(
-                "rpg:mesa:cte-finalizado",
+                "rpg:mesa:item-entregue",
                 {
-                    detail: resultado
+                    detail: {
+                        jogador,
+                        item
+                    }
                 }
+            )
+        );
+
+
+        abrirJogador(
+            jogador
+        );
+    }
+
+
+    function obterInventarioLocal(
+        jogador
+    ) {
+        const personagem =
+            obterPersonagem(
+                jogador
+            );
+
+        return primeiroValor(
+            jogador,
+            [
+                "inventory",
+                "inventario"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "inventory",
+                    "inventario"
+                ],
+                []
             )
         );
     }
 
-    window.rpgMesa.finalizarCTE = finalizarCTE;
+
+    /* =====================================================
+       SISTEMA DE TROCA
+    ===================================================== */
+
+    function abrirTroca(
+        jogadorOrigem
+    ) {
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
+
+        limparElemento(tela);
+
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-module-screen"
+            );
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltarMesa(),
+
+            criarElemento(
+                "h2",
+                "",
+                "🔄 SISTEMA DE TROCA"
+            )
+        );
+
+        conteudo.append(
+            header
+        );
+
+
+        const origem =
+            criarElemento(
+                "article",
+                "trade-panel"
+            );
+
+        origem.append(
+            criarElemento(
+                "h3",
+                "",
+                `De: ${obterNomePersonagemLocal(
+                    jogadorOrigem
+                )}`
+            )
+        );
+
+
+        const selectOrigem =
+            criarElemento(
+                "select",
+                "mesa-form-input"
+            );
+
+        const inventario =
+            obterInventarioLocal(
+                jogadorOrigem
+            );
+
+
+        if (
+            Array.isArray(
+                inventario
+            )
+        ) {
+            inventario.forEach(
+                (item, indice) => {
+                    const option =
+                        criarElemento(
+                            "option"
+                        );
+
+                    option.value =
+                        String(indice);
+
+                    option.textContent =
+                        obterNomeItemLocal(
+                            item
+                        );
+
+                    selectOrigem.append(
+                        option
+                    );
+                }
+            );
+        }
+
+
+        origem.append(
+            criarLabelLocal(
+                "Item",
+                selectOrigem
+            )
+        );
+
+
+        const destino =
+            criarElemento(
+                "article",
+                "trade-panel"
+            );
+
+        destino.append(
+            criarElemento(
+                "h3",
+                "",
+                "Para:"
+            )
+        );
+
+
+        const selectDestino =
+            criarElemento(
+                "select",
+                "mesa-form-input"
+            );
+
+
+        mesa.jogadores
+            .filter(
+                jogador =>
+                    jogador !==
+                    jogadorOrigem
+            )
+            .forEach(
+                jogador => {
+                    const option =
+                        criarElemento(
+                            "option"
+                        );
+
+                    option.value =
+                        String(
+                            obterIdLocal(
+                                jogador
+                            ) ??
+                            mesa.jogadores.indexOf(
+                                jogador
+                            )
+                        );
+
+                    option.textContent =
+                        obterNomePersonagemLocal(
+                            jogador
+                        );
+
+                    selectDestino.append(
+                        option
+                    );
+                }
+            );
+
+
+        destino.append(
+            criarLabelLocal(
+                "Jogador",
+                selectDestino
+            )
+        );
+
+
+        const confirmar =
+            criarElemento(
+                "button",
+                "mesa-primary-button",
+                "🔄 Realizar troca"
+            );
+
+        confirmar.type =
+            "button";
+
+
+        confirmar.addEventListener(
+            "click",
+            () => {
+                const indice =
+                    Number(
+                        selectOrigem.value
+                    );
+
+                const jogadorDestino =
+                    encontrarJogadorLocal(
+                        selectDestino.value
+                    );
+
+                if (
+                    !jogadorDestino
+                ) {
+                    notificarLocal(
+                        "Nenhum jogador de destino selecionado.",
+                        3000,
+                        "error"
+                    );
+
+                    return;
+                }
+
+                trocarItem(
+                    jogadorOrigem,
+                    jogadorDestino,
+                    indice
+                );
+            }
+        );
+
+
+        conteudo.append(
+            origem,
+            destino,
+            confirmar
+        );
+
+        tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function trocarItem(
+        origem,
+        destino,
+        indice
+    ) {
+        const inventarioOrigem =
+            obterInventarioLocal(
+                origem
+            );
+
+        if (
+            !Array.isArray(
+                inventarioOrigem
+            ) ||
+            !inventarioOrigem[indice]
+        ) {
+            notificarLocal(
+                "Item inválido.",
+                3000,
+                "error"
+            );
+
+            return;
+        }
+
+
+        const item =
+            inventarioOrigem.splice(
+                indice,
+                1
+            )[0];
+
+
+        const inventarioDestino =
+            obterInventarioLocal(
+                destino
+            );
+
+
+        if (
+            !Array.isArray(
+                inventarioDestino
+            )
+        ) {
+            destino.inventory = [];
+        }
+
+
+        const listaDestino =
+            Array.isArray(
+                destino.inventory
+            )
+                ? destino.inventory
+                : [];
+
+
+        listaDestino.push(
+            item
+        );
+
+        destino.inventory =
+            listaDestino;
+
+
+        notificarLocal(
+            `${obterNomeItemLocal(
+                item
+            )} transferido para ${obterNomePersonagemLocal(
+                destino
+            )}.`,
+            3500,
+            "success"
+        );
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:item-trocado",
+                {
+                    detail: {
+                        origem,
+                        destino,
+                        item
+                    }
+                }
+            )
+        );
+
+
+        abrirJogador(
+            destino
+        );
+    }
+
+
+    function encontrarJogadorLocal(
+        id
+    ) {
+        return mesa.jogadores.find(
+            jogador =>
+                String(
+                    obterIdLocal(
+                        jogador
+                    )
+                ) === String(id)
+        ) || mesa.jogadores[
+            Number(id)
+        ] || null;
+    }
 
 
     /* =====================================================
@@ -2193,89 +5035,154 @@
     ===================================================== */
 
     function renderizarMapa() {
-        const tela = mesa.elementos.tela;
+        const tela =
+            mesa.elementos.tela;
+
+        if (!tela) return;
 
         limparElemento(tela);
 
-        const titulo = criarElemento(
-            "h3",
-            [],
-            "🗺️ MAPA"
+        mesa.telaAtual =
+            "mapa";
+
+        definirModo(
+            "map"
         );
 
-        tela.appendChild(titulo);
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-module-screen map-screen"
+            );
 
-        const mapa = criarElemento(
-            "div",
-            ["mesa-map"]
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltarMesa(),
+
+            criarElemento(
+                "h2",
+                "",
+                "🗺️ MAPA"
+            )
         );
 
-        mapa.id = "mesa-map";
-
-        const svg = criarMapaSVG();
-
-        mapa.appendChild(svg);
-
-        tela.appendChild(mapa);
-
-        const controles = criarElemento(
-            "div",
-            ["mesa-map-controls"]
+        conteudo.append(
+            header
         );
 
-        const menos = criarElemento(
-            "button",
-            [],
-            "−"
+
+        const controles =
+            criarElemento(
+                "div",
+                "map-controls"
+            );
+
+        const diminuir =
+            criarElemento(
+                "button",
+                "map-control-button",
+                "−"
+            );
+
+        const resetar =
+            criarElemento(
+                "button",
+                "map-control-button",
+                "⟳"
+            );
+
+        const aumentar =
+            criarElemento(
+                "button",
+                "map-control-button",
+                "+"
+            );
+
+
+        diminuir.type =
+            "button";
+
+        resetar.type =
+            "button";
+
+        aumentar.type =
+            "button";
+
+
+        controles.append(
+            diminuir,
+            resetar,
+            aumentar
         );
 
-        const reset = criarElemento(
-            "button",
-            [],
-            "↺"
+
+        const mapaContainer =
+            criarElemento(
+                "div",
+                "mesa-map"
+            );
+
+        mapaContainer.id =
+            "mesa-map";
+
+
+        const svg =
+            criarMapaSVG();
+
+        mapaContainer.append(
+            svg
         );
 
-        const mais = criarElemento(
-            "button",
-            [],
-            "+"
+
+        diminuir.addEventListener(
+            "click",
+            () => alterarZoomMapa(
+                -0.1,
+                svg
+            )
         );
 
-        menos.type = "button";
-        reset.type = "button";
-        mais.type = "button";
 
-        menos.addEventListener("click", () => {
-            alterarZoomMapa(-0.1);
-        });
+        aumentar.addEventListener(
+            "click",
+            () => alterarZoomMapa(
+                0.1,
+                svg
+            )
+        );
 
-        reset.addEventListener("click", () => {
-            resetarMapa();
-        });
 
-        mais.addEventListener("click", () => {
-            alterarZoomMapa(0.1);
-        });
+        resetar.addEventListener(
+            "click",
+            () => resetarMapa(
+                svg
+            )
+        );
 
-        controles.appendChild(menos);
-        controles.appendChild(reset);
-        controles.appendChild(mais);
 
-        tela.appendChild(controles);
+        conteudo.append(
+            controles,
+            mapaContainer
+        );
 
-        configurarMapaInteracao(mapa, svg);
+
+        tela.appendChild(
+            conteudo
+        );
     }
 
 
-    /* =====================================================
-       SVG DO MAPA
-    ===================================================== */
-
     function criarMapaSVG() {
-        const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg"
-        );
+        const svg =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "svg"
+            );
 
         svg.setAttribute(
             "viewBox",
@@ -2287,590 +5194,1935 @@
             "xMidYMid meet"
         );
 
-        const fundo = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "rect"
+        svg.classList.add(
+            "mesa-map-svg"
         );
 
-        fundo.setAttribute("x", "0");
-        fundo.setAttribute("y", "0");
-        fundo.setAttribute("width", "1000");
-        fundo.setAttribute("height", "600");
-        fundo.setAttribute("fill", "#07111d");
 
-        svg.appendChild(fundo);
+        /* -------------------------------------------------
+           FUNDO
+        ------------------------------------------------- */
 
-
-        const regioes = [
-            {
-                nome: "Região Norte",
-                x: 80,
-                y: 80,
-                largura: 250,
-                altura: 180
-            },
-            {
-                nome: "Região Central",
-                x: 370,
-                y: 190,
-                largura: 260,
-                altura: 190
-            },
-            {
-                nome: "Região Leste",
-                x: 680,
-                y: 70,
-                largura: 220,
-                altura: 210
-            },
-            {
-                nome: "Região Sul",
-                x: 170,
-                y: 390,
-                largura: 280,
-                altura: 150
-            },
-            {
-                nome: "Região Oeste",
-                x: 570,
-                y: 390,
-                largura: 260,
-                altura: 150
-            }
-        ];
-
-        regioes.forEach((regiao) => {
-            const rect = document.createElementNS(
+        const fundo =
+            document.createElementNS(
                 "http://www.w3.org/2000/svg",
                 "rect"
             );
 
-            rect.setAttribute("x", regiao.x);
-            rect.setAttribute("y", regiao.y);
-            rect.setAttribute("width", regiao.largura);
-            rect.setAttribute("height", regiao.altura);
-            rect.setAttribute("rx", "18");
-            rect.setAttribute(
-                "fill",
-                "rgba(34,197,94,.10)"
-            );
-            rect.setAttribute(
-                "stroke",
-                "rgba(134,239,172,.35)"
-            );
+        fundo.setAttribute(
+            "x",
+            "0"
+        );
 
-            rect.style.cursor = "pointer";
+        fundo.setAttribute(
+            "y",
+            "0"
+        );
 
-            rect.addEventListener("click", () => {
-                notificar(
-                    `🗺️ ${regiao.nome}`
+        fundo.setAttribute(
+            "width",
+            "1000"
+        );
+
+        fundo.setAttribute(
+            "height",
+            "600"
+        );
+
+        fundo.setAttribute(
+            "rx",
+            "20"
+        );
+
+        fundo.classList.add(
+            "map-background"
+        );
+
+        svg.appendChild(
+            fundo
+        );
+
+
+        /* -------------------------------------------------
+           REGIÕES
+        ------------------------------------------------- */
+
+        const regioes = [
+            {
+                nome: "Sylvandor",
+                x: 70,
+                y: 70,
+                largura: 260,
+                altura: 180
+            },
+
+            {
+                nome: "Aqualith",
+                x: 650,
+                y: 80,
+                largura: 270,
+                altura: 170
+            },
+
+            {
+                nome: "Caelwyn",
+                x: 70,
+                y: 350,
+                largura: 260,
+                altura: 170
+            },
+
+            {
+                nome: "Pyrrathis",
+                x: 650,
+                y: 340,
+                largura: 270,
+                altura: 180
+            },
+
+            {
+                nome: "Iligandres",
+                x: 390,
+                y: 220,
+                largura: 220,
+                altura: 160
+            }
+        ];
+
+
+        regioes.forEach(
+            regiao => {
+                const grupo =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "g"
+                    );
+
+                grupo.classList.add(
+                    "map-region"
                 );
-            });
 
-            svg.appendChild(rect);
+                grupo.dataset.region =
+                    regiao.nome;
 
-            const texto = document.createElementNS(
+
+                const retangulo =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "rect"
+                    );
+
+                retangulo.setAttribute(
+                    "x",
+                    regiao.x
+                );
+
+                retangulo.setAttribute(
+                    "y",
+                    regiao.y
+                );
+
+                retangulo.setAttribute(
+                    "width",
+                    regiao.largura
+                );
+
+                retangulo.setAttribute(
+                    "height",
+                    regiao.altura
+                );
+
+                retangulo.setAttribute(
+                    "rx",
+                    "24"
+                );
+
+                retangulo.classList.add(
+                    "map-region-shape"
+                );
+
+
+                const texto =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "text"
+                    );
+
+                texto.setAttribute(
+                    "x",
+                    regiao.x +
+                    regiao.largura / 2
+                );
+
+                texto.setAttribute(
+                    "y",
+                    regiao.y +
+                    regiao.altura / 2
+                );
+
+                texto.setAttribute(
+                    "text-anchor",
+                    "middle"
+                );
+
+                texto.setAttribute(
+                    "dominant-baseline",
+                    "middle"
+                );
+
+                texto.classList.add(
+                    "map-region-label"
+                );
+
+                texto.textContent =
+                    regiao.nome;
+
+
+                grupo.append(
+                    retangulo,
+                    texto
+                );
+
+
+                grupo.addEventListener(
+                    "click",
+                    () => {
+                        selecionarRegiaoMapa(
+                            regiao.nome
+                        );
+                    }
+                );
+
+
+                svg.appendChild(
+                    grupo
+                );
+            }
+        );
+
+
+        /* -------------------------------------------------
+           RIOS / FLUXOS
+        ------------------------------------------------- */
+
+        const rios = [
+            "M 330 150 C 400 180, 430 210, 500 300",
+            "M 670 160 C 610 190, 570 240, 500 300",
+            "M 320 430 C 390 400, 430 350, 500 300",
+            "M 680 420 C 620 390, 570 350, 500 300"
+        ];
+
+
+        rios.forEach(
+            caminho => {
+                const path =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "path"
+                    );
+
+                path.setAttribute(
+                    "d",
+                    caminho
+                );
+
+                path.classList.add(
+                    "map-river"
+                );
+
+                svg.appendChild(
+                    path
+                );
+            }
+        );
+
+
+        /* -------------------------------------------------
+           ILIGANDRES / CENTRO
+        ------------------------------------------------- */
+
+        const centro =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+            );
+
+        centro.setAttribute(
+            "cx",
+            "500"
+        );
+
+        centro.setAttribute(
+            "cy",
+            "300"
+        );
+
+        centro.setAttribute(
+            "r",
+            "24"
+        );
+
+        centro.classList.add(
+            "map-center-marker"
+        );
+
+        svg.appendChild(
+            centro
+        );
+
+
+        const centroTexto =
+            document.createElementNS(
                 "http://www.w3.org/2000/svg",
                 "text"
             );
 
-            texto.setAttribute(
-                "x",
-                regiao.x + regiao.largura / 2
-            );
-
-            texto.setAttribute(
-                "y",
-                regiao.y + regiao.altura / 2
-            );
-
-            texto.setAttribute(
-                "text-anchor",
-                "middle"
-            );
-
-            texto.setAttribute(
-                "dominant-baseline",
-                "middle"
-            );
-
-            texto.setAttribute(
-                "fill",
-                "#86efac"
-            );
-
-            texto.setAttribute(
-                "font-size",
-                "18"
-            );
-
-            texto.textContent = regiao.nome;
-
-            svg.appendChild(texto);
-        });
-
-
-        /* -----------------------------------------------
-           MARCADOR CENTRAL
-        ------------------------------------------------ */
-
-        const marcador = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "circle"
+        centroTexto.setAttribute(
+            "x",
+            "500"
         );
 
-        marcador.setAttribute("cx", "500");
-        marcador.setAttribute("cy", "285");
-        marcador.setAttribute("r", "13");
-
-        marcador.setAttribute(
-            "fill",
-            "#eab308"
+        centroTexto.setAttribute(
+            "y",
+            "300"
         );
 
-        marcador.setAttribute(
-            "stroke",
-            "#fff7ae"
+        centroTexto.setAttribute(
+            "text-anchor",
+            "middle"
         );
 
-        marcador.setAttribute(
-            "stroke-width",
-            "3"
+        centroTexto.setAttribute(
+            "dominant-baseline",
+            "middle"
         );
 
-        svg.appendChild(marcador);
+        centroTexto.classList.add(
+            "map-center-text"
+        );
 
+        centroTexto.textContent =
+            "✦";
+
+
+        svg.appendChild(
+            centroTexto
+        );
+
+
+        /* -------------------------------------------------
+           PORTAIS
+        ------------------------------------------------- */
+
+        const portais = [
+            {
+                nome: "Abismo de Nyx",
+                x: 190,
+                y: 160,
+                ativo: true
+            },
+
+            {
+                nome: "Fenda do Sussurro",
+                x: 210,
+                y: 430,
+                ativo: true
+            },
+
+            {
+                nome: "Vórtice de Lhor",
+                x: 500,
+                y: 260,
+                ativo: false
+            },
+
+            {
+                nome: "Ruptura de Sera",
+                x: 780,
+                y: 430,
+                ativo: true
+            },
+
+            {
+                nome: "Fissura de Felgan",
+                x: 790,
+                y: 160,
+                ativo: false
+            }
+        ];
+
+
+        portais.forEach(
+            portal => {
+                const grupo =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "g"
+                    );
+
+                grupo.classList.add(
+                    "map-portal"
+                );
+
+                if (
+                    portal.ativo
+                ) {
+                    grupo.classList.add(
+                        "active"
+                    );
+                } else {
+                    grupo.classList.add(
+                        "inactive"
+                    );
+                }
+
+
+                const circulo =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "circle"
+                    );
+
+                circulo.setAttribute(
+                    "cx",
+                    portal.x
+                );
+
+                circulo.setAttribute(
+                    "cy",
+                    portal.y
+                );
+
+                circulo.setAttribute(
+                    "r",
+                    "12"
+                );
+
+
+                const aura =
+                    document.createElementNS(
+                        "http://www.w3.org/2000/svg",
+                        "circle"
+                    );
+
+                aura.setAttribute(
+                    "cx",
+                    portal.x
+                );
+
+                aura.setAttribute(
+                    "cy",
+                    portal.y
+                );
+
+                aura.setAttribute(
+                    "r",
+                    "22"
+                );
+
+                aura.classList.add(
+                    "map-portal-aura"
+                );
+
+
+                grupo.append(
+                    aura,
+                    circulo
+                );
+
+
+                grupo.addEventListener(
+                    "click",
+                    () => {
+                        selecionarPortalMapa(
+                            portal
+                        );
+                    }
+                );
+
+
+                svg.appendChild(
+                    grupo
+                );
+            }
+        );
+
+
+        adicionarInteracaoMapa(
+            svg
+        );
 
         return svg;
     }
 
 
     /* =====================================================
-       ZOOM MAPA
+       INTERAÇÃO DO MAPA
     ===================================================== */
 
-    function alterarZoomMapa(valor) {
-        mesa.mapa.escala = Math.max(
-            .5,
-            Math.min(
-                3,
-                mesa.mapa.escala + valor
-            )
-        );
+    function alterarZoomMapa(
+        valor,
+        svg
+    ) {
+        mesa.mapa.escala =
+            Math.max(
+                0.6,
+                Math.min(
+                    2.5,
+                    mesa.mapa.escala +
+                    valor
+                )
+            );
 
-        aplicarTransformacaoMapa();
+        aplicarTransformacaoMapa(
+            svg
+        );
     }
 
 
-    function resetarMapa() {
+    function resetarMapa(
+        svg
+    ) {
         mesa.mapa.x = 0;
         mesa.mapa.y = 0;
         mesa.mapa.escala = 1;
 
-        aplicarTransformacaoMapa();
+        aplicarTransformacaoMapa(
+            svg
+        );
     }
 
 
-    function aplicarTransformacaoMapa() {
-        const svg = qs("#mesa-map svg");
-
+    function aplicarTransformacaoMapa(
+        svg
+    ) {
         if (!svg) return;
 
         svg.style.transform =
             `translate(${mesa.mapa.x}px, ${mesa.mapa.y}px) scale(${mesa.mapa.escala})`;
-
-        svg.style.transformOrigin = "center";
     }
 
 
-    /* =====================================================
-       INTERAÇÃO MAPA
-    ===================================================== */
-
-    function configurarMapaInteracao(container, svg) {
+    function adicionarInteracaoMapa(
+        svg
+    ) {
         let arrastando = false;
+
         let inicioX = 0;
         let inicioY = 0;
 
-        container.addEventListener(
+        let origemX = 0;
+        let origemY = 0;
+
+
+        svg.addEventListener(
             "pointerdown",
-            (evento) => {
+            evento => {
                 arrastando = true;
 
-                inicioX = evento.clientX -
-                          mesa.mapa.x;
+                inicioX =
+                    evento.clientX;
 
-                inicioY = evento.clientY -
-                          mesa.mapa.y;
+                inicioY =
+                    evento.clientY;
 
-                container.setPointerCapture(
+                origemX =
+                    mesa.mapa.x;
+
+                origemY =
+                    mesa.mapa.y;
+
+                svg.setPointerCapture(
                     evento.pointerId
+                );
+
+                svg.classList.add(
+                    "dragging"
                 );
             }
         );
 
-        container.addEventListener(
+
+        svg.addEventListener(
             "pointermove",
-            (evento) => {
-                if (!arrastando) return;
+            evento => {
+                if (!arrastando) {
+                    return;
+                }
 
                 mesa.mapa.x =
-                    evento.clientX - inicioX;
+                    origemX +
+                    (
+                        evento.clientX -
+                        inicioX
+                    );
 
                 mesa.mapa.y =
-                    evento.clientY - inicioY;
+                    origemY +
+                    (
+                        evento.clientY -
+                        inicioY
+                    );
 
-                aplicarTransformacaoMapa();
+                aplicarTransformacaoMapa(
+                    svg
+                );
             }
         );
 
-        container.addEventListener(
+
+        const finalizar =
+            evento => {
+                if (!arrastando) {
+                    return;
+                }
+
+                arrastando = false;
+
+                try {
+                    svg.releasePointerCapture(
+                        evento.pointerId
+                    );
+                } catch (_) {}
+
+                svg.classList.remove(
+                    "dragging"
+                );
+            };
+
+
+        svg.addEventListener(
             "pointerup",
-            () => {
-                arrastando = false;
-            }
+            finalizar
         );
 
-        container.addEventListener(
+        svg.addEventListener(
             "pointercancel",
-            () => {
-                arrastando = false;
+            finalizar
+        );
+
+        svg.addEventListener(
+            "pointerleave",
+            evento => {
+                if (
+                    evento.pointerType ===
+                    "mouse"
+                ) {
+                    finalizar(
+                        evento
+                    );
+                }
             }
         );
     }
 
 
+    function selecionarRegiaoMapa(
+        nome
+    ) {
+        notificarLocal(
+            `Região selecionada: ${nome}`,
+            2500
+        );
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:regiao-selecionada",
+                {
+                    detail: {
+                        nome
+                    }
+                }
+            )
+        );
+    }
+
+
+    function selecionarPortalMapa(
+        portal
+    ) {
+        const estado =
+            portal.ativo
+                ? "ATIVO"
+                : "INERTE";
+
+        notificarLocal(
+            `${portal.nome} — ${estado}`,
+            3000,
+            portal.ativo
+                ? "success"
+                : "normal"
+        );
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:portal-selecionado",
+                {
+                    detail: portal
+                }
+            )
+        );
+    }
+
+
     /* =====================================================
-       BOSS
+       FUNÇÕES LOCAIS DE DADOS
     ===================================================== */
 
-    function ativarBoss(nome = "BOSS") {
-        limparBossAnterior();
-
-        mesa.boss = {
-            nome,
-            ativo: true,
-            iniciadoEm: Date.now()
-        };
-
-        definirModo("boss");
-
-        const painel = mesa.elementos.painel;
-
-        if (painel) {
-            painel.classList.add(
-                "mesa-boss-flash"
+    function obterNomePersonagemLocal(
+        jogador
+    ) {
+        const personagem =
+            obterPersonagem(
+                jogador
             );
-        }
 
-        criarAlertaBoss(nome);
-
-        notificar(
-            `🚨 BOSS: ${nome}`,
-            4000
-        );
-
-        mesa.bossTimer = setTimeout(() => {
-            finalizarBoss();
-        }, 5000);
-    }
-
-    window.ativarBoss = ativarBoss;
-    window.rpgMesa.alertarBoss = ativarBoss;
-
-
-    /* =====================================================
-       ALERTA BOSS
-    ===================================================== */
-
-    function criarAlertaBoss(nome) {
-        const painel = mesa.elementos.painel;
-
-        if (!painel) return;
-
-        const overlay = criarElemento(
-            "div",
-            ["mesa-boss-alert"]
-        );
-
-        overlay.id = "mesa-boss-alert";
-
-        const conteudo = criarElemento(
-            "div",
-            ["mesa-boss-alert-content"]
-        );
-
-        conteudo.appendChild(
-            criarElemento(
-                "h2",
-                [],
-                "🚨 BOSS"
+        return primeiroValor(
+            jogador,
+            [
+                "character_name",
+                "characterName",
+                "personagem_nome",
+                "personagemNome"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "name",
+                    "nome"
+                ],
+                "Personagem"
             )
         );
-
-        conteudo.appendChild(
-            criarElemento(
-                "strong",
-                [],
-                nome
-            )
-        );
-
-        conteudo.appendChild(
-            criarElemento(
-                "p",
-                [],
-                "Uma presença poderosa entrou em cena."
-            )
-        );
-
-        overlay.appendChild(conteudo);
-
-        painel.appendChild(overlay);
     }
 
 
-    /* =====================================================
-       FINALIZAR BOSS
-    ===================================================== */
-
-    function finalizarBoss() {
-        if (mesa.bossTimer) {
-            clearTimeout(mesa.bossTimer);
-            mesa.bossTimer = null;
-        }
-
-        const painel = mesa.elementos.painel;
-
-        if (painel) {
-            painel.classList.remove(
-                "mesa-boss-flash"
+    function obterRacaLocal(
+        jogador
+    ) {
+        const personagem =
+            obterPersonagem(
+                jogador
             );
-        }
 
-        const alerta = document.getElementById(
-            "mesa-boss-alert"
+        return primeiroValor(
+            jogador,
+            [
+                "race",
+                "raca"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "race",
+                    "raca"
+                ],
+                "—"
+            )
         );
-
-        if (alerta) {
-            alerta.remove();
-        }
-
-        mesa.boss = null;
-
-        definirModo("interface");
-
-        renderizarInterface();
     }
 
 
-    function limparBossAnterior() {
-        if (mesa.bossTimer) {
-            clearTimeout(mesa.bossTimer);
-            mesa.bossTimer = null;
+    function obterClasseLocal(
+        jogador
+    ) {
+        const personagem =
+            obterPersonagem(
+                jogador
+            );
+
+        return primeiroValor(
+            jogador,
+            [
+                "class",
+                "classe"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "class",
+                    "classe"
+                ],
+                "—"
+            )
+        );
+    }
+
+
+    function obterAfinidadeLocal(
+        jogador
+    ) {
+        const personagem =
+            obterPersonagem(
+                jogador
+            );
+
+        return primeiroValor(
+            jogador,
+            [
+                "affinity",
+                "afinidade"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "affinity",
+                    "afinidade"
+                ],
+                "—"
+            )
+        );
+    }
+
+
+    function obterNomeHabilidadeLocal(
+        habilidade
+    ) {
+        if (!habilidade) {
+            return "Slot vazio";
         }
 
-        const alerta = document.getElementById(
-            "mesa-boss-alert"
+        if (
+            typeof habilidade ===
+            "string"
+        ) {
+            return habilidade;
+        }
+
+        return primeiroValor(
+            habilidade,
+            [
+                "name",
+                "nome",
+                "title",
+                "titulo"
+            ],
+            "Habilidade"
+        );
+    }
+
+
+    function obterDescricaoHabilidadeLocal(
+        habilidade
+    ) {
+        if (!habilidade) {
+            return "";
+        }
+
+        if (
+            typeof habilidade ===
+            "string"
+        ) {
+            return "";
+        }
+
+        return primeiroValor(
+            habilidade,
+            [
+                "description",
+                "descricao",
+                "detail",
+                "detalhe",
+                "effect",
+                "efeito"
+            ],
+            ""
+        );
+    }
+
+
+    function obterNomeItemLocal(
+        item
+    ) {
+        if (
+            typeof item ===
+            "string"
+        ) {
+            return item;
+        }
+
+        return primeiroValor(
+            item,
+            [
+                "name",
+                "nome",
+                "itemName",
+                "item_name"
+            ],
+            "Item"
+        );
+    }
+
+
+    function usuarioEhMestreLocal() {
+        const usuario =
+            obterUsuarioAtualLocal();
+
+        if (!usuario) {
+            return false;
+        }
+
+        if (
+            window.rpgAuth?.isMaster ===
+            true
+        ) {
+            return true;
+        }
+
+        const idUsuario =
+            obterIdLocal(
+                usuario
+            );
+
+        const idMestre =
+            primeiroValor(
+                mesa.campanha,
+                [
+                    "master_id",
+                    "masterId",
+                    "mestre_id",
+                    "mestreId"
+                ],
+                null
+            );
+
+        return (
+            idUsuario !== null &&
+            idMestre !== null &&
+            String(idUsuario) ===
+            String(idMestre)
+        );
+    }
+
+
+    function notificarLocal(
+        mensagem,
+        duracao = 3000,
+        tipo = "normal"
+    ) {
+        if (
+            typeof window.notificarMesa ===
+            "function"
+        ) {
+            window.notificarMesa(
+                mensagem,
+                duracao,
+                tipo
+            );
+
+            return;
+        }
+
+        const elemento =
+            mesa.elementos.notificacao;
+
+        if (!elemento) return;
+
+        elemento.textContent =
+            mensagem;
+
+        elemento.className =
+            `mesa-notificacao notification-${tipo} visible`;
+
+        clearTimeout(
+            mesa._notificacaoTimer
         );
 
-        if (alerta) {
-            alerta.remove();
+        mesa._notificacaoTimer =
+            setTimeout(
+                () => {
+                    elemento.classList.remove(
+                        "visible"
+                    );
+                },
+                duracao
+            );
+    }
+
+
+    /* =====================================================
+       ATUALIZAÇÃO DOS CARDS
+    ===================================================== */
+
+    function atualizarCards() {
+        if (
+            typeof mesa.renderizarCardsJogadores ===
+            "function"
+        ) {
+            mesa.renderizarCardsJogadores();
+        }
+
+        if (
+            typeof mesa.renderizarAssentos ===
+            "function"
+        ) {
+            mesa.renderizarAssentos();
         }
     }
 
 
     /* =====================================================
-       AJUDA
+       EXPORTAÇÕES
     ===================================================== */
 
-    function renderizarAjuda() {
-        const tela = mesa.elementos.tela;
+    mesa.renderizarInterface =
+        renderizarInterface;
 
-        limparElemento(tela);
+    mesa.renderizarNecessidades =
+        renderizarNecessidades;
 
-        criarBotaoVoltar(tela);
+    mesa.renderizarJogadores =
+        renderizarJogadores;
 
-        tela.appendChild(
-            criarElemento(
-                "h3",
-                [],
-                "❓ AJUDA"
-            )
-        );
+    mesa.abrirJogador =
+        abrirJogador;
 
-        const textos = [
-            "🎭 Personagem — informações do personagem.",
-            "❤️ Status — vida, mana e outros recursos.",
-            "✨ Afinidade — afinidade elemental/mágica.",
-            "🎒 Inventário — itens carregados.",
-            "🗺️ Mapa — exploração do mapa.",
-            "⚔️ Combate — estado atual da batalha.",
-            "⚡ CTE — eventos com tempo limitado.",
-            "🚨 BOSS — alerta especial do Mestre."
-        ];
+    mesa.abrirEntregaItem =
+        abrirEntregaItem;
 
-        textos.forEach((texto) => {
-            tela.appendChild(
-                criarElemento(
-                    "p",
-                    [],
-                    texto
-                )
-            );
-        });
-    }
-   /* ============================================================
-   MESA RPG ONLINE — PARTE 3/3
-   COMBATE + CTE + BOSS + CONFIGURAÇÕES +
-   ATALHOS + FINALIZAÇÃO
-============================================================ */
+    mesa.entregarItem =
+        entregarItem;
 
-(function () {
+    mesa.abrirTroca =
+        abrirTroca;
+
+    mesa.trocarItem =
+        trocarItem;
+
+    mesa.renderizarMapa =
+        renderizarMapa;
+
+    mesa.atualizarCards =
+        atualizarCards;
+
+
+    window.renderizarInterfaceMesa =
+        renderizarInterface;
+
+    window.renderizarMapaMesa =
+        renderizarMapa;
+
+    window.renderizarJogadoresMesa =
+        renderizarJogadores;
+
+    window.abrirJogadorMesa =
+        abrirJogador;
+
+    window.entregarItemMesa =
+        entregarItem;
+
+    window.abrirTrocaMesa =
+        abrirTroca;
+
+
+    /* =====================================================
+       EVENTOS INTERNOS
+    ===================================================== */
+
+    window.addEventListener(
+        "rpg:mesa:atualizar-jogadores",
+        () => {
+            atualizarCards();
+        }
+    );
+
+
+    window.addEventListener(
+        "rpg:mesa:inventario-atualizado",
+        () => {
+            atualizarCards();
+        }
+    );
+
+
+    console.log(
+        "Mesa RPG — Parte 2 carregada."
+    );
+
+})();
+})();
+/* =========================================================
+   MESA RPG ONLINE
+   mesa.js
+   PARTE 3/3
+   ---------------------------------------------------------
+   Combate
+   CTE
+   Boss
+   Configurações
+   Eventos
+   Inicialização
+   Integração
+========================================================= */
+
+(() => {
     "use strict";
 
-    const MESA = window.rpgMesa;
+    const mesa = window.rpgMesa;
 
-
-    /* ========================================================
-       COMBATE
-    ======================================================== */
-
-    function criarTelaCombate() {
-        const tela = limparTela();
-
-        if (!tela) return;
-
-        criarTitulo(
-            tela,
-            "⚔️ COMBATE",
-            "A Mesa está em modo de combate."
+    if (!mesa) {
+        console.error(
+            "Mesa RPG: as partes anteriores não foram carregadas."
         );
-
-        const aviso = document.createElement("div");
-
-        aviso.style.cssText = `
-            width:min(100%,600px);
-            padding:18px;
-            margin-top:12px;
-            border:1px solid rgba(252,165,165,.25);
-            border-radius:15px;
-            background:rgba(80,15,15,.2);
-            text-align:center;
-        `;
-
-        aviso.innerHTML = `
-            <div style="font-size:34px">⚔️</div>
-            <strong style="display:block;margin-top:8px;color:#fee2e2">
-                COMBATE ATIVO
-            </strong>
-            <small style="display:block;margin-top:6px;color:#fca5a5">
-                O Mestre controla os acontecimentos desta batalha.
-            </small>
-        `;
-
-        tela.appendChild(aviso);
-
-
-        /* Participantes */
-
-        const participantes =
-            document.createElement("div");
-
-        participantes.style.cssText = `
-            width:min(100%,600px);
-            display:grid;
-            grid-template-columns:repeat(2,1fr);
-            gap:9px;
-            margin-top:12px;
-        `;
-
-        const jogadores =
-            MESA.players || [];
-
-        jogadores.forEach(function (jogador, index) {
-            const card =
-                document.createElement("div");
-
-            card.style.cssText = `
-                padding:12px;
-                border:1px solid rgba(252,165,165,.15);
-                border-radius:11px;
-                background:rgba(0,0,0,.2);
-            `;
-
-            const nome =
-                document.createElement("strong");
-
-            nome.textContent =
-                obterNomeUsuario(jogador);
-
-            const hp =
-                document.createElement("small");
-
-            hp.textContent =
-                "❤️ 100 / 100";
-
-            hp.style.cssText = `
-                display:block;
-                margin-top:5px;
-                color:#fca5a5;
-            `;
-
-            card.appendChild(nome);
-            card.appendChild(hp);
-
-            participantes.appendChild(card);
-        });
-
-        if (!jogadores.length) {
-            const vazio =
-                document.createElement("p");
-
-            vazio.textContent =
-                "Nenhum participante carregado.";
-
-            participantes.appendChild(vazio);
-        }
-
-        tela.appendChild(participantes);
-
-        tela.appendChild(criarBotaoVoltar());
+        return;
     }
 
 
-    /* ========================================================
-       CTE
-    ======================================================== */
+    /* =====================================================
+       UTILITÁRIOS
+    ===================================================== */
 
-    function iniciarCTE(dados) {
-        dados = dados || {};
+    const criarElemento = (
+        tag,
+        classe = "",
+        texto = ""
+    ) => {
+        const elemento =
+            document.createElement(tag);
 
-        const tempo =
-            Number(
-                dados.timeLimit ??
-                dados.tempo ??
-                dados.tempoLimite ??
-                10
+        if (classe) {
+            elemento.className = classe;
+        }
+
+        if (texto !== "") {
+            elemento.textContent = texto;
+        }
+
+        return elemento;
+    };
+
+
+    const limparElemento = elemento => {
+        if (!elemento) return;
+
+        while (elemento.firstChild) {
+            elemento.removeChild(
+                elemento.firstChild
+            );
+        }
+    };
+
+
+    const primeiroValor = (
+        objeto,
+        campos,
+        padrao = null
+    ) => {
+        if (!objeto) {
+            return padrao;
+        }
+
+        for (const campo of campos) {
+            const valor =
+                objeto[campo];
+
+            if (
+                valor !== undefined &&
+                valor !== null &&
+                valor !== ""
+            ) {
+                return valor;
+            }
+        }
+
+        return padrao;
+    };
+
+
+    function obterId(objeto) {
+        return primeiroValor(
+            objeto,
+            [
+                "id",
+                "uid",
+                "user_id",
+                "userId",
+                "player_id",
+                "playerId"
+            ],
+            null
+        );
+    }
+
+
+    function obterNome(objeto) {
+        return primeiroValor(
+            objeto,
+            [
+                "name",
+                "nome",
+                "username",
+                "displayName",
+                "display_name"
+            ],
+            "Jogador"
+        );
+    }
+
+
+    function obterUsuarioAtual() {
+        if (
+            window.rpgAuth?.user
+        ) {
+            return window.rpgAuth.user;
+        }
+
+        if (
+            window.rpgAuth?.usuario
+        ) {
+            return window.rpgAuth.usuario;
+        }
+
+        if (
+            window.usuarioAtual
+        ) {
+            return window.usuarioAtual;
+        }
+
+        return null;
+    }
+
+
+    function usuarioEhMestre() {
+        const usuario =
+            obterUsuarioAtual();
+
+        if (!usuario) {
+            return false;
+        }
+
+        if (
+            window.rpgAuth?.isMaster ===
+            true
+        ) {
+            return true;
+        }
+
+        const idUsuario =
+            obterId(usuario);
+
+        const idMestre =
+            primeiroValor(
+                mesa.campanha,
+                [
+                    "master_id",
+                    "masterId",
+                    "mestre_id",
+                    "mestreId"
+                ],
+                null
             );
 
-        const opcoes =
-            Array.isArray(dados.options)
-                ? dados.options
-                : Array.isArray(dados.opcoes)
-                    ? dados.opcoes
-                    : [];
+        return (
+            idUsuario !== null &&
+            idMestre !== null &&
+            String(idUsuario) ===
+            String(idMestre)
+        );
+    }
 
-        MESA.cte = {
-            title:
+
+    function notificar(
+        mensagem,
+        duracao = 3000,
+        tipo = "normal"
+    ) {
+        if (
+            typeof window.notificarMesa ===
+            "function"
+        ) {
+            window.notificarMesa(
+                mensagem,
+                duracao,
+                tipo
+            );
+
+            return;
+        }
+
+        const elemento =
+            mesa.elementos.notificacao;
+
+        if (!elemento) return;
+
+        elemento.textContent =
+            mensagem;
+
+        elemento.className =
+            `mesa-notificacao notification-${tipo} visible`;
+
+        clearTimeout(
+            mesa._notificacaoTimer
+        );
+
+        mesa._notificacaoTimer =
+            setTimeout(
+                () => {
+                    elemento.classList.remove(
+                        "visible"
+                    );
+                },
+                duracao
+            );
+    }
+
+
+    function limparTela() {
+        const tela =
+            mesa.elementos.tela;
+
+        if (tela) {
+            limparElemento(
+                tela
+            );
+        }
+    }
+
+
+    function criarBotaoVoltar() {
+        const botao =
+            criarElemento(
+                "button",
+                "mesa-back-button",
+                "← Voltar"
+            );
+
+        botao.type =
+            "button";
+
+        botao.addEventListener(
+            "click",
+            () => {
+                if (
+                    typeof mesa.renderizarInterface ===
+                    "function"
+                ) {
+                    mesa.renderizarInterface();
+                }
+            }
+        );
+
+        return botao;
+    }
+
+
+    function definirModo(modo) {
+        mesa.modo =
+            modo;
+
+        const area =
+            mesa.elementos.mesaArea;
+
+        const status =
+            mesa.elementos.statusMesa;
+
+        if (area) {
+            area.classList.remove(
+                "mesa-state-interface",
+                "mesa-state-combat",
+                "mesa-state-cte",
+                "mesa-state-map",
+                "mesa-state-boss",
+                "mesa-state-campaign"
+            );
+
+            area.classList.add(
+                `mesa-state-${modo}`
+            );
+        }
+
+        const nomes = {
+            interface:
+                "🟢 INTERFACE",
+
+            combat:
+                "⚔️ COMBATE",
+
+            cte:
+                "🎭 CTE",
+
+            map:
+                "🗺️ MAPA",
+
+            boss:
+                "👹 BOSS",
+
+            campaign:
+                "📖 CAMPANHA"
+        };
+
+        if (status) {
+            status.textContent =
+                nomes[modo] ||
+                "🟢 INTERFACE";
+        }
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:modo",
+                {
+                    detail: {
+                        modo
+                    }
+                }
+            )
+        );
+    }
+
+
+    /* =====================================================
+       COMBATE
+    ===================================================== */
+
+    function renderizarCombate(
+        dados = null
+    ) {
+        limparTela();
+
+        mesa.telaAtual =
+            "combate";
+
+        definirModo(
+            "combat"
+        );
+
+        const tela =
+            mesa.elementos.tela;
+
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-combat-screen"
+            );
+
+
+        /* -------------------------------------------------
+           CABEÇALHO
+        ------------------------------------------------- */
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
+                "⚔️ COMBATE"
+            )
+        );
+
+        conteudo.append(
+            header
+        );
+
+
+        /* -------------------------------------------------
+           COMBATE ATIVO
+        ------------------------------------------------- */
+
+        if (
+            mesa.combate
+        ) {
+            const combateInfo =
+                criarElemento(
+                    "article",
+                    "combat-info"
+                );
+
+            combateInfo.append(
+                criarElemento(
+                    "h3",
+                    "",
+                    mesa.combate.nome ||
+                    "Combate em andamento"
+                ),
+
+                criarElemento(
+                    "p",
+                    "",
+                    mesa.combate.descricao ||
+                    "O combate está acontecendo."
+                )
+            );
+
+
+            /* ---------------------------------------------
+               PARTICIPANTES
+            --------------------------------------------- */
+
+            const participantes =
+                criarElemento(
+                    "div",
+                    "combat-participants"
+                );
+
+            mesa.jogadores.forEach(
+                jogador => {
+                    const participante =
+                        criarParticipanteCombate(
+                            jogador
+                        );
+
+                    participantes.append(
+                        participante
+                    );
+                }
+            );
+
+
+            combateInfo.append(
+                participantes
+            );
+
+            conteudo.append(
+                combateInfo
+            );
+
+
+            /* ---------------------------------------------
+               CONTROLE DO MESTRE
+            --------------------------------------------- */
+
+            if (
+                usuarioEhMestre()
+            ) {
+                const finalizar =
+                    criarElemento(
+                        "button",
+                        "mesa-danger-button",
+                        "⛔ Encerrar combate"
+                    );
+
+                finalizar.type =
+                    "button";
+
+                finalizar.addEventListener(
+                    "click",
+                    finalizarCombate
+                );
+
+                conteudo.append(
+                    finalizar
+                );
+            }
+        }
+
+        /* -------------------------------------------------
+           SEM COMBATE
+        ------------------------------------------------- */
+
+        else {
+            const vazio =
+                criarElemento(
+                    "div",
+                    "combat-empty"
+                );
+
+            vazio.append(
+                criarElemento(
+                    "div",
+                    "combat-empty-icon",
+                    "⚔️"
+                ),
+
+                criarElemento(
+                    "h3",
+                    "",
+                    "Nenhum combate ativo"
+                ),
+
+                criarElemento(
+                    "p",
+                    "",
+                    usuarioEhMestre()
+                        ? "O Mestre pode iniciar um combate."
+                        : "Aguardando o Mestre iniciar o combate."
+                )
+            );
+
+
+            if (
+                usuarioEhMestre()
+            ) {
+                const iniciar =
+                    criarElemento(
+                        "button",
+                        "mesa-primary-button",
+                        "⚔️ Iniciar combate"
+                    );
+
+                iniciar.type =
+                    "button";
+
+                iniciar.addEventListener(
+                    "click",
+                    () => {
+                        iniciarCombate();
+                    }
+                );
+
+                vazio.append(
+                    iniciar
+                );
+            }
+
+            conteudo.append(
+                vazio
+            );
+        }
+
+
+        tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function criarParticipanteCombate(
+        jogador
+    ) {
+        const item =
+            criarElement(
+                "article",
+                "combat-player"
+            );
+
+        const hp =
+            obterHPCombate(
+                jogador
+            );
+
+        const percentual =
+            hp.max > 0
+                ? Math.max(
+                    0,
+                    Math.min(
+                        100,
+                        hp.atual /
+                        hp.max *
+                        100
+                    )
+                )
+                : 0;
+
+
+        item.append(
+            criarElemento(
+                "strong",
+                "combat-player-name",
+                obterNomePersonagem(
+                    jogador
+                )
+            ),
+
+            criarElemento(
+                "span",
+                "combat-player-hp",
+                `HP ${hp.atual}/${hp.max}`
+            )
+        );
+
+
+        const barra =
+            criarElemento(
+                "div",
+                "resource-bar"
+            );
+
+        const fill =
+            criarElemento(
+                "div",
+                "resource-fill"
+            );
+
+        fill.style.width =
+            `${percentual}%`;
+
+        barra.append(
+            fill
+        );
+
+        item.append(
+            barra
+        );
+
+        return item;
+    }
+
+
+    function obterHPCombate(
+        jogador
+    ) {
+        if (
+            typeof mesa.obterHP ===
+            "function"
+        ) {
+            const hp =
+                mesa.obterHP(
+                    jogador
+                );
+
+            return {
+                atual:
+                    Number(hp.atual) || 0,
+
+                max:
+                    Number(hp.maximo) || 1
+            };
+        }
+
+        return {
+            atual: 0,
+            max: 1
+        };
+    }
+
+
+    function obterNomePersonagem(
+        jogador
+    ) {
+        const personagem =
+            jogador?.character ||
+            jogador?.personagem ||
+            {};
+
+        return primeiroValor(
+            jogador,
+            [
+                "character_name",
+                "characterName",
+                "personagem_nome",
+                "personagemNome"
+            ],
+            primeiroValor(
+                personagem,
+                [
+                    "name",
+                    "nome"
+                ],
+                "Personagem"
+            )
+        );
+    }
+
+
+    function iniciarCombate(
+        dados = {}
+    ) {
+        if (
+            !usuarioEhMestre()
+        ) {
+            notificar(
+                "Somente o Mestre pode iniciar um combate.",
+                3000,
+                "error"
+            );
+
+            return;
+        }
+
+        mesa.combate = {
+            id:
+                dados.id ||
+                `combat-${Date.now()}`,
+
+            nome:
+                dados.nome ||
+                dados.name ||
+                "Combate",
+
+            descricao:
+                dados.descricao ||
+                dados.description ||
+                "Combate iniciado pelo Mestre.",
+
+            iniciadoEm:
+                new Date().toISOString(),
+
+            participantes:
+                mesa.jogadores.map(
+                    jogador => ({
+                        id:
+                            obterId(
+                                jogador
+                            ),
+
+                        nome:
+                            obterNomePersonagem(
+                                jogador
+                            )
+                    })
+                )
+        };
+
+
+        definirModo(
+            "combat"
+        );
+
+        renderizarCombate();
+
+
+        notificar(
+            "⚔️ Combate iniciado!",
+            3000,
+            "success"
+        );
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:combate-iniciado",
+                {
+                    detail:
+                        mesa.combate
+                }
+            )
+        );
+    }
+
+
+    function finalizarCombate() {
+        if (
+            !mesa.combate
+        ) {
+            return;
+        }
+
+        const combateAnterior =
+            mesa.combate;
+
+        mesa.combate =
+            null;
+
+        definirModo(
+            "interface"
+        );
+
+        if (
+            typeof mesa.renderizarInterface ===
+            "function"
+        ) {
+            mesa.renderizarInterface();
+        }
+
+        notificar(
+            "⚔️ Combate encerrado.",
+            3000
+        );
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:combate-finalizado",
+                {
+                    detail:
+                        combateAnterior
+                }
+            )
+        );
+    }
+
+
+    mesa.renderizarCombate =
+        renderizarCombate;
+
+    mesa.iniciarCombate =
+        iniciarCombate;
+
+    mesa.finalizarCombate =
+        finalizarCombate;
+
+    window.iniciarCombateMesa =
+        iniciarCombate;
+
+    window.finalizarCombateMesa =
+        finalizarCombate;
+
+
+    /* =====================================================
+       CTE
+       -----------------------------------------------------
+       CTE = Cena / decisão / evento temporário
+    ===================================================== */
+
+    function iniciarCTE(
+        dados = {}
+    ) {
+        if (
+            !usuarioEhMestre()
+        ) {
+            notificar(
+                "Somente o Mestre pode iniciar um CTE.",
+                3000,
+                "error"
+            );
+
+            return;
+        }
+
+
+        if (
+            mesa.cteTimer
+        ) {
+            clearInterval(
+                mesa.cteTimer
+            );
+
+            mesa.cteTimer =
+                null;
+        }
+
+
+        const opcoes =
+            Array.isArray(
+                dados.options
+            )
+                ? dados.options
+                : Array.isArray(
+                    dados.opcoes
+                )
+                    ? dados.opcoes
+                    : [
+                        "Continuar",
+                        "Recuar"
+                    ];
+
+
+        const tempo =
+            Math.max(
+                1,
+                Number(
+                    dados.timeLimit ||
+                    dados.tempo ||
+                    dados.duracao ||
+                    10
+                )
+            );
+
+
+        mesa.cte = {
+            id:
+                dados.id ||
+                `cte-${Date.now()}`,
+
+            titulo:
                 dados.title ||
                 dados.titulo ||
-                "EVENTO",
+                "Evento",
 
-            description:
+            descricao:
                 dados.description ||
                 dados.descricao ||
                 "Escolha uma ação.",
+
+            options:
+                opcoes,
 
             timeLimit:
                 tempo,
@@ -2878,62 +7130,338 @@
             remaining:
                 tempo,
 
-            options:
-                opcoes,
+            active:
+                true,
 
-            active: true,
+            response:
+                null,
 
-            answered: false
+            startedAt:
+                new Date().toISOString()
         };
 
-        definirModo("cte");
 
-        criarTelaCTE();
+        definirModo(
+            "cte"
+        );
+
+        renderizarCTE();
 
         iniciarTimerCTE();
 
-        mostrarNotificacao(
-            "⚡ CTE iniciado!"
+
+        notificar(
+            "🎭 Um CTE foi iniciado!",
+            3000
+        );
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:cte-iniciado",
+                {
+                    detail:
+                        mesa.cte
+                }
+            )
         );
     }
 
-    window.rpgMesa.iniciarCTE =
-        iniciarCTE;
+
+    function renderizarCTE() {
+        limparTela();
+
+        mesa.telaAtual =
+            "cte";
+
+        definirModo(
+            "cte"
+        );
+
+        const tela =
+            mesa.elementos.tela;
 
 
-    function iniciarTimerCTE() {
-        clearInterval(MESA.cteTimer);
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-cte-screen"
+            );
 
-        if (!MESA.cte) {
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
+                "🎭 CTE"
+            )
+        );
+
+        conteudo.append(
+            header
+        );
+
+
+        if (
+            !mesa.cte ||
+            !mesa.cte.active
+        ) {
+            const vazio =
+                criarElemento(
+                    "div",
+                    "cte-empty"
+                );
+
+            vazio.append(
+                criarElemento(
+                    "div",
+                    "cte-empty-icon",
+                    "🎭"
+                ),
+
+                criarElemento(
+                    "h3",
+                    "",
+                    "Nenhum CTE ativo"
+                ),
+
+                criarElemento(
+                    "p",
+                    "",
+                    usuarioEhMestre()
+                        ? "O Mestre pode iniciar um evento."
+                        : "Aguardando um evento do Mestre."
+                )
+            );
+
+
+            if (
+                usuarioEhMestre()
+            ) {
+                const iniciar =
+                    criarElemento(
+                        "button",
+                        "mesa-primary-button",
+                        "🎭 Criar CTE"
+                    );
+
+                iniciar.type =
+                    "button";
+
+                iniciar.addEventListener(
+                    "click",
+                    () => {
+                        iniciarCTE({
+                            title:
+                                "Escolha rápida",
+
+                            description:
+                                "O grupo precisa decidir rapidamente.",
+
+                            options: [
+                                "Esquerda",
+                                "Direita"
+                            ],
+
+                            timeLimit:
+                                10
+                        });
+                    }
+                );
+
+                vazio.append(
+                    iniciar
+                );
+            }
+
+
+            conteudo.append(
+                vazio
+            );
+
+            tela.appendChild(
+                conteudo
+            );
+
             return;
         }
 
-        atualizarTimerCTE();
 
-        MESA.cteTimer =
-            setInterval(function () {
+        /* -------------------------------------------------
+           CTE ATIVO
+        ------------------------------------------------- */
 
-                if (!MESA.cte ||
-                    !MESA.cte.active) {
+        const painel =
+            criarElemento(
+                "article",
+                "mesa-cte-panel"
+            );
 
-                    clearInterval(
-                        MESA.cteTimer
+
+        painel.append(
+            criarElemento(
+                "h3",
+                "cte-title",
+                mesa.cte.titulo
+            ),
+
+            criarElemento(
+                "p",
+                "cte-description",
+                mesa.cte.descricao
+            )
+        );
+
+
+        const timer =
+            criarElemento(
+                "div",
+                "cte-timer",
+                `${mesa.cte.remaining}s`
+            );
+
+        timer.id =
+            "mesa-cte-timer";
+
+
+        painel.append(
+            timer
+        );
+
+
+        const opcoes =
+            criarElemento(
+                "div",
+                "cte-options"
+            );
+
+
+        mesa.cte.options.forEach(
+            (opcao, indice) => {
+                const botao =
+                    criarElemento(
+                        "button",
+                        "cte-option",
+                        typeof opcao ===
+                        "string"
+                            ? opcao
+                            : obterNomeOpcao(
+                                opcao
+                            )
                     );
 
-                    return;
-                }
+                botao.type =
+                    "button";
 
-                MESA.cte.remaining--;
+                botao.dataset.option =
+                    String(indice);
 
-                atualizarTimerCTE();
 
-                if (MESA.cte.remaining <= 0) {
-                    finalizarCTE(
-                        "tempo"
-                    );
-                }
+                botao.addEventListener(
+                    "click",
+                    () => {
+                        responderCTE(
+                            indice
+                        );
+                    }
+                );
 
-            }, 1000);
+
+                opcoes.append(
+                    botao
+                );
+            }
+        );
+
+
+        painel.append(
+            opcoes
+        );
+
+        conteudo.append(
+            painel
+        );
+
+        tela.appendChild(
+            conteudo
+        );
+    }
+
+
+    function obterNomeOpcao(
+        opcao
+    ) {
+        if (
+            typeof opcao ===
+            "string"
+        ) {
+            return opcao;
+        }
+
+        return primeiroValor(
+            opcao,
+            [
+                "name",
+                "nome",
+                "title",
+                "titulo"
+            ],
+            "Opção"
+        );
+    }
+
+
+    function iniciarTimerCTE() {
+        if (
+            mesa.cteTimer
+        ) {
+            clearInterval(
+                mesa.cteTimer
+            );
+        }
+
+
+        mesa.cteTimer =
+            setInterval(
+                () => {
+                    if (
+                        !mesa.cte ||
+                        !mesa.cte.active
+                    ) {
+                        clearInterval(
+                            mesa.cteTimer
+                        );
+
+                        mesa.cteTimer =
+                            null;
+
+                        return;
+                    }
+
+
+                    mesa.cte.remaining--;
+
+                    atualizarTimerCTE();
+
+
+                    if (
+                        mesa.cte.remaining <= 0
+                    ) {
+                        finalizarCTE(
+                            "tempo"
+                        );
+                    }
+                },
+                1000
+            );
     }
 
 
@@ -2943,738 +7471,1466 @@
                 "mesa-cte-timer"
             );
 
-        if (!timer || !MESA.cte) {
+        if (!timer) {
             return;
         }
 
         timer.textContent =
-            MESA.cte.remaining;
+            `${Math.max(
+                0,
+                mesa.cte?.remaining ||
+                0
+            )}s`;
     }
 
 
-    function criarTelaCTE() {
-        const tela = limparTela();
-
-        if (!tela) return;
-
-        if (!MESA.cte) {
-            criarTelaCTEIndisponivel();
+    function responderCTE(
+        indice
+    ) {
+        if (
+            !mesa.cte ||
+            !mesa.cte.active
+        ) {
             return;
         }
 
-        const cte =
-            document.createElement("div");
-
-        cte.className = "mesa-cte";
-
-        const titulo =
-            document.createElement("h2");
-
-        titulo.textContent =
-            cteTitulo();
-
-        const descricao =
-            document.createElement("p");
-
-        descricao.textContent =
-            MESA.cte.description;
-
-        const timer =
-            document.createElement("div");
-
-        timer.className =
-            "mesa-cte-timer";
-
-        timer.id =
-            "mesa-cte-timer";
-
-        timer.textContent =
-            MESA.cte.remaining;
-
-        const opcoes =
-            document.createElement("div");
-
-        opcoes.className =
-            "mesa-cte-options";
-
-        MESA.cte.options.forEach(
-            function (opcao, index) {
-
-                const botao =
-                    document.createElement("button");
-
-                botao.type = "button";
-
-                botao.className =
-                    "mesa-cte-option";
-
-                botao.dataset.optionId =
-                    opcao.id ??
-                    index;
-
-                botao.textContent =
-                    opcao.label ||
-                    opcao.nome ||
-                    `Opção ${index + 1}`;
-
-                botao.onclick =
-                    function () {
-
-                        responderCTE(
-                            opcao.id ??
-                            index
-                        );
-                    };
-
-                opcoes.appendChild(
-                    botao
-                );
-            }
-        );
-
-        cte.appendChild(titulo);
-        cte.appendChild(descricao);
-        cte.appendChild(timer);
-        cte.appendChild(opcoes);
-
-        tela.appendChild(cte);
-    }
-
-
-    function cteTitulo() {
-        return MESA.cte?.title ||
-            "EVENTO";
-    }
-
-
-    function criarTelaCTEIndisponivel() {
-        const tela = limparTela();
-
-        if (!tela) return;
-
-        criarTitulo(
-            tela,
-            "⚡ CTE",
-            "Nenhum evento de decisão rápida está ativo."
-        );
-
-        const info =
-            document.createElement("div");
-
-        info.style.cssText = `
-            margin-top:15px;
-            padding:20px;
-            width:min(100%,500px);
-            text-align:center;
-            border:1px solid rgba(234,179,8,.18);
-            border-radius:15px;
-            background:rgba(234,179,8,.04);
-        `;
-
-        info.textContent =
-            usuarioEhMestre()
-                ? "Use as configurações da Mesa para iniciar um CTE."
-                : "Aguardando o Mestre iniciar um evento.";
-
-        tela.appendChild(info);
-    }
-
-
-    function responderCTE(id) {
-        if (!MESA.cte ||
-            !MESA.cte.active) {
-
-            return;
-        }
 
         const opcao =
-            MESA.cte.options.find(
-                function (item, index) {
-                    return String(
-                        item.id ?? index
-                    ) === String(id);
-                }
-            );
+            mesa.cte.options[
+                indice
+            ];
 
-        if (!opcao) {
+
+        if (
+            opcao === undefined
+        ) {
             return;
         }
 
-        MESA.cte.answered = true;
-        MESA.cte.active = false;
 
-        clearInterval(
-            MESA.cteTimer
+        mesa.cte.response =
+            typeof opcao ===
+            "string"
+                ? opcao
+                : obterNomeOpcao(
+                    opcao
+                );
+
+
+        mesa.cte.active =
+            false;
+
+
+        finalizarCTE(
+            "resposta"
+        );
+    }
+
+
+    function finalizarCTE(
+        motivo = "manual"
+    ) {
+        if (
+            mesa.cteTimer
+        ) {
+            clearInterval(
+                mesa.cteTimer
+            );
+
+            mesa.cteTimer =
+                null;
+        }
+
+
+        if (!mesa.cte) {
+            return;
+        }
+
+
+        const resultado = {
+            ...mesa.cte,
+
+            motivo
+        };
+
+
+        mesa.cte =
+            null;
+
+
+        definirModo(
+            "interface"
         );
 
-        mostrarNotificacao(
-            "Escolha registrada: " +
-            (
-                opcao.label ||
-                opcao.nome ||
-                "Opção"
+
+        if (
+            typeof mesa.renderizarInterface ===
+            "function"
+        ) {
+            mesa.renderizarInterface();
+        }
+
+
+        let mensagem =
+            "🎭 CTE finalizado.";
+
+
+        if (
+            motivo ===
+            "tempo"
+        ) {
+            mensagem =
+                "⏰ O tempo do CTE acabou.";
+        }
+
+
+        if (
+            resultado.response
+        ) {
+            mensagem =
+                `🎭 Escolha: ${resultado.response}`;
+        }
+
+
+        notificar(
+            mensagem,
+            3500
+        );
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:cte-finalizado",
+                {
+                    detail:
+                        resultado
+                }
             )
         );
-
-        finalizarCTE("resposta");
     }
 
-    window.rpgMesa.responderCTE =
+
+    mesa.renderizarCTE =
+        renderizarCTE;
+
+    mesa.iniciarCTE =
+        iniciarCTE;
+
+    mesa.responderCTE =
         responderCTE;
 
+    mesa.finalizarCTE =
+        finalizarCTE;
 
-    function finalizarCTE(motivo) {
-        clearInterval(
-            MESA.cteTimer
-        );
+    window.iniciarCTEMesa =
+        iniciarCTE;
 
-        MESA.cteTimer = null;
-
-        if (MESA.cte) {
-            MESA.cte.active = false;
-        }
-
-        if (motivo === "tempo") {
-            mostrarNotificacao(
-                "⏱️ O tempo do CTE acabou."
-            );
-        }
-
-        MESA.cte = null;
-
-        definirModo("interface");
-
-        criarTelaInterface();
-    }
-
-    window.rpgMesa.finalizarCTE =
+    window.finalizarCTEMesa =
         finalizarCTE;
 
 
-    /* ========================================================
+    /* =====================================================
        BOSS
-    ======================================================== */
+    ===================================================== */
 
-    function ativarBoss(nome) {
-        const painel =
-            document.getElementById(
-                "online-table-panel"
+    function ativarBoss(
+        nome = "BOSS"
+    ) {
+        if (
+            !usuarioEhMestre()
+        ) {
+            notificar(
+                "Somente o Mestre pode ativar um BOSS.",
+                3000,
+                "error"
             );
 
-        if (!painel) {
             return;
         }
 
-        clearTimeout(
-            MESA.bossTimeout
+
+        finalizarBoss(
+            false
         );
 
-        definirModo("boss");
 
-        painel.classList.add(
-            "mesa-boss-flash"
+        mesa.boss = {
+            id:
+                `boss-${Date.now()}`,
+
+            nome:
+                nome ||
+                "BOSS",
+
+            ativo:
+                true,
+
+            ativadoEm:
+                new Date().toISOString()
+        };
+
+
+        definirModo(
+            "boss"
         );
+
+
+        const painel =
+            mesa.elementos.painel;
+
+        if (painel) {
+            painel.classList.add(
+                "boss-active"
+            );
+        }
+
 
         const alerta =
-            document.createElement("div");
+            criarElemento(
+                "div",
+                "mesa-boss-alert"
+            );
 
-        alerta.className =
+        alerta.id =
             "mesa-boss-alert";
 
-        const conteudo =
-            document.createElement("div");
 
-        conteudo.className =
-            "mesa-boss-alert-content";
+        alerta.append(
+            criarElemento(
+                "span",
+                "boss-alert-icon",
+                "👹"
+            ),
 
-        const titulo =
-            document.createElement("h2");
+            criarElemento(
+                "strong",
+                "",
+                "BOSS ATIVADO"
+            ),
 
-        titulo.textContent =
-            "🚨 BOSS";
-
-        const nomeBoss =
-            document.createElement("strong");
-
-        nomeBoss.textContent =
-            nome ||
-            "Inimigo poderoso";
-
-        conteudo.appendChild(titulo);
-        conteudo.appendChild(nomeBoss);
-
-        alerta.appendChild(conteudo);
-
-        painel.appendChild(alerta);
-
-        mostrarNotificacao(
-            "🚨 BOSS ENCONTRADO!"
+            criarElemento(
+                "span",
+                "boss-alert-name",
+                nome
+            )
         );
 
-        MESA.bossTimeout =
+
+        if (painel) {
+            painel.append(
+                alerta
+            );
+        }
+
+
+        notificar(
+            `👹 ${nome} apareceu!`,
+            4000,
+            "error"
+        );
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:boss-ativado",
+                {
+                    detail:
+                        mesa.boss
+                }
+            )
+        );
+
+
+        mesa.bossTimer =
             setTimeout(
-                function () {
-
-                    painel.classList.remove(
-                        "mesa-boss-flash"
-                    );
-
-                    alerta.remove();
-
-                    definirModo(
-                        "interface"
-                    );
-
-                    criarTelaInterface();
-
+                () => {
+                    finalizarBoss();
                 },
                 5000
             );
     }
 
-    window.rpgMesa.alertarBoss =
-        ativarBoss;
+
+    function finalizarBoss(
+        notificarFim = true
+    ) {
+        if (
+            mesa.bossTimer
+        ) {
+            clearTimeout(
+                mesa.bossTimer
+            );
+
+            mesa.bossTimer =
+                null;
+        }
 
 
-    /* ========================================================
-       CONFIGURAÇÕES
-    ======================================================== */
+        const bossAnterior =
+            mesa.boss;
 
-    function abrirConfiguracoesMesa() {
-        fecharConfiguracoesMesa();
+
+        mesa.boss =
+            null;
+
+
+        const alerta =
+            document.getElementById(
+                "mesa-boss-alert"
+            );
+
+        if (alerta) {
+            alerta.remove();
+        }
+
 
         const painel =
-            document.getElementById(
-                "online-table-panel"
-            );
+            mesa.elementos.painel;
 
-        if (!painel) {
-            return;
+        if (painel) {
+            painel.classList.remove(
+                "boss-active"
+            );
         }
 
-        const overlay =
-            document.createElement("div");
 
-        overlay.className =
-            "mesa-settings-overlay";
+        if (
+            mesa.modo ===
+            "boss"
+        ) {
+            definirModo(
+                "interface"
+            );
+        }
 
-        overlay.id =
-            "mesa-settings-overlay";
 
-        const caixa =
-            document.createElement("div");
+        if (
+            notificarFim &&
+            bossAnterior
+        ) {
+            notificar(
+                `👹 ${bossAnterior.nome} saiu da tela.`,
+                2500
+            );
+        }
 
-        caixa.className =
-            "mesa-settings";
 
-        const titulo =
-            document.createElement("h3");
+        if (
+            bossAnterior
+        ) {
+            window.dispatchEvent(
+                new CustomEvent(
+                    "rpg:mesa:boss-finalizado",
+                    {
+                        detail:
+                            bossAnterior
+                    }
+                )
+            );
+        }
+    }
 
-        titulo.textContent =
-            "⚙️ CONFIGURAÇÕES DA MESA";
 
-        caixa.appendChild(titulo);
+    mesa.ativarBoss =
+        ativarBoss;
 
-        if (usuarioEhMestre()) {
-            criarConfiguracoesMestre(
-                caixa
+    mesa.finalizarBoss =
+        finalizarBoss;
+
+    window.ativarBossMesa =
+        ativarBoss;
+
+    window.finalizarBossMesa =
+        finalizarBoss;
+
+
+    /* =====================================================
+       CONFIGURAÇÕES
+    ===================================================== */
+
+    function abrirConfiguracoesMesa() {
+        limparTela();
+
+        mesa.telaAtual =
+            "configuracoes";
+
+        definirModo(
+            "interface"
+        );
+
+
+        const tela =
+            mesa.elementos.tela;
+
+
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-settings-screen"
+            );
+
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
+                "⚙️ CONFIGURAÇÕES"
+            )
+        );
+
+
+        conteudo.append(
+            header
+        );
+
+
+        if (
+            usuarioEhMestre()
+        ) {
+            conteudo.append(
+                criarConfiguracoesMestre()
             );
         } else {
-            criarConfiguracoesJogador(
-                caixa
+            conteudo.append(
+                criarConfiguracoesJogador()
             );
         }
 
-        const fechar =
-            document.createElement("button");
 
-        fechar.type = "button";
-
-        fechar.textContent =
-            "Fechar";
-
-        fechar.onclick =
-            fecharConfiguracoesMesa;
-
-        caixa.appendChild(fechar);
-
-        overlay.appendChild(caixa);
-
-        painel.appendChild(overlay);
+        tela.appendChild(
+            conteudo
+        );
     }
 
-    window.rpgMesa.abrirConfiguracoes =
-        abrirConfiguracoesMesa;
 
-
-    function fecharConfiguracoesMesa() {
-        const overlay =
-            document.getElementById(
-                "mesa-settings-overlay"
+    function criarConfiguracoesMestre() {
+        const area =
+            criarElemento(
+                "div",
+                "settings-panel"
             );
 
-        if (overlay) {
-            overlay.remove();
-        }
+
+        area.append(
+            criarElemento(
+                "h3",
+                "",
+                "👑 CONTROLES DO MESTRE"
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "👥",
+                "Jogadores",
+                () => {
+                    if (
+                        typeof mesa.renderizarJogadores ===
+                        "function"
+                    ) {
+                        mesa.renderizarJogadores();
+                    }
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "🧙",
+                "Personagens",
+                () => {
+                    mesa.renderizarPersonagem();
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "❤️",
+                "Status",
+                () => {
+                    mesa.renderizarStatus();
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "🍖",
+                "Necessidades",
+                () => {
+                    if (
+                        typeof mesa.renderizarNecessidades ===
+                        "function"
+                    ) {
+                        mesa.renderizarNecessidades();
+                    }
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "🎒",
+                "Inventário",
+                () => {
+                    mesa.renderizarInventario();
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "⚔️",
+                "Iniciar combate",
+                () => {
+                    iniciarCombate();
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "🎭",
+                "Criar CTE",
+                () => {
+                    iniciarCTE({
+                        title:
+                            "DESVIE!",
+
+                        description:
+                            "Uma ameaça se aproxima. Escolha rapidamente.",
+
+                        options: [
+                            "Esquerda",
+                            "Direita"
+                        ],
+
+                        timeLimit:
+                            10
+                    });
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "🗺️",
+                "Abrir mapa",
+                () => {
+                    if (
+                        typeof mesa.renderizarMapa ===
+                        "function"
+                    ) {
+                        mesa.renderizarMapa();
+                    }
+                }
+            )
+        );
+
+
+        area.append(
+            criarBotaoConfig(
+                "👹",
+                "Testar BOSS",
+                () => {
+                    ativarBoss(
+                        "Guardião do Vazio"
+                    );
+                }
+            )
+        );
+
+
+        area.append(
+            criarElemento(
+                "h3",
+                "settings-subtitle",
+                "🖥️ Interface"
+            )
+        );
+
+
+        area.append(
+            criarControleConfiguracao(
+                "Mostrar cards dos jogadores",
+                mesa.configuracoes.mostrarCards,
+                valor => {
+                    mesa.configuracoes.mostrarCards =
+                        valor;
+
+                    mesa.atualizarListaJogadores();
+                }
+            )
+        );
+
+
+        area.append(
+            criarControleConfiguracao(
+                "Mostrar chat",
+                mesa.configuracoes.mostrarChat,
+                valor => {
+                    mesa.configuracoes.mostrarChat =
+                        valor;
+
+                    renderizarInterface();
+                }
+            )
+        );
+
+
+        area.append(
+            criarControleConfiguracao(
+                "Animações",
+                mesa.configuracoes.animacoes,
+                valor => {
+                    mesa.configuracoes.animacoes =
+                        valor;
+
+                    const painel =
+                        mesa.elementos.painel;
+
+                    if (painel) {
+                        painel.classList.toggle(
+                            "no-animations",
+                            !valor
+                        );
+                    }
+                }
+            )
+        );
+
+
+        return area;
     }
 
-    window.rpgMesa.fecharConfiguracoes =
-        fecharConfiguracoesMesa;
+
+    function criarConfiguracoesJogador() {
+        const area =
+            criarElemento(
+                "div",
+                "settings-panel"
+            );
 
 
-    function criarConfiguracoesMestre(caixa) {
-        const titulo =
-            document.createElement("p");
-
-        titulo.textContent =
-            "FERRAMENTAS DO MESTRE";
-
-        titulo.style.cssText = `
-            color:#86efac;
-            font-size:9px;
-            letter-spacing:2px;
-        `;
-
-        caixa.appendChild(titulo);
-
-
-        criarBotaoConfig(
-            caixa,
-            "👥 Jogadores",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("players");
-            }
+        area.append(
+            criarElemento(
+                "h3",
+                "",
+                "🎮 OPÇÕES DO JOGADOR"
+            )
         );
 
 
-        criarBotaoConfig(
-            caixa,
-            "👤 Personagens",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("character");
-            }
+        area.append(
+            criarControleConfiguracao(
+                "Mostrar cards",
+                mesa.configuracoes.mostrarCards,
+                valor => {
+                    mesa.configuracoes.mostrarCards =
+                        valor;
+
+                    mesa.atualizarListaJogadores();
+                }
+            )
         );
 
 
-        criarBotaoConfig(
-            caixa,
-            "❤️ Status",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("status");
-            }
+        area.append(
+            criarControleConfiguracao(
+                "Mostrar chat",
+                mesa.configuracoes.mostrarChat,
+                valor => {
+                    mesa.configuracoes.mostrarChat =
+                        valor;
+
+                    renderizarInterface();
+                }
+            )
         );
 
 
-        criarBotaoConfig(
-            caixa,
-            "🍖 Necessidades",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("needs");
-            }
+        area.append(
+            criarControleConfiguracao(
+                "Animações",
+                mesa.configuracoes.animacoes,
+                valor => {
+                    mesa.configuracoes.animacoes =
+                        valor;
+
+                    const painel =
+                        mesa.elementos.painel;
+
+                    if (painel) {
+                        painel.classList.toggle(
+                            "no-animations",
+                            !valor
+                        );
+                    }
+                }
+            )
         );
 
 
-        criarBotaoConfig(
-            caixa,
-            "🎒 Inventário",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("inventory");
-            }
+        area.append(
+            criarBotaoConfig(
+                "❓",
+                "Ajuda",
+                () => {
+                    renderizarAjuda();
+                }
+            )
         );
 
 
-        criarBotaoConfig(
-            caixa,
-            "⚔️ Combate",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("combat");
-            }
-        );
-
-
-        criarBotaoConfig(
-            caixa,
-            "⚡ Eventos / CTE",
-            function () {
-                fecharConfiguracoesMesa();
-
-                iniciarCTE({
-                    title: "DESVIE!",
-                    description:
-                        "Escolha rapidamente uma ação.",
-                    timeLimit: 5,
-                    options: [
-                        {
-                            id: "left",
-                            label: "⬅️ Esquerda"
-                        },
-                        {
-                            id: "right",
-                            label: "➡️ Direita"
-                        }
-                    ]
-                });
-            }
-        );
-
-
-        criarBotaoConfig(
-            caixa,
-            "🗺️ Mapa",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("map");
-            }
-        );
-
-
-        criarBotaoConfig(
-            caixa,
-            "🚨 Testar BOSS",
-            function () {
-                fecharConfiguracoesMesa();
-                ativarBoss(
-                    "Guardião da Mesa"
-                );
-            }
-        );
-    }
-
-
-    function criarConfiguracoesJogador(caixa) {
-        const titulo =
-            document.createElement("p");
-
-        titulo.textContent =
-            "FERRAMENTAS DO JOGADOR";
-
-        titulo.style.cssText = `
-            color:#86efac;
-            font-size:9px;
-            letter-spacing:2px;
-        `;
-
-        caixa.appendChild(titulo);
-
-
-        criarBotaoConfig(
-            caixa,
-            "🟢 Interface",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("interface");
-            }
-        );
-
-
-        criarBotaoConfig(
-            caixa,
-            "❔ Ajuda",
-            function () {
-                fecharConfiguracoesMesa();
-                abrirModulo("help");
-            }
-        );
+        return area;
     }
 
 
     function criarBotaoConfig(
-        caixa,
-        texto,
+        icone,
+        nome,
         acao
     ) {
         const botao =
-            document.createElement("button");
-
-        botao.type = "button";
-
-        botao.textContent = texto;
-
-        botao.onclick = acao;
-
-        caixa.appendChild(botao);
-    }
-
-
-    /* ========================================================
-       AUXILIARES DE DADOS
-    ======================================================== */
-
-    function obterNomeUsuario(usuario) {
-        if (!usuario) {
-            return "Jogador";
-        }
-
-        return (
-            usuario.nome ||
-            usuario.name ||
-            usuario.username ||
-            usuario.display_name ||
-            usuario.displayName ||
-            usuario.email?.split("@")[0] ||
-            "Jogador"
-        );
-    }
-
-
-    function escaparHTML(valor) {
-        return String(valor ?? "")
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-    }
-
-
-    function limparTela() {
-        const tela =
-            document.getElementById(
-                "mesa-screen"
+            criarElemento(
+                "button",
+                "settings-action"
             );
 
-        if (!tela) {
-            return null;
-        }
+        botao.type =
+            "button";
 
-        tela.innerHTML = "";
+        botao.append(
+            criarElemento(
+                "span",
+                "settings-action-icon",
+                icone
+            ),
 
-        return tela;
-    }
+            criarElemento(
+                "span",
+                "",
+                nome
+            )
+        );
 
 
-    function criarBotaoVoltar() {
-        const botao =
-            document.createElement("button");
+        botao.addEventListener(
+            "click",
+            acao
+        );
 
-        botao.type = "button";
-
-        botao.textContent =
-            "← Voltar";
-
-        botao.style.cssText = `
-            margin-top:12px;
-            padding:9px 14px;
-            border:1px solid rgba(134,239,172,.25);
-            border-radius:10px;
-            background:rgba(34,197,94,.06);
-            color:#d8e8db;
-            cursor:pointer;
-        `;
-
-        botao.onclick = function () {
-            definirModo("interface");
-            criarTelaInicialMesa();
-        };
 
         return botao;
     }
 
 
-    function criarTelaInicialMesa() {
-        const tela =
-            limparTela();
+    function criarControleConfiguracao(
+        nome,
+        valor,
+        aoAlterar
+    ) {
+        const area =
+            criarElemento(
+                "label",
+                "settings-toggle"
+            );
 
-        if (!tela) return;
-
-        const titulo =
-            document.createElement("h3");
-
-        titulo.textContent =
-            "MESA DE RPG";
 
         const texto =
-            document.createElement("p");
+            criarElemento(
+                "span",
+                "",
+                nome
+            );
 
-        texto.textContent =
-            "A mesa está pronta para a aventura.";
 
-        tela.appendChild(titulo);
-        tela.appendChild(texto);
+        const input =
+            document.createElement(
+                "input"
+            );
+
+        input.type =
+            "checkbox";
+
+        input.checked =
+            Boolean(valor);
+
+
+        input.addEventListener(
+            "change",
+            () => {
+                aoAlterar(
+                    input.checked
+                );
+            }
+        );
+
+
+        area.append(
+            texto,
+            input
+        );
+
+
+        return area;
     }
 
-
-    /* ========================================================
-       EXPORTAÇÕES
-    ======================================================== */
-
-    window.rpgMesa.criarTelaCombate =
-        criarTelaCombate;
-
-    window.rpgMesa.criarTelaCTE =
-        criarTelaCTE;
-
-    window.rpgMesa.criarTelaJogadores =
-        criarTelaJogadores;
-
-    window.rpgMesa.criarTelaInterface =
-        criarTelaInterface;
-
-    window.rpgMesa.criarTelaNecessidades =
-        criarTelaNecessidades;
-
-    window.rpgMesa.criarTelaAjuda =
-        criarTelaAjuda;
-
-    window.rpgMesa.criarTelaMapa =
-        criarTelaMapa;
-
-
-    /* ========================================================
-       ATALHOS GLOBAIS
-    ======================================================== */
-
-    window.iniciarCTE =
-        iniciarCTE;
-
-    window.responderCTE =
-        responderCTE;
-
-    window.finalizarCTE =
-        finalizarCTE;
-
-    window.ativarBoss =
-        ativarBoss;
-
-    window.alertarBoss =
-        ativarBoss;
-
-    window.abrirModuloMesa =
-        abrirModulo;
 
     window.abrirConfiguracoesMesa =
         abrirConfiguracoesMesa;
 
-    window.fecharConfiguracoesMesa =
-        fecharConfiguracoesMesa;
+    mesa.abrirConfiguracoes =
+        abrirConfiguracoesMesa;
 
 
-    /* ========================================================
-       INICIALIZAÇÃO FINAL
-    ======================================================== */
+    /* =====================================================
+       AJUDA
+    ===================================================== */
+
+    function renderizarAjuda() {
+        limparTela();
+
+        mesa.telaAtual =
+            "ajuda";
+
+        const tela =
+            mesa.elementos.tela;
+
+
+        const conteudo =
+            criarElemento(
+                "section",
+                "mesa-module-screen"
+            );
+
+
+        const header =
+            criarElemento(
+                "div",
+                "module-screen-header"
+            );
+
+
+        header.append(
+            criarBotaoVoltar(),
+
+            criarElemento(
+                "h2",
+                "",
+                "❓ AJUDA"
+            )
+        );
+
+
+        conteudo.append(
+            header
+        );
+
+
+        const itens = [
+            [
+                "🧙",
+                "Personagem",
+                "Visualize os dados básicos dos personagens."
+            ],
+
+            [
+                "❤️",
+                "Status",
+                "Consulte HP e recursos atuais."
+            ],
+
+            [
+                "✦",
+                "Afinidade",
+                "Veja a afinidade de cada personagem."
+            ],
+
+            [
+                "🎒",
+                "Inventário",
+                "Consulte os itens carregados."
+            ],
+
+            [
+                "🗺️",
+                "Mapa",
+                "Explore o mapa e selecione regiões ou portais."
+            ],
+
+            [
+                "⚔️",
+                "Combate",
+                "Acompanhe os combates ativos."
+            ],
+
+            [
+                "🎭",
+                "CTE",
+                "Responda eventos que exigem uma decisão."
+            ]
+        ];
+
+
+        const lista =
+            criarElemento(
+                "div",
+                "help-list"
+            );
+
+
+        itens.forEach(
+            ([icone, titulo, descricao]) => {
+                const item =
+                    criarElemento(
+                        "article",
+                        "help-item"
+                    );
+
+
+                item.append(
+                    criarElemento(
+                        "span",
+                        "help-icon",
+                        icone
+                    ),
+
+                    criarElemento(
+                        "strong",
+                        "",
+                        titulo
+                    ),
+
+                    criarElemento(
+                        "p",
+                        "",
+                        descricao
+                    )
+                );
+
+
+                lista.append(
+                    item
+                );
+            }
+        );
+
+
+        conteudo.append(
+            lista
+        );
+
+
+        tela.appendChild(
+            conteudo
+        );
+
+
+        definirModo(
+            "interface"
+        );
+    }
+
+
+    mesa.renderizarAjuda =
+        renderizarAjuda;
+
+
+    /* =====================================================
+       ATUALIZAÇÃO DOS DADOS
+    ===================================================== */
+
+    function atualizarMesa() {
+        const campanha =
+            obterCampanhaAtual();
+
+
+        if (campanha) {
+            mesa.campanha =
+                campanha;
+        }
+
+
+        if (
+            mesa.campanha
+        ) {
+            mesa.mestre =
+                obterMestreDaCampanha(
+                    mesa.campanha
+                );
+        }
+
+
+        if (
+            typeof mesa.carregarJogadoresMesa ===
+            "function"
+        ) {
+            mesa.carregarJogadoresMesa();
+        }
+
+
+        if (
+            typeof mesa.atualizarListaJogadores ===
+            "function"
+        ) {
+            mesa.atualizarListaJogadores();
+        }
+
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:atualizada",
+                {
+                    detail: {
+                        campanha:
+                            mesa.campanha,
+
+                        jogadores:
+                            mesa.jogadores
+                    }
+                }
+            )
+        );
+    }
+
+
+    function obterCampanhaAtual() {
+        if (
+            typeof window.obterCampanhaAtiva ===
+            "function"
+        ) {
+            try {
+                const campanha =
+                    window.obterCampanhaAtiva();
+
+                if (campanha) {
+                    return campanha;
+                }
+            } catch (erro) {
+                console.warn(
+                    "Erro ao obter campanha:",
+                    erro
+                );
+            }
+        }
+
+
+        if (
+            window.rpgAuth?.campaign
+        ) {
+            return window.rpgAuth.campaign;
+        }
+
+
+        if (
+            window.rpgAuth?.campanha
+        ) {
+            return window.rpgAuth.campanha;
+        }
+
+
+        if (
+            window.campanhaAtual
+        ) {
+            return window.campanhaAtual;
+        }
+
+
+        return mesa.campanha;
+    }
+
+
+    function obterMestreDaCampanha(
+        campanha
+    ) {
+        if (!campanha) {
+            return null;
+        }
+
+
+        const mestre =
+            campanha.master ||
+            campanha.mestre ||
+            campanha.masterData ||
+            campanha.mestreData;
+
+
+        if (mestre) {
+            return mestre;
+        }
+
+
+        const id =
+            primeiroValor(
+                campanha,
+                [
+                    "master_id",
+                    "masterId",
+                    "mestre_id",
+                    "mestreId"
+                ],
+                null
+            );
+
+
+        if (
+            id !== null &&
+            Array.isArray(
+                campanha.members
+            )
+        ) {
+            return campanha.members.find(
+                membro =>
+                    String(
+                        obterId(
+                            membro
+                        )
+                    ) ===
+                    String(id)
+            ) || null;
+        }
+
+
+        return null;
+    }
+
+
+    mesa.atualizarMesa =
+        atualizarMesa;
+
+
+    /* =====================================================
+       INICIALIZAÇÃO
+    ===================================================== */
+
+    function iniciarMesa() {
+        if (
+            mesa.inicializada
+        ) {
+            return mesa;
+        }
+
+
+        console.log(
+            "Mesa RPG: iniciando..."
+        );
+
+
+        mesa.campanha =
+            obterCampanhaAtual();
+
+
+        if (
+            mesa.campanha
+        ) {
+            mesa.mestre =
+                obterMestreDaCampanha(
+                    mesa.campanha
+                );
+        }
+
+
+        if (
+            typeof mesa.carregarJogadoresMesa ===
+            "function"
+        ) {
+            mesa.carregarJogadoresMesa();
+        }
+
+
+        /* -------------------------------------------------
+           CRIA A INTERFACE
+        ------------------------------------------------- */
+
+        if (
+            typeof mesa.criarInterfaceMesa ===
+            "function"
+        ) {
+            mesa.criarInterfaceMesa();
+        }
+
+
+        mesa.inicializada =
+            true;
+
+
+        /* -------------------------------------------------
+           CONFIGURAÇÕES VISUAIS
+        ------------------------------------------------- */
+
+        const painel =
+            mesa.elementos.painel;
+
+        if (painel) {
+            painel.classList.toggle(
+                "no-animations",
+                !mesa.configuracoes.animacoes
+            );
+        }
+
+
+        /* -------------------------------------------------
+           EVENTO
+        ------------------------------------------------- */
+
+        window.dispatchEvent(
+            new CustomEvent(
+                "rpg:mesa:iniciada",
+                {
+                    detail:
+                        mesa
+                }
+            )
+        );
+
+
+        console.log(
+            "Mesa RPG: iniciada com sucesso.",
+            {
+                campanha:
+                    mesa.campanha,
+
+                jogadores:
+                    mesa.jogadores.length
+            }
+        );
+
+
+        return mesa;
+    }
+
+
+    window.iniciarMesa =
+        iniciarMesa;
+
+
+    mesa.iniciar =
+        iniciarMesa;
+
+
+    /* =====================================================
+       ATUALIZAÇÃO AUTOMÁTICA
+    ===================================================== */
+
+    function atualizarInterfaceMesa() {
+        if (
+            !mesa.inicializada
+        ) {
+            return;
+        }
+
+
+        atualizarMesa();
+
+
+        if (
+            mesa.telaAtual ===
+            "inicio"
+        ) {
+            return;
+        }
+
+
+        if (
+            mesa.telaAtual ===
+            "interface"
+        ) {
+            renderizarInterfaceSeguro();
+        }
+    }
+
+
+    function renderizarInterfaceSeguro() {
+        if (
+            typeof mesa.renderizarInterface ===
+            "function"
+        ) {
+            mesa.renderizarInterface();
+        }
+    }
+
+
+    window.atualizarMesaRPG =
+        atualizarInterfaceMesa;
+
+
+    /* =====================================================
+       EVENTOS EXTERNOS
+    ===================================================== */
+
+    window.addEventListener(
+        "rpg:personagem-confirmado",
+        () => {
+            atualizarMesa();
+        }
+    );
+
+
+    window.addEventListener(
+        "rpg:personagem-atualizado",
+        () => {
+            atualizarMesa();
+        }
+    );
+
+
+    window.addEventListener(
+        "rpg:status-atualizado",
+        () => {
+            atualizarMesa();
+        }
+    );
+
+
+    window.addEventListener(
+        "rpg:inventario-atualizado",
+        () => {
+            atualizarMesa();
+        }
+    );
+
+
+    window.addEventListener(
+        "rpg:jogadores-atualizados",
+        () => {
+            atualizarMesa();
+        }
+    );
+
+
+    /* =====================================================
+       API PÚBLICA DA MESA
+    ===================================================== */
+
+    mesa.api = {
+        iniciar:
+            iniciarMesa,
+
+        atualizar:
+            atualizarMesa,
+
+        abrirModulo:
+            mesa.abrirModulo,
+
+        abrirJogador:
+            mesa.abrirJogador,
+
+        iniciarCombate:
+            iniciarCombate,
+
+        finalizarCombate:
+            finalizarCombate,
+
+        iniciarCTE:
+            iniciarCTE,
+
+        responderCTE:
+            responderCTE,
+
+        finalizarCTE:
+            finalizarCTE,
+
+        ativarBoss:
+            ativarBoss,
+
+        finalizarBoss:
+            finalizarBoss,
+
+        abrirConfiguracoes:
+            abrirConfiguracoesMesa
+    };
+
+
+    /* =====================================================
+       INICIALIZAÇÃO DOM
+    ===================================================== */
 
     function iniciarQuandoPronto() {
-        if (typeof window.iniciarMesa === "function") {
-            window.iniciarMesa();
+        if (
+            mesa.inicializada
+        ) {
+            return;
+        }
+
+
+        try {
+            iniciarMesa();
+        } catch (erro) {
+            console.error(
+                "Mesa RPG: erro durante inicialização.",
+                erro
+            );
+
+            notificar(
+                "Não foi possível carregar completamente a mesa.",
+                5000,
+                "error"
+            );
         }
     }
 
 
     if (
-        document.readyState === "loading"
+        document.readyState ===
+        "loading"
     ) {
         document.addEventListener(
             "DOMContentLoaded",
-            iniciarQuandoPronto
+            iniciarQuandoPronto,
+            {
+                once: true
+            }
         );
     } else {
         iniciarQuandoPronto();
     }
+
+
+    /* =====================================================
+       ATALHOS GLOBAIS
+    ===================================================== */
+
+    window.mesaRPG = {
+        abrir:
+            iniciarMesa,
+
+        atualizar:
+            atualizarMesa,
+
+        combate:
+            iniciarCombate,
+
+        encerrarCombate:
+            finalizarCombate,
+
+        cte:
+            iniciarCTE,
+
+        boss:
+            ativarBoss
+    };
+
+
+    console.log(
+        "Mesa RPG — Parte 3 carregada."
+    );
 
 })();
