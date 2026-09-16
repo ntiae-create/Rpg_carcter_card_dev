@@ -1,6 +1,6 @@
 /* =========================================================
    MESA ONLINE — RPG
-   CSS DEFINITIVO — 8 JOGADORES
+   VISUAL PRINCIPAL
 ========================================================= */
 
 * {
@@ -8,37 +8,34 @@
 }
 
 :root {
-    --bg: #03050a;
-    --panel: #071026;
-    --panel-2: #0a1430;
-    --panel-3: #0d1a3b;
+    --bg: #05040a;
+    --bg-2: #0b0812;
+    --panel: #100c18;
+    --panel-2: #151020;
 
-    --border: #24345c;
-    --border-light: #344878;
+    --purple: #8b5cf6;
+    --purple-light: #c4b5fd;
+    --purple-dark: #5b21b6;
 
-    --purple: #7c3aed;
-    --purple-light: #a78bfa;
-    --purple-soft: rgba(124, 58, 237, 0.14);
-
-    --blue: #2563eb;
-    --blue-light: #60a5fa;
-
-    --green: #22c55e;
-    --green-soft: rgba(34, 197, 94, 0.12);
-
-    --yellow: #eab308;
-    --yellow-soft: rgba(234, 179, 8, 0.12);
-
+    --blue: #38bdf8;
+    --green: #4ade80;
     --red: #ef4444;
-    --red-soft: rgba(239, 68, 68, 0.12);
+    --yellow: #facc15;
 
-    --text: #f5f7ff;
-    --text-soft: #aeb8d0;
-    --text-muted: #69758f;
+    --text: #f5f3ff;
+    --muted: #91899f;
+    --muted-2: #625b6d;
+
+    --border: rgba(139, 92, 246, 0.28);
+    --border-soft: rgba(255, 255, 255, 0.07);
+
+    --shadow:
+        0 20px 60px rgba(0, 0, 0, 0.65);
 }
 
+
 /* =========================================================
-   BODY
+   BASE
 ========================================================= */
 
 html,
@@ -51,11 +48,16 @@ body {
 
     background:
         radial-gradient(
-            circle at top,
-            #101b45 0%,
-            #050814 42%,
-            #03050a 100%
-        );
+            circle at 50% -10%,
+            rgba(91, 33, 182, 0.32),
+            transparent 42%
+        ),
+        radial-gradient(
+            circle at 10% 90%,
+            rgba(56, 189, 248, 0.05),
+            transparent 35%
+        ),
+        var(--bg);
 
     color: var(--text);
 
@@ -65,10 +67,6 @@ body {
         sans-serif;
 }
 
-body {
-    min-height: 100vh;
-    overflow-x: hidden;
-}
 
 /* =========================================================
    MESA
@@ -80,21 +78,18 @@ body {
     width: 100%;
     min-height: 100vh;
 
-    padding: 10px;
+    padding: 12px;
 
     overflow-x: hidden;
-
-    transition:
-        background 0.35s ease,
-        box-shadow 0.35s ease;
 }
+
 
 /* =========================================================
    HEADER
 ========================================================= */
 
 #mesa-header {
-    width: 100%;
+    position: relative;
 
     display: flex;
 
@@ -103,24 +98,25 @@ body {
 
     gap: 12px;
 
-    margin-bottom: 10px;
+    width: 100%;
+
+    margin-bottom: 12px;
 
     padding: 12px 14px;
 
-    border:
-        1px solid var(--border);
-
-    border-radius: 14px;
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
 
     background:
         linear-gradient(
-            145deg,
-            rgba(13, 26, 59, 0.95),
-            rgba(5, 10, 25, 0.95)
+            135deg,
+            rgba(21, 16, 32, 0.96),
+            rgba(8, 6, 13, 0.96)
         );
 
-    box-shadow:
-        0 10px 30px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow);
+
+    backdrop-filter: blur(12px);
 }
 
 .mesa-header-info {
@@ -132,132 +128,107 @@ body {
 
     margin-bottom: 3px;
 
-    color: var(--text-muted);
-
     font-size: 8px;
 
     letter-spacing: 2px;
 
     text-transform: uppercase;
+
+    color: var(--muted);
 }
 
-.mesa-campanha h1 {
+#mesa-campanha-nome {
     margin: 0;
-
-    max-width: 55vw;
 
     overflow: hidden;
 
-    color: var(--text);
-
     font-size: 17px;
+    font-weight: 700;
 
     white-space: nowrap;
-
     text-overflow: ellipsis;
 }
 
-.mesa-mestre {
-    margin-top: 4px;
-
-    color: var(--text-soft);
+#mesa-mestre-nome {
+    margin-top: 3px;
 
     font-size: 10px;
+
+    color: var(--muted);
 }
 
-.mesa-mestre strong {
-    color: var(--purple-light);
-}
 
 /* =========================================================
-   ESTADO DA MESA
+   ESTADO
 ========================================================= */
 
 #mesa-estado {
-    flex-shrink: 0;
-
     display: flex;
 
     align-items: center;
 
-    gap: 6px;
+    gap: 7px;
+
+    flex-shrink: 0;
 
     padding: 7px 9px;
 
-    border-radius: 10px;
+    border-radius: 20px;
 
-    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.035);
 
-    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--border-soft);
 }
 
 #mesa-estado-indicador {
-    width: 8px;
-    height: 8px;
+    width: 7px;
+    height: 7px;
 
     border-radius: 50%;
 
     background: var(--green);
 
     box-shadow:
-        0 0 10px rgba(34, 197, 94, 0.7);
+        0 0 10px rgba(74, 222, 128, 0.8);
 }
 
 #mesa-estado-texto {
-    color: var(--text-soft);
-
     font-size: 9px;
 
-    font-weight: bold;
-
-    letter-spacing: 0.8px;
+    color: #d8d1e4;
 }
 
-/* estados */
-
-#mesa-estado.estado-espera
-#mesa-estado-indicador {
-    background: var(--yellow);
-}
-
-#mesa-estado.estado-combate
-#mesa-estado-indicador {
-    background: var(--red);
-}
-
-#mesa-estado.estado-cte
-#mesa-estado-indicador {
-    background: var(--purple-light);
-}
 
 /* =========================================================
-   LAYOUT PRINCIPAL
+   LAYOUT
 ========================================================= */
 
 #mesa-layout {
-    width: 100%;
-
     display: flex;
 
     flex-direction: column;
 
-    gap: 10px;
+    width: 100%;
+
+    gap: 12px;
 }
 
+
 /* =========================================================
-   ASSENTOS
+   ÁREA DOS 8 JOGADORES
 ========================================================= */
 
 #assentos-jogadores {
-    width: 100%;
-
     display: grid;
 
     grid-template-columns:
         repeat(2, minmax(0, 1fr));
 
     gap: 8px;
+
+    width: 100%;
 }
+
 
 /* =========================================================
    CARD DO JOGADOR
@@ -266,9 +237,7 @@ body {
 .jogador-card {
     position: relative;
 
-    min-width: 0;
-
-    min-height: 92px;
+    min-height: 74px;
 
     padding: 10px;
 
@@ -276,102 +245,121 @@ body {
 
     align-items: center;
 
-    gap: 8px;
+    overflow: hidden;
 
-    border:
-        1px solid var(--border);
+    border-radius: 15px;
 
-    border-radius: 14px;
+    border: 1px solid var(--border-soft);
 
     background:
         linear-gradient(
             145deg,
-            rgba(13, 26, 59, 0.95),
-            rgba(6, 11, 27, 0.95)
+            rgba(24, 18, 35, 0.96),
+            rgba(10, 8, 15, 0.96)
         );
 
     box-shadow:
-        inset 0 0 20px rgba(124, 58, 237, 0.025);
-
-    overflow: hidden;
+        0 8px 25px rgba(0, 0, 0, 0.35);
 
     transition:
         transform 0.2s ease,
         border-color 0.2s ease,
-        box-shadow 0.2s ease,
-        background 0.2s ease;
+        box-shadow 0.2s ease;
 }
+
+
+/* brilho lateral */
 
 .jogador-card::before {
     content: "";
 
     position: absolute;
 
-    inset: 0;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
 
-    pointer-events: none;
+    width: 2px;
+
+    border-radius: 5px;
 
     background:
         linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.035),
-            transparent 45%
+            to bottom,
+            transparent,
+            var(--purple),
+            transparent
         );
+
+    opacity: 0.45;
 }
+
+
+/* jogador confirmado */
 
 .jogador-card.confirmado {
     border-color:
-        rgba(34, 197, 94, 0.45);
+        rgba(139, 92, 246, 0.45);
 
     box-shadow:
-        0 0 18px rgba(34, 197, 94, 0.08);
+        0 8px 28px rgba(91, 33, 182, 0.18);
 }
 
-.jogador-card.vazio {
-    opacity: 0.72;
+.jogador-card.confirmado::before {
+    opacity: 1;
 }
+
+
+/* vaga */
+
+.jogador-card.vazio {
+    opacity: 0.62;
+}
+
 
 /* =========================================================
    NÚMERO DO ASSENTO
 ========================================================= */
 
 .jogador-numero {
-    position: relative;
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     flex-shrink: 0;
 
     width: 30px;
     height: 30px;
 
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
+    margin-right: 9px;
 
     border-radius: 9px;
 
-    border:
-        1px solid var(--border-light);
-
     background:
-        rgba(124, 58, 237, 0.08);
+        linear-gradient(
+            145deg,
+            rgba(139, 92, 246, 0.18),
+            rgba(255, 255, 255, 0.025)
+        );
+
+    border: 1px solid rgba(139, 92, 246, 0.22);
 
     color: var(--purple-light);
 
-    font-size: 10px;
+    font-size: 9px;
 
-    font-weight: bold;
+    font-weight: 700;
 
     letter-spacing: 1px;
 }
 
+
 /* =========================================================
-   CONTEÚDO DO CARD
+   CONTEÚDO DO JOGADOR
 ========================================================= */
 
 .jogador-card-conteudo {
-    position: relative;
-
     min-width: 0;
 
     flex: 1;
@@ -380,63 +368,48 @@ body {
 .jogador-nome {
     display: block;
 
-    width: 100%;
-
     overflow: hidden;
-
-    color: var(--text);
 
     font-size: 11px;
 
-    font-weight: bold;
-
     white-space: nowrap;
-
     text-overflow: ellipsis;
 }
 
 .jogador-classe {
     display: block;
 
-    width: 100%;
-
     margin-top: 3px;
 
     overflow: hidden;
 
-    color: var(--text-muted);
-
     font-size: 8px;
 
     white-space: nowrap;
-
     text-overflow: ellipsis;
+
+    color: var(--muted);
 }
+
+
+/* =========================================================
+   STATUS MINI
+========================================================= */
 
 .jogador-status {
     display: flex;
 
-    gap: 5px;
+    gap: 8px;
 
-    margin-top: 7px;
+    margin-top: 6px;
 }
 
 .status-mini {
-    display: inline-flex;
+    font-size: 8px;
 
-    align-items: center;
-
-    padding: 3px 5px;
-
-    border-radius: 6px;
-
-    background:
-        rgba(255, 255, 255, 0.04);
-
-    color: var(--text-soft);
-
-    font-size: 7px;
+    color: #bdb5c8;
 }
+
 
 /* =========================================================
    TELA CENTRAL
@@ -447,41 +420,96 @@ body {
 
     width: 100%;
 
-    min-height: 420px;
+    min-height: 430px;
 
     display: flex;
 
     flex-direction: column;
 
-    border:
-        1px solid var(--border-light);
+    overflow: hidden;
 
-    border-radius: 18px;
+    border-radius: 22px;
+
+    border: 1px solid
+        rgba(139, 92, 246, 0.35);
 
     background:
         radial-gradient(
-            circle at center,
-            rgba(37, 99, 235, 0.06),
-            transparent 58%
+            circle at 50% 25%,
+            rgba(91, 33, 182, 0.14),
+            transparent 48%
         ),
         linear-gradient(
             145deg,
-            rgba(10, 20, 48, 0.98),
-            rgba(4, 8, 19, 0.98)
+            #100b18,
+            #07060b
         );
 
     box-shadow:
-        0 15px 45px rgba(0, 0, 0, 0.3),
-        inset 0 0 50px rgba(124, 58, 237, 0.025);
-
-    overflow: hidden;
+        0 25px 70px rgba(0, 0, 0, 0.65),
+        inset 0 0 50px rgba(139, 92, 246, 0.035);
 }
+
+
+/* =========================================================
+   LINHAS DECORATIVAS DA TELA
+========================================================= */
+
+#tela-mesa::before {
+    content: "";
+
+    position: absolute;
+
+    top: 0;
+    left: 18%;
+    right: 18%;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(196, 181, 253, 0.7),
+            transparent
+        );
+
+    opacity: 0.6;
+}
+
+#tela-mesa::after {
+    content: "";
+
+    position: absolute;
+
+    width: 250px;
+    height: 250px;
+
+    left: 50%;
+    top: 45%;
+
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.055);
+
+    box-shadow:
+        0 0 80px rgba(139, 92, 246, 0.04);
+
+    pointer-events: none;
+}
+
 
 /* =========================================================
    HEADER DA TELA
 ========================================================= */
 
 #tela-mesa-header {
+    position: relative;
+    z-index: 2;
+
     display: flex;
 
     align-items: center;
@@ -489,10 +517,10 @@ body {
 
     gap: 10px;
 
-    padding: 12px 14px;
+    padding: 13px 16px;
 
     border-bottom:
-        1px solid rgba(255, 255, 255, 0.06);
+        1px solid rgba(255, 255, 255, 0.055);
 
     background:
         rgba(0, 0, 0, 0.15);
@@ -501,68 +529,63 @@ body {
 .tela-label {
     display: block;
 
-    margin-bottom: 3px;
+    font-size: 8px;
 
-    color: var(--text-muted);
-
-    font-size: 7px;
+    text-transform: uppercase;
 
     letter-spacing: 2px;
 
-    text-transform: uppercase;
+    color: var(--muted);
 }
 
 #tela-mesa-titulo {
-    margin: 0;
+    margin: 3px 0 0;
 
-    color: var(--text);
-
-    font-size: 14px;
+    font-size: 15px;
 }
+
+
+/* =========================================================
+   CONEXÃO
+========================================================= */
 
 #mesa-conexao {
-    flex-shrink: 0;
+    font-size: 8px;
 
-    padding: 5px 7px;
-
-    border-radius: 7px;
-
-    background:
-        rgba(255, 255, 255, 0.04);
-
-    color: var(--text-muted);
-
-    font-size: 7px;
+    color: var(--muted);
 }
 
-#mesa-conexao.conexao-conectada {
+.conexao-conectada {
     color: var(--green);
 }
 
-#mesa-conexao.conexao-desconectada {
-    color: var(--yellow);
+.conexao-desconectada {
+    color: var(--red);
 }
 
+
 /* =========================================================
-   CONTEÚDO DOS MÓDULOS
+   CONTEÚDO CENTRAL
 ========================================================= */
 
 #tela-mesa-conteudo {
     position: relative;
+    z-index: 1;
 
     flex: 1;
 
-    min-height: 340px;
-
-    padding: 14px;
+    padding: 18px;
 
     overflow-y: auto;
 }
 
+
+/* =========================================================
+   MÓDULOS
+========================================================= */
+
 .modulo-mesa {
     width: 100%;
-
-    min-height: 280px;
 }
 
 .modulo-mesa[hidden] {
@@ -570,621 +593,281 @@ body {
 }
 
 .modulo-placeholder {
-    min-height: 280px;
+    min-height: 340px;
 
     display: flex;
 
     flex-direction: column;
 
     align-items: center;
-
     justify-content: center;
-
-    gap: 8px;
 
     text-align: center;
 
-    color: var(--text-muted);
+    color: var(--muted);
 }
 
 .modulo-icone {
-    font-size: 36px;
+    display: flex;
 
-    opacity: 0.7;
+    align-items: center;
+    justify-content: center;
+
+    width: 72px;
+    height: 72px;
+
+    margin-bottom: 15px;
+
+    border-radius: 50%;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.35);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(139, 92, 246, 0.18),
+            rgba(139, 92, 246, 0.02)
+        );
+
+    font-size: 30px;
+
+    box-shadow:
+        0 0 35px rgba(139, 92, 246, 0.12);
 }
 
-.modulo-placeholder strong {
-    color: var(--text-soft);
+.modulo-placeholder h3 {
+    margin: 0 0 6px;
 
-    font-size: 12px;
+    color: var(--text);
+
+    font-size: 17px;
 }
 
-.modulo-placeholder span {
-    max-width: 260px;
+.modulo-placeholder p {
+    max-width: 280px;
 
-    font-size: 9px;
+    margin: 0;
 
-    line-height: 1.5;
+    font-size: 10px;
+
+    line-height: 1.6;
+
+    color: var(--muted);
 }
+
 
 /* =========================================================
    NAVEGAÇÃO DOS MÓDULOS
 ========================================================= */
 
 #mesa-modulos {
+    position: relative;
+    z-index: 5;
+
+    display: flex;
+
+    gap: 5px;
+
     width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 6px;
-
-    margin-top: 0;
 
     padding: 8px;
 
-    border:
-        1px solid var(--border);
+    overflow-x: auto;
 
-    border-radius: 14px;
+    border-top:
+        1px solid rgba(255, 255, 255, 0.055);
 
     background:
-        rgba(7, 16, 38, 0.95);
+        rgba(5, 4, 9, 0.9);
+
+    scrollbar-width: none;
+}
+
+#mesa-modulos::-webkit-scrollbar {
+    display: none;
 }
 
 .modulo-btn {
-    min-height: 44px;
+    flex: 0 0 auto;
 
-    border:
-        1px solid transparent;
+    min-width: 58px;
 
-    border-radius: 9px;
+    padding: 9px 8px;
 
-    background:
-        rgba(255, 255, 255, 0.025);
+    border: 1px solid transparent;
 
-    color: var(--text-muted);
+    border-radius: 10px;
 
-    font-size: 9px;
+    background: transparent;
 
-    font-weight: bold;
+    color: var(--muted);
+
+    font-size: 8px;
 
     cursor: pointer;
 
     transition:
         background 0.2s ease,
-        border-color 0.2s ease,
         color 0.2s ease,
-        transform 0.2s ease;
+        border-color 0.2s ease;
 }
 
 .modulo-btn:hover {
-    background:
-        rgba(124, 58, 237, 0.08);
+    color: var(--text);
 
-    color: var(--text-soft);
+    background:
+        rgba(255, 255, 255, 0.035);
 }
 
 .modulo-btn.ativo {
-    border-color:
-        rgba(124, 58, 237, 0.55);
-
-    background:
-        var(--purple-soft);
-
     color: var(--purple-light);
 
-    box-shadow:
-        0 0 14px rgba(124, 58, 237, 0.08);
-}
-
-/* =========================================================
-   INTERFACE
-========================================================= */
-
-#modulo-interface {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 12px;
-}
-
-.interface-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 8px;
-}
-
-.interface-box {
-    padding: 12px;
-
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.07);
+    border-color:
+        rgba(139, 92, 246, 0.3);
 
     background:
-        rgba(255, 255, 255, 0.025);
+        rgba(139, 92, 246, 0.12);
+
+    box-shadow:
+        0 0 18px rgba(139, 92, 246, 0.08);
 }
 
-.interface-box span {
-    display: block;
-
-    margin-bottom: 5px;
-
-    color: var(--text-muted);
-
-    font-size: 8px;
-}
-
-.interface-box strong {
-    color: var(--text);
-
-    font-size: 13px;
-}
 
 /* =========================================================
    PERSONAGEM
 ========================================================= */
 
-.personagem-detalhes {
-    display: flex;
+#modulo-personagem,
+#modulo-status,
+#modulo-afinidade,
+#modulo-inventario {
+    max-width: 650px;
 
-    flex-direction: column;
-
-    gap: 10px;
+    margin: 0 auto;
 }
 
-.personagem-banner {
-    padding: 15px;
-
-    border-radius: 13px;
-
-    border:
-        1px solid var(--border);
-
-    background:
-        linear-gradient(
-            135deg,
-            rgba(124, 58, 237, 0.12),
-            rgba(37, 99, 235, 0.04)
-        );
-}
-
-.personagem-banner h3 {
-    margin: 0;
+#modulo-personagem h3,
+#modulo-status h3,
+#modulo-afinidade h3,
+#modulo-inventario h3 {
+    margin-top: 0;
 
     font-size: 18px;
 }
 
-.personagem-banner p {
-    margin: 5px 0 0;
+#modulo-personagem p,
+#modulo-status p,
+#modulo-afinidade p,
+#modulo-inventario p {
+    color: var(--muted);
 
-    color: var(--text-muted);
+    font-size: 10px;
 
-    font-size: 9px;
+    line-height: 1.7;
 }
 
-/* =========================================================
-   STATUS
-========================================================= */
-
-.status-barras {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 10px;
-}
-
-.status-linha {
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 5px;
-}
-
-.status-linha-header {
-    display: flex;
-
-    justify-content: space-between;
-
-    color: var(--text-soft);
-
-    font-size: 9px;
-}
-
-.status-bar {
-    width: 100%;
-    height: 8px;
-
-    border-radius: 20px;
-
-    background:
-        rgba(255, 255, 255, 0.06);
-
-    overflow: hidden;
-}
-
-.status-bar-fill {
-    width: 50%;
-    height: 100%;
-
-    border-radius: inherit;
-
-    background:
-        linear-gradient(
-            90deg,
-            var(--purple),
-            var(--purple-light)
-        );
-
-    transition:
-        width 0.3s ease;
-}
-
-/* =========================================================
-   AFINIDADE
-========================================================= */
-
-.afinidade-card {
-    padding: 15px;
-
-    text-align: center;
-
-    border-radius: 14px;
-
-    border:
-        1px solid var(--border);
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(124, 58, 237, 0.1),
-            transparent 65%
-        );
-}
-
-.afinidade-icone {
-    font-size: 42px;
-
-    margin-bottom: 8px;
-}
-
-.afinidade-card h3 {
-    margin: 0;
-
-    font-size: 16px;
-}
-
-.afinidade-card p {
-    margin: 5px 0 0;
-
-    color: var(--text-muted);
-
-    font-size: 9px;
-}
-
-/* =========================================================
-   INVENTÁRIO
-========================================================= */
-
-.inventario-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
-    gap: 8px;
-}
-
-.item-inventario {
-    min-height: 80px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-
-    justify-content: center;
-
-    gap: 5px;
-
-    padding: 8px;
-
-    border-radius: 11px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.07);
-
-    background:
-        rgba(255, 255, 255, 0.025);
-
-    text-align: center;
-}
-
-.item-inventario .item-icone {
-    font-size: 23px;
-}
-
-.item-inventario strong {
-    font-size: 8px;
-}
-
-.item-inventario small {
-    color: var(--text-muted);
-
-    font-size: 7px;
-}
 
 /* =========================================================
    MAPA
 ========================================================= */
 
-.mapa-area {
-    position: relative;
-
-    width: 100%;
-
-    min-height: 290px;
+#modulo-mapa {
+    min-height: 340px;
 
     display: flex;
 
     align-items: center;
     justify-content: center;
 
-    border-radius: 14px;
+    border-radius: 16px;
 
     border:
-        1px solid var(--border);
+        1px solid rgba(56, 189, 248, 0.15);
 
     background:
         radial-gradient(
-            circle,
-            rgba(37, 99, 235, 0.1),
+            circle at center,
+            rgba(56, 189, 248, 0.06),
             transparent 60%
         );
-
-    overflow: hidden;
 }
 
-.mapa-area::before {
-    content: "";
-
-    position: absolute;
-
-    width: 180px;
-    height: 180px;
-
-    border-radius: 50%;
-
-    border:
-        1px dashed rgba(124, 58, 237, 0.3);
-
-    box-shadow:
-        0 0 40px rgba(124, 58, 237, 0.08);
-}
-
-.mapa-placeholder {
-    position: relative;
-
-    z-index: 1;
-
-    text-align: center;
-
-    color: var(--text-muted);
-
-    font-size: 10px;
-}
 
 /* =========================================================
    COMBATE
 ========================================================= */
 
 #modulo-combate {
-    display: flex;
+    min-height: 340px;
 
-    flex-direction: column;
+    padding: 15px;
 
-    gap: 12px;
-}
-
-.combate-header {
-    padding: 14px;
-
-    border-radius: 13px;
+    border-radius: 16px;
 
     border:
-        1px solid rgba(239, 68, 68, 0.25);
+        1px solid rgba(239, 68, 68, 0.16);
 
     background:
-        var(--red-soft);
+        radial-gradient(
+            circle at center,
+            rgba(239, 68, 68, 0.055),
+            transparent 65%
+        );
 }
 
-.combate-header strong {
-    color: #fca5a5;
-
-    font-size: 14px;
-}
-
-.combate-header span {
-    display: block;
-
-    margin-top: 4px;
-
-    color: var(--text-muted);
-
-    font-size: 8px;
-}
-
-.combate-log {
-    min-height: 130px;
-    max-height: 190px;
-
-    padding: 10px;
-
-    overflow-y: auto;
-
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(255, 255, 255, 0.07);
-
-    background:
-        rgba(0, 0, 0, 0.2);
-}
-
-.combate-log-item {
-    padding: 7px 0;
-
-    border-bottom:
-        1px solid rgba(255, 255, 255, 0.05);
-
-    color: var(--text-soft);
-
-    font-size: 8px;
-}
-
-.combate-log-item:last-child {
-    border-bottom: 0;
-}
 
 /* =========================================================
    CTE
 ========================================================= */
 
 #modulo-cte {
+    min-height: 340px;
+
     display: flex;
 
     flex-direction: column;
 
     align-items: center;
-
     justify-content: center;
-
-    gap: 15px;
-
-    min-height: 300px;
 
     text-align: center;
 }
 
-.cte-circulo {
-    width: 150px;
-    height: 150px;
+#cte-timer {
+    font-size: 52px;
 
-    display: flex;
+    font-weight: 800;
 
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    border:
-        2px solid var(--purple);
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(124, 58, 237, 0.25),
-            rgba(3, 5, 10, 0.95)
-        );
-
-    box-shadow:
-        0 0 35px rgba(124, 58, 237, 0.3);
-
-    animation:
-        ctePulse 2s ease-in-out infinite;
-}
-
-.cte-circulo strong {
-    font-size: 34px;
+    letter-spacing: 3px;
 
     color: var(--purple-light);
+
+    text-shadow:
+        0 0 25px rgba(139, 92, 246, 0.55);
 }
 
-.cte-circulo span {
-    margin-top: 4px;
-
-    color: var(--text-muted);
-
-    font-size: 8px;
-
-    letter-spacing: 2px;
-}
-
-.cte-status {
-    color: var(--text-soft);
-
-    font-size: 11px;
-}
-
-.cte-opcoes {
-    width: 100%;
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 8px;
-}
-
-.cte-opcao {
-    padding: 10px;
-
-    border-radius: 10px;
-
-    border:
-        1px solid var(--border);
-
-    background:
-        rgba(255, 255, 255, 0.025);
-
-    color: var(--text-soft);
+#cte-status {
+    margin-top: 8px;
 
     font-size: 9px;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+
+    color: var(--muted);
 }
 
-@keyframes ctePulse {
-    0%,
-    100% {
-        transform: scale(1);
-
-        box-shadow:
-            0 0 35px rgba(124, 58, 237, 0.3);
-    }
-
-    50% {
-        transform: scale(1.025);
-
-        box-shadow:
-            0 0 55px rgba(124, 58, 237, 0.5);
-    }
-}
 
 /* =========================================================
    DUNGEON
 ========================================================= */
 
 #modulo-dungeon {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    min-height: 280px;
+    min-height: 340px;
 }
+
 
 /* =========================================================
    BOSS
@@ -1193,118 +876,42 @@ body {
 #modulo-boss {
     position: relative;
 
-    min-height: 300px;
+    min-height: 340px;
 
     display: flex;
 
     flex-direction: column;
 
     align-items: center;
-
     justify-content: center;
 
-    gap: 12px;
-
     text-align: center;
-}
 
-#boss-alerta {
-    padding: 12px 18px;
+    border-radius: 18px;
 
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(239, 68, 68, 0.6);
-
-    background:
-        rgba(127, 29, 29, 0.35);
-
-    color: #fecaca;
-
-    font-size: 12px;
-
-    font-weight: bold;
-
-    letter-spacing: 2px;
-
-    animation:
-        bossPulse 1.1s ease-in-out infinite;
-}
-
-.boss-nome {
-    margin: 0;
-
-    color: #fca5a5;
-
-    font-size: 25px;
-
-    text-transform: uppercase;
-}
-
-.boss-descricao {
-    max-width: 300px;
-
-    color: var(--text-muted);
-
-    font-size: 9px;
-
-    line-height: 1.5;
-}
-
-@keyframes bossPulse {
-    0%,
-    100% {
-        opacity: 0.75;
-
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-
-        transform: scale(1.035);
-    }
-}
-
-/* =========================================================
-   MODO BOSS
-========================================================= */
-
-#rpg-mesa.modo-boss {
     background:
         radial-gradient(
-            circle at center,
-            rgba(127, 29, 29, 0.22),
-            transparent 65%
+            circle,
+            rgba(239, 68, 68, 0.13),
+            transparent 62%
         );
 }
 
-#rpg-mesa.modo-boss #tela-mesa {
-    border-color:
-        rgba(239, 68, 68, 0.55);
+#boss-alerta {
+    font-size: 26px;
 
-    box-shadow:
-        0 0 50px rgba(239, 68, 68, 0.15),
-        inset 0 0 60px rgba(239, 68, 68, 0.05);
+    font-weight: 900;
 
-    animation:
-        mesaBossPulse 1.5s ease-in-out infinite;
+    letter-spacing: 3px;
+
+    color: #fca5a5;
+
+    text-transform: uppercase;
+
+    text-shadow:
+        0 0 25px rgba(239, 68, 68, 0.8);
 }
 
-@keyframes mesaBossPulse {
-    0%,
-    100% {
-        box-shadow:
-            0 0 35px rgba(239, 68, 68, 0.12),
-            inset 0 0 50px rgba(239, 68, 68, 0.04);
-    }
-
-    50% {
-        box-shadow:
-            0 0 70px rgba(239, 68, 68, 0.28),
-            inset 0 0 70px rgba(239, 68, 68, 0.08);
-    }
-}
 
 /* =========================================================
    PAINEL DO MESTRE
@@ -1313,88 +920,376 @@ body {
 #painel-mestre {
     width: 100%;
 
-    padding: 14px;
+    padding: 15px;
 
-    border-radius: 15px;
+    border-radius: 18px;
 
     border:
-        1px solid rgba(124, 58, 237, 0.4);
+        1px solid rgba(139, 92, 246, 0.28);
 
     background:
         linear-gradient(
             145deg,
-            rgba(15, 10, 31, 0.98),
-            rgba(7, 10, 23, 0.98)
+            rgba(20, 14, 29, 0.98),
+            rgba(8, 6, 12, 0.98)
         );
 
     box-shadow:
-        0 15px 40px rgba(0, 0, 0, 0.35);
+        0 15px 45px rgba(0, 0, 0, 0.5);
 }
 
 #painel-mestre[hidden] {
     display: none !important;
 }
 
-#painel-mestre h2 {
-    margin: 0 0 12px;
+#painel-mestre h3 {
+    margin: 0 0 14px;
+
+    font-size: 13px;
 
     color: var(--purple-light);
 
-    font-size: 14px;
-}
-
-.mestre-grupo {
-    margin-bottom: 14px;
-}
-
-.mestre-grupo:last-child {
-    margin-bottom: 0;
-}
-
-.mestre-grupo-titulo {
-    display: block;
-
-    margin-bottom: 7px;
-
-    color: var(--text-muted);
-
-    font-size: 8px;
-
     letter-spacing: 1px;
-
-    text-transform: uppercase;
 }
 
-.mestre-botoes {
-    display: grid;
 
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+/* =========================================================
+   CONTROLES DO MESTRE
+========================================================= */
 
-    gap: 7px;
+.master-control,
+.master-controls,
+.control {
+    width: 100%;
 }
 
-.mestre-btn {
-    min-height: 38px;
+.control {
+    display: flex;
 
-    padding: 7px;
+    align-items: center;
 
-    border:
-        1px solid var(--border);
+    gap: 8px;
 
-    border-radius: 9px;
+    margin-bottom: 8px;
+}
+
+.control label {
+    flex: 1;
+
+    font-size: 9px;
+
+    color: #c9c2d2;
+}
+
+.control button {
+    min-width: 34px;
+    height: 30px;
+
+    border: 1px solid rgba(139, 92, 246, 0.28);
+
+    border-radius: 8px;
 
     background:
-        rgba(255, 255, 255, 0.025);
+        rgba(139, 92, 246, 0.08);
 
-    color: var(--text-soft);
+    color: var(--purple-light);
 
-    font-size: 8px;
+    cursor: pointer;
+}
 
-    font-weight: bold;
+.control button:hover {
+    background:
+        rgba(139, 92, 246, 0.18);
+
+    border-color:
+        rgba(139, 92, 246, 0.55);
+}
+
+
+/* =========================================================
+   BOTÃO MESTRE
+========================================================= */
+
+#abrir-painel-mestre {
+    width: 100%;
+
+    padding: 11px 14px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.35);
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(91, 33, 182, 0.2),
+            rgba(139, 92, 246, 0.06)
+        );
+
+    color: var(--purple-light);
+
+    font-size: 10px;
+
+    font-weight: 700;
 
     cursor: pointer;
 
     transition:
-        background 0.2s ease,
-        border-color 0.2
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+#abrir-painel-mestre:hover {
+    transform: translateY(-1px);
+
+    background:
+        rgba(139, 92, 246, 0.16);
+}
+
+
+/* =========================================================
+   NOTIFICAÇÕES
+========================================================= */
+
+#mesa-notificacoes {
+    position: fixed;
+
+    left: 50%;
+    bottom: 20px;
+
+    z-index: 100;
+
+    transform: translateX(-50%);
+
+    width: calc(100% - 30px);
+
+    max-width: 420px;
+
+    pointer-events: none;
+}
+
+.mesa-notificacao {
+    margin-top: 8px;
+
+    padding: 11px 14px;
+
+    border-radius: 12px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.3);
+
+    background:
+        rgba(15, 10, 22, 0.96);
+
+    box-shadow:
+        0 15px 35px rgba(0, 0, 0, 0.55);
+
+    color: #ddd6e8;
+
+    font-size: 10px;
+
+    text-align: center;
+
+    backdrop-filter: blur(10px);
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+#mesa-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 200;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background:
+        rgba(0, 0, 0, 0.75);
+
+    backdrop-filter: blur(8px);
+}
+
+#mesa-modal[hidden] {
+    display: none !important;
+}
+
+#mesa-modal-conteudo {
+    width: 100%;
+
+    max-width: 420px;
+
+    padding: 20px;
+
+    border-radius: 18px;
+
+    border:
+        1px solid rgba(139, 92, 246, 0.35);
+
+    background:
+        linear-gradient(
+            145deg,
+            #171020,
+            #09070e
+        );
+
+    box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.7);
+}
+
+
+/* =========================================================
+   MODOS
+========================================================= */
+
+#rpg-mesa.modo-combate {
+    --purple: #ef4444;
+}
+
+#rpg-mesa.modo-cte {
+    --purple: #c084fc;
+}
+
+#rpg-mesa.modo-boss {
+    animation:
+        mesaBossPulse 1.4s infinite;
+}
+
+@keyframes mesaBossPulse {
+    0%,
+    100% {
+        box-shadow:
+            inset 0 0 0 rgba(239, 68, 68, 0);
+    }
+
+    50% {
+        box-shadow:
+            inset 0 0 80px rgba(239, 68, 68, 0.09);
+    }
+}
+
+
+/* =========================================================
+   ANIMAÇÃO CTE
+========================================================= */
+
+#modulo-cte.cte-ativo #cte-timer {
+    animation:
+        ctePulse 1s infinite;
+}
+
+@keyframes ctePulse {
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.035);
+        opacity: 0.75;
+    }
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (min-width: 600px) {
+
+    #rpg-mesa {
+        padding: 18px;
+    }
+
+    #assentos-jogadores {
+        grid-template-columns:
+            repeat(4, minmax(0, 1fr));
+    }
+
+    .jogador-card {
+        min-height: 82px;
+    }
+
+    #tela-mesa {
+        min-height: 520px;
+    }
+
+}
+
+
+/* =========================================================
+   DESKTOP
+========================================================= */
+
+@media (min-width: 1000px) {
+
+    #rpg-mesa {
+        max-width: 1250px;
+
+        margin: 0 auto;
+
+        padding: 24px;
+    }
+
+    #mesa-layout {
+        display: grid;
+
+        grid-template-columns:
+            250px
+            minmax(0, 1fr);
+
+        align-items: start;
+    }
+
+    #assentos-jogadores {
+        grid-column: 1;
+
+        grid-template-columns: 1fr;
+
+        max-height: 720px;
+
+        overflow-y: auto;
+    }
+
+    #tela-mesa {
+        grid-column: 2;
+
+        min-height: 650px;
+    }
+
+    #painel-mestre {
+        grid-column: 1 / -1;
+    }
+
+    .jogador-card {
+        min-height: 82px;
+    }
+
+}
+
+
+/* =========================================================
+   REDUÇÃO DE MOVIMENTO
+========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+}
