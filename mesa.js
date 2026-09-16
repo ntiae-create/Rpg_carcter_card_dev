@@ -37,6 +37,42 @@ function criarAssento(numero) {
 
     return assento;
 }
+function atualizarListaJogadores() {
+    const jogadores = window.rpgMesa?.players || [];
+
+    const assentos = document.querySelectorAll(".mesa-seat");
+
+    assentos.forEach((assento, index) => {
+        const jogador = jogadores[index];
+
+        const nome = assento.querySelector(".mesa-seat-name");
+        const icone = assento.querySelector(".mesa-seat-icon");
+
+        if (!jogador) {
+            if (nome) nome.textContent = "Aguardando jogador";
+            if (icone) icone.textContent = "👤";
+            assento.classList.remove("ocupado");
+            return;
+        }
+
+        const nomeJogador =
+            jogador.nome ||
+            jogador.name ||
+            jogador.username ||
+            "Jogador";
+
+        if (nome) nome.textContent = nomeJogador;
+        if (icone) icone.textContent = "🧙";
+
+        assento.classList.add("ocupado");
+    });
+
+    const contador = document.querySelector("#mesa-player-count");
+
+    if (contador) {
+        contador.textContent = `${jogadores.length}/${window.rpgMesa?.maxPlayers || 8}`;
+    }
+}
 // ==========================================
 // MESA ONLINE — RPG
 // PASSO 6 — MESA FUNCIONAL
