@@ -321,10 +321,40 @@ const CharacterModule = (() => {
 
 
     /* =====================================================
+       VERIFICAR SE PERSONAGEM ESTÁ CONFIRMADO
+    ===================================================== */
+
+    function personagemConfirmado() {
+
+        return (
+            typeof character !== "undefined" &&
+            character.confirmed === true
+        );
+
+    }
+
+
+    /* =====================================================
        ALTERAR RAÇA
     ===================================================== */
 
     function alterarRaca(raceName) {
+
+        /*
+           Depois da confirmação a raça não pode
+           mais ser alterada.
+        */
+
+        if (
+            personagemConfirmado()
+        ) {
+
+            sincronizarEditor();
+
+            return;
+
+        }
+
 
         const race =
             RACES[raceName];
@@ -445,6 +475,112 @@ const CharacterModule = (() => {
 
 
     /* =====================================================
+       BLOQUEAR DEFINIÇÕES DO PERSONAGEM
+       
+       Nome / Raça / Classe / Afinidade
+    ===================================================== */
+
+    function atualizarBloqueioDefinicoes() {
+
+        const bloqueado =
+            personagemConfirmado();
+
+
+        const nameInput =
+            get("character-name-input");
+
+        const raceSelect =
+            get("character-race-select");
+
+        const classSelect =
+            get("character-class-select");
+
+        /*
+           O ID esperado da afinidade é
+           character-affinity-select.
+
+           Se existir no HTML, será bloqueado.
+        */
+
+        const affinitySelect =
+            get("character-affinity-select");
+
+
+        if (nameInput) {
+
+            nameInput.disabled =
+                bloqueado;
+
+            nameInput.setAttribute(
+                "aria-disabled",
+                String(bloqueado)
+            );
+
+        }
+
+
+        if (raceSelect) {
+
+            raceSelect.disabled =
+                bloqueado;
+
+            raceSelect.setAttribute(
+                "aria-disabled",
+                String(bloqueado)
+            );
+
+        }
+
+
+        if (classSelect) {
+
+            classSelect.disabled =
+                bloqueado;
+
+            classSelect.setAttribute(
+                "aria-disabled",
+                String(bloqueado)
+            );
+
+        }
+
+
+        if (affinitySelect) {
+
+            affinitySelect.disabled =
+                bloqueado;
+
+            affinitySelect.setAttribute(
+                "aria-disabled",
+                String(bloqueado)
+            );
+
+        }
+
+
+        /*
+           Classe visual no editor.
+        */
+
+        const editor =
+            document.querySelector(
+                ".character-editor"
+            );
+
+
+        if (editor) {
+
+            editor.classList.toggle(
+                "character-locked",
+                bloqueado
+            );
+
+        }
+
+    }
+
+
+    /* =====================================================
        EDITOR DO PERSONAGEM
     ===================================================== */
 
@@ -458,6 +594,9 @@ const CharacterModule = (() => {
 
         const classSelect =
             get("character-class-select");
+
+        const affinitySelect =
+            get("character-affinity-select");
 
 
         /* -------------------------------------------------
@@ -473,6 +612,24 @@ const CharacterModule = (() => {
             nameInput.addEventListener(
                 "input",
                 () => {
+
+                    /*
+                       Segurança adicional:
+                       mesmo que o evento seja disparado,
+                       não permite alteração após confirmação.
+                    */
+
+                    if (
+                        personagemConfirmado()
+                    ) {
+
+                        nameInput.value =
+                            character.name;
+
+                        return;
+
+                    }
+
 
                     character.name =
                         nameInput.value ||
@@ -527,6 +684,23 @@ const CharacterModule = (() => {
                 "change",
                 () => {
 
+                    /*
+                       Não permite alteração após
+                       confirmação.
+                    */
+
+                    if (
+                        personagemConfirmado()
+                    ) {
+
+                        classSelect.value =
+                            character.class;
+
+                        return;
+
+                    }
+
+
                     character.class =
                         classSelect.value;
 
@@ -545,6 +719,56 @@ const CharacterModule = (() => {
                         "Classe atual:",
                         classe
                     );
+
+
+                    atualizarInterface();
+
+                    salvarPersonagem();
+
+                }
+            );
+
+        }
+
+
+        /* -------------------------------------------------
+           AFINIDADE
+           -------------------------------------------------
+           
+           O módulo passa a reconhecer a afinidade
+           caso o elemento exista no HTML.
+        ------------------------------------------------- */
+
+        if (affinitySelect) {
+
+            affinitySelect.value =
+                character.affinity || "";
+
+
+            affinitySelect.addEventListener(
+                "change",
+                () => {
+
+                    /*
+                       Não permite alteração após
+                       confirmação.
+                    */
+
+                    if (
+                        personagemConfirmado()
+                    ) {
+
+                        affinitySelect.value =
+                            character.affinity || "";
+
+                        return;
+
+                    }
+
+
+                    character.affinity =
+                        affinitySelect.value ||
+                        null;
 
 
                     atualizarInterface();
@@ -629,6 +853,13 @@ const CharacterModule = (() => {
             );
 
         }
+
+
+        /*
+           Aplica o estado inicial do bloqueio.
+        */
+
+        atualizarBloqueioDefinicoes();
 
     }
 
@@ -733,6 +964,18 @@ const CharacterModule = (() => {
         }
 
 
+        const affinity =
+            get("character-affinity-select");
+
+
+        if (affinity) {
+
+            affinity.value =
+                character.affinity || "";
+
+        }
+
+
         const imageURL =
             get("character-image-url");
 
@@ -746,6 +989,14 @@ const CharacterModule = (() => {
                 character.imageURL || "";
 
         }
+
+
+        /*
+           Garante que o estado visual dos campos
+           acompanhe o estado confirmado.
+        */
+
+        atualizarBloqueioDefinicoes();
 
     }
 
@@ -954,6 +1205,10 @@ const CharacterModule = (() => {
         atualizarImagem,
 
         sincronizarEditor,
+
+        atualizarBloqueioDefinicoes,
+
+        personagemConfirmado,
 
         obterDadosSupabase,
 
