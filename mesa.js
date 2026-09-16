@@ -5,6 +5,20 @@ function escaparHTML(valor) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
+};
+function obterNomeMestre() {
+    const campanha = window.rpgMesa?.campaign;
+    const mestre = window.rpgMesa?.master;
+
+    return (
+        mestre?.nome ||
+        mestre?.name ||
+        campanha?.master_name ||
+        campanha?.masterName ||
+        campanha?.nome_mestre ||
+        campanha?.nomeMestre ||
+        "Mestre"
+    );
 }
 // ==========================================
 // MESA ONLINE — RPG
