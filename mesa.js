@@ -1,6 +1,6 @@
 // ==========================================
-// MESA ONLINE — RPG CHARACTER CARD
-// PASSO 5 — CARDS DOS JOGADORES
+// MESA ONLINE — RPG
+// PASSO 6 — MESA FUNCIONAL
 // ==========================================
 
 (function () {
@@ -24,23 +24,42 @@
 
         initialized: false,
 
-        mode: "campaign"
+        mode: "campaign",
+
+        activeModule: "home",
+
+        selectedPlayer: null,
+
+        selectedCharacter: null,
+
+        cte: null,
+
+        bossTimeout: null,
+
+        map: {
+
+            x: 0,
+
+            y: 0,
+
+            scale: 1
+
+        }
 
     };
 
 
     // ==========================================
-    // INICIALIZAR MESA
+    // INICIALIZAÇÃO
     // ==========================================
 
     async function iniciarMesa() {
 
-        console.log(
-            "🎲 Mesa.js carregado."
-        );
+        console.log("🎲 Mesa.js carregado.");
 
 
         let tentativas = 0;
+
         const limite = 40;
 
 
@@ -79,10 +98,6 @@
         }
 
 
-        // --------------------------------------
-        // ESPERAR CAMPANHA
-        // --------------------------------------
-
         let campanha = null;
 
         let tentativasCampanha = 0;
@@ -107,8 +122,7 @@
 
             if (
                 !campanha &&
-                window.rpgAuth &&
-                window.rpgAuth.campaign
+                window.rpgAuth?.campaign
             ) {
 
                 campanha =
@@ -190,7 +204,7 @@
 
 
     // ==========================================
-    // VERIFICAR SE É MESTRE
+    // MESTRE
     // ==========================================
 
     function usuarioEhMestre() {
@@ -224,7 +238,7 @@
 
 
     // ==========================================
-    // CRIAR INTERFACE DA MESA
+    // INTERFACE PRINCIPAL
     // ==========================================
 
     function criarInterfaceMesa() {
@@ -250,537 +264,72 @@
             "online-table-panel";
 
 
-        painel.classList.add(
-            "mesa-fullscreen"
-        );
+        painel.className =
+            "mesa-fullscreen";
 
 
         painel.innerHTML = `
 
-            <!-- =================================
+            <!-- ==================================
                  CABEÇALHO
             ================================== -->
 
-            <div class="online-table-header">
+            <header class="mesa-header">
 
                 <div>
 
-                    <span class="online-table-label">
+                    <span class="mesa-header-label">
                         🎲 MESA ONLINE
                     </span>
 
                     <h2 id="online-table-name">
                         ${escaparHTML(
-                            window.rpgMesa.campaign.name
+                            window.rpgMesa.campaign?.name ||
+                            "Campanha"
                         )}
                     </h2>
 
                 </div>
 
 
-                <div
-                    class="online-table-header-actions"
-                    style="
-                        display:flex;
-                        align-items:center;
-                        gap:8px;
-                    "
-                >
+                <div class="mesa-header-actions">
 
-                    <div class="online-table-status">
-
+                    <div
+                        id="mesa-mode-status"
+                        class="mesa-mode-status"
+                    >
                         🟢 CAMPANHA
-
                     </div>
 
 
                     <button
                         id="mesa-settings-button"
+                        class="mesa-icon-button"
                         type="button"
-                        style="
-                            border:1px solid #68408a;
-                            border-radius:10px;
-                            background:#1b1424;
-                            color:#d8c7e8;
-                            padding:9px 11px;
-                            cursor:pointer;
-                            font-weight:bold;
-                        "
+                        title="Configurações"
                     >
-
                         ⚙️
-
                     </button>
 
                 </div>
 
-            </div>
+            </header>
 
 
-            <!-- =================================
-                 CENTRAL DE CONFIGURAÇÕES
+            <!-- ==================================
+                 ÁREA PRINCIPAL
             ================================== -->
 
-            <div
-                id="mesa-settings-panel"
-                style="
-                    display:none;
-                    position:fixed;
-                    inset:0;
-                    z-index:9999;
-                    padding:18px;
-                    background:rgba(3,2,8,0.88);
-                    backdrop-filter:blur(8px);
-                    overflow-y:auto;
-                "
-            >
+            <main class="mesa-main">
 
-                <div
-                    style="
-                        width:100%;
-                        max-width:500px;
-                        margin:0 auto;
-                        border:1px solid #6f3aa8;
-                        border-radius:18px;
-                        background:
-                            linear-gradient(
-                                160deg,
-                                #171020,
-                                #0b0910
-                            );
-                        box-shadow:
-                            0 0 30px rgba(
-                                124,
-                                58,
-                                237,
-                                0.28
-                            );
-                        padding:18px;
-                    "
-                >
 
-                    <div
-                        style="
-                            display:flex;
-                            justify-content:space-between;
-                            align-items:center;
-                            gap:10px;
-                            margin-bottom:18px;
-                        "
-                    >
-
-                        <div>
-
-                            <small
-                                style="
-                                    color:#8f839d;
-                                    letter-spacing:2px;
-                                "
-                            >
-                                OPÇÕES DA MESA
-                            </small>
-
-                            <h2
-                                style="
-                                    margin:4px 0 0;
-                                    color:#f5f0ff;
-                                "
-                            >
-                                ⚙️ Configurações
-                            </h2>
-
-                        </div>
-
-
-                        <button
-                            id="mesa-settings-close"
-                            type="button"
-                            style="
-                                width:38px;
-                                height:38px;
-                                border:1px solid #68408a;
-                                border-radius:50%;
-                                background:#1b1424;
-                                color:#fff;
-                                cursor:pointer;
-                                font-size:18px;
-                            "
-                        >
-                            ✕
-                        </button>
-
-                    </div>
-
-
-                    <!-- =================================
-                         ÁREA DO MESTRE
-                    ================================== -->
-
-                    <div
-                        id="mesa-master-settings"
-                        style="display:none;"
-                    >
-
-                        <div
-                            style="
-                                padding:14px;
-                                margin-bottom:12px;
-                                border:1px solid #6f3aa8;
-                                border-radius:14px;
-                                background:
-                                    rgba(
-                                        124,
-                                        58,
-                                        237,
-                                        0.08
-                                    );
-                            "
-                        >
-
-                            <strong
-                                style="
-                                    display:block;
-                                    color:#c084fc;
-                                    font-size:13px;
-                                    letter-spacing:1px;
-                                    margin-bottom:5px;
-                                "
-                            >
-                                👑 MODO MESTRE
-                            </strong>
-
-                            <span
-                                style="
-                                    color:#8f839d;
-                                    font-size:10px;
-                                "
-                            >
-                                Ferramentas administrativas da mesa
-                            </span>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="players"
-                        >
-
-                            <span>👥</span>
-
-                            <div>
-                                <strong>Jogadores</strong>
-
-                                <small>
-                                    Gerenciar jogadores da mesa
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="characters"
-                        >
-
-                            <span>🎴</span>
-
-                            <div>
-                                <strong>Personagens</strong>
-
-                                <small>
-                                    Visualizar e gerenciar personagens
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="status"
-                        >
-
-                            <span>❤️</span>
-
-                            <div>
-                                <strong>Status</strong>
-
-                                <small>
-                                    Recursos e condições dos jogadores
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="needs"
-                        >
-
-                            <span>🍖</span>
-
-                            <div>
-                                <strong>Fome e Sede</strong>
-
-                                <small>
-                                    Controlar necessidades dos jogadores
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="inventory"
-                        >
-
-                            <span>🎒</span>
-
-                            <div>
-                                <strong>Inventário</strong>
-
-                                <small>
-                                    Dar, remover e trocar itens
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="combat"
-                        >
-
-                            <span>⚔️</span>
-
-                            <div>
-                                <strong>Combate</strong>
-
-                                <small>
-                                    Controle de combate da mesa
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="events"
-                        >
-
-                            <span>🎲</span>
-
-                            <div>
-                                <strong>Eventos / QTE</strong>
-
-                                <small>
-                                    Criar e lançar eventos
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-master-tool="map"
-                        >
-
-                            <span>🗺️</span>
-
-                            <div>
-                                <strong>Mapa</strong>
-
-                                <small>
-                                    Controle do mapa da campanha
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                    </div>
-
-
-                    <!-- =================================
-                         CONFIGURAÇÕES DO JOGADOR
-                    ================================== -->
-
-                    <div
-                        id="mesa-player-settings"
-                        style="display:none;"
-                    >
-
-                        <div
-                            style="
-                                padding:14px;
-                                margin-bottom:12px;
-                                border:1px solid rgba(
-                                    255,
-                                    255,
-                                    255,
-                                    0.08
-                                );
-                                border-radius:14px;
-                                background:
-                                    rgba(
-                                        255,
-                                        255,
-                                        255,
-                                        0.03
-                                    );
-                            "
-                        >
-
-                            <strong
-                                style="
-                                    display:block;
-                                    color:#c084fc;
-                                    font-size:13px;
-                                    margin-bottom:5px;
-                                "
-                            >
-                                ⚙️ OPÇÕES
-                            </strong>
-
-                            <span
-                                style="
-                                    color:#8f839d;
-                                    font-size:10px;
-                                "
-                            >
-                                Configurações disponíveis para você
-                            </span>
-
-                        </div>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-player-tool="interface"
-                        >
-
-                            <span>🎨</span>
-
-                            <div>
-                                <strong>Interface</strong>
-
-                                <small>
-                                    Opções visuais da mesa
-                                </small>
-                            </div>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="mesa-setting-option"
-                            data-player-tool="help"
-                        >
-
-                            <span>❓</span>
-
-                            <div>
-                                <strong>Ajuda</strong>
-
-                                <small>
-                                    Informações sobre a mesa
-                                </small>
-                            </div>
-
-                        </button>
-
-                    </div>
-
-
-                    <!-- =================================
-                         MANUTENÇÃO
-                    ================================== -->
-
-                    <div
-                        style="
-                            margin-top:18px;
-                            padding-top:16px;
-                            border-top:1px solid rgba(
-                                255,
-                                255,
-                                255,
-                                0.08
-                            );
-                        "
-                    >
-
-                        <small
-                            style="
-                                display:block;
-                                color:#8f839d;
-                                letter-spacing:1px;
-                                margin-bottom:10px;
-                            "
-                        >
-                            🔄 MESA
-                        </small>
-
-
-                        <button
-                            id="mesa-refresh-button"
-                            type="button"
-                            class="mesa-setting-action"
-                        >
-
-                            🔄 ATUALIZAR MESA
-
-                        </button>
-
-
-                        <div
-                            id="mesa-refresh-status"
-                            style="
-                                text-align:center;
-                                margin-top:8px;
-                                min-height:14px;
-                                color:#75687f;
-                                font-size:9px;
-                            "
-                        ></div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- =================================
-                 MESA
-            ================================== -->
-
-            <div class="rpg-table">
-
-
-                <!-- =================================
+                <!-- ==============================
                      MESTRE
-                ================================== -->
+                =============================== -->
 
-                <div class="table-head">
+                <div class="mesa-master">
 
-                    <small>MESTRE</small>
+                    <span>👑 MESTRE</span>
 
                     <strong>
                         ${escaparHTML(
@@ -791,194 +340,390 @@
                 </div>
 
 
-                <!-- =================================
-                     JOGADORES — ESQUERDA
-                ================================== -->
+                <!-- ==============================
+                     MESA
+                =============================== -->
 
-                <div class="table-side left">
-
-                    ${criarAssento(1)}
-                    ${criarAssento(2)}
-                    ${criarAssento(3)}
-                    ${criarAssento(4)}
-
-                </div>
+                <div
+                    id="rpg-table"
+                    class="rpg-table mesa-state-campaign"
+                >
 
 
-                <!-- =================================
-                     JOGADORES — DIREITA
-                ================================== -->
+                    <!-- LADO ESQUERDO -->
 
-                <div class="table-side right">
+                    <div class="table-side left">
 
-                    ${criarAssento(5)}
-                    ${criarAssento(6)}
-                    ${criarAssento(7)}
-                    ${criarAssento(8)}
+                        ${criarAssento(1)}
+                        ${criarAssento(2)}
+                        ${criarAssento(3)}
+                        ${criarAssento(4)}
 
-                </div>
+                    </div>
 
 
-                <!-- =================================
-                     CENTRO
-                ================================== -->
+                    <!-- CENTRO -->
 
-                <div class="table-center">
+                    <div class="table-center">
 
 
-                    <!-- CHAT -->
+                        <!-- TELA -->
 
-                    <div class="table-chat">
+                        <div
+                            id="mesa-screen"
+                            class="mesa-screen"
+                        >
 
-                        <div class="table-chat-title">
-
-                            💬 CHAT DA MESA
+                            ${criarTelaInicial()}
 
                         </div>
+
+
+                        <!-- MÓDULOS -->
+
+                        <div class="table-modules">
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="character"
+                            >
+                                <span>🎴</span>
+                                <small>PERSONAGEM</small>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="status"
+                            >
+                                <span>❤️</span>
+                                <small>STATUS</small>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="affinity"
+                            >
+                                <span>✨</span>
+                                <small>AFINIDADES</small>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="inventory"
+                            >
+                                <span>🎒</span>
+                                <small>INVENTÁRIO</small>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="map"
+                            >
+                                <span>🗺️</span>
+                                <small>MAPA</small>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="combat"
+                            >
+                                <span>⚔️</span>
+                                <small>COMBATE</small>
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="table-module"
+                                data-table-module="cte"
+                            >
+                                <span>⚡</span>
+                                <small>CTE</small>
+                            </button>
+
+                        </div>
+
+
+                        <!-- CHAT -->
+
+                        <div class="table-chat">
+
+                            <div class="table-chat-title">
+                                💬 CHAT DA MESA
+                            </div>
+
+                            <div
+                                id="online-table-chat-messages"
+                                class="table-chat-messages"
+                            >
+                                A mesa está pronta.
+                                Aguardando os jogadores...
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- LADO DIREITO -->
+
+                    <div class="table-side right">
+
+                        ${criarAssento(5)}
+                        ${criarAssento(6)}
+                        ${criarAssento(7)}
+                        ${criarAssento(8)}
+
+                    </div>
+
+                </div>
+
+
+                <!-- ==============================
+                     CARDS
+                =============================== -->
+
+                <section class="online-table-players">
+
+                    <div class="online-table-section-title">
+
+                        <span>
+                            JOGADORES
+                        </span>
+
+                        <strong
+                            id="online-table-player-count"
+                        >
+                            0 / 8
+                        </strong>
+
+                    </div>
+
+
+                    <div
+                        id="online-table-player-list"
+                        class="online-table-player-list"
+                    >
+                    </div>
+
+                </section>
+
+            </main>
+
+
+            <!-- ==================================
+                 CONFIGURAÇÕES
+            ================================== -->
+
+            <div
+                id="mesa-settings-panel"
+                class="mesa-overlay"
+                style="display:none;"
+            >
+
+                <div class="mesa-settings-box">
+
+                    <div class="mesa-panel-header">
+
+                        <div>
+
+                            <small>
+                                OPÇÕES DA MESA
+                            </small>
+
+                            <h2>
+                                ⚙️ Configurações
+                            </h2>
+
+                        </div>
+
+
+                        <button
+                            id="mesa-settings-close"
+                            class="mesa-close-button"
+                            type="button"
+                        >
+                            ✕
+                        </button>
+
+                    </div>
+
+
+                    <!-- MESTRE -->
+
+                    <div
+                        id="mesa-master-settings"
+                        style="display:none;"
+                    >
+
+                        <div class="mesa-settings-heading master">
+                            👑 MODO MESTRE
+                        </div>
+
+
+                        ${criarBotaoConfiguracao(
+                            "players",
+                            "👥",
+                            "Jogadores",
+                            "Gerenciar jogadores da mesa"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "characters",
+                            "🎴",
+                            "Personagens",
+                            "Visualizar personagens"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "status",
+                            "❤️",
+                            "Status",
+                            "Controlar status dos jogadores"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "needs",
+                            "🍖",
+                            "Fome e Sede",
+                            "Controlar necessidades"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "inventory",
+                            "🎒",
+                            "Inventário",
+                            "Dar, remover e trocar itens"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "combat",
+                            "⚔️",
+                            "Combate",
+                            "Controle do combate"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "events",
+                            "⚡",
+                            "Eventos / CTE",
+                            "Criar e lançar eventos"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "map",
+                            "🗺️",
+                            "Mapa",
+                            "Controle do mapa"
+                        )}
+
+
+                        <button
+                            type="button"
+                            class="mesa-boss-button"
+                            id="mesa-boss-button"
+                        >
+                            👹 DISPARAR ALERTA DE BOSS
+                        </button>
+
+                    </div>
+
+
+                    <!-- JOGADOR -->
+
+                    <div
+                        id="mesa-player-settings"
+                        style="display:none;"
+                    >
+
+                        <div class="mesa-settings-heading">
+                            ⚙️ OPÇÕES DO JOGADOR
+                        </div>
+
+
+                        ${criarBotaoConfiguracao(
+                            "interface",
+                            "🎨",
+                            "Interface",
+                            "Opções visuais da mesa"
+                        )}
+
+
+                        ${criarBotaoConfiguracao(
+                            "help",
+                            "❓",
+                            "Ajuda",
+                            "Informações da mesa"
+                        )}
+
+                    </div>
+
+
+                    <div class="mesa-settings-maintenance">
+
+                        <small>
+                            🔄 MESA
+                        </small>
+
+
+                        <button
+                            id="mesa-refresh-button"
+                            class="mesa-setting-action"
+                            type="button"
+                        >
+                            🔄 ATUALIZAR MESA
+                        </button>
 
 
                         <div
-                            id="online-table-chat-messages"
-                            class="table-chat-messages"
-                        >
-
-                            A mesa está pronta.
-                            Aguardando os jogadores...
-
-                        </div>
+                            id="mesa-refresh-status"
+                            class="mesa-refresh-status"
+                        ></div>
 
                     </div>
-
-
-                    <!-- MÓDULOS -->
-
-                    <div class="table-modules">
-
-
-                        <button
-                            type="button"
-                            class="table-module"
-                            data-table-module="character"
-                        >
-
-                            <span>🎴</span>
-
-                            <small>
-                                PERSONAGEM
-                            </small>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="table-module"
-                            data-table-module="status"
-                        >
-
-                            <span>❤️</span>
-
-                            <small>
-                                STATUS
-                            </small>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="table-module"
-                            data-table-module="affinity"
-                        >
-
-                            <span>✨</span>
-
-                            <small>
-                                AFINIDADES
-                            </small>
-
-                        </button>
-
-
-                        <button
-                            type="button"
-                            class="table-module"
-                            data-table-module="inventory"
-                        >
-
-                            <span>🎒</span>
-
-                            <small>
-                                INVENTÁRIO
-                            </small>
-
-                        </button>
-
-
-                    </div>
-
 
                 </div>
-
 
             </div>
 
 
-            <!-- =================================
-                 CARDS DOS JOGADORES
+            <!-- ==================================
+                 MODAL DO JOGADOR
             ================================== -->
 
-            <div class="online-table-players">
-
-                <div class="online-table-section-title">
-
-                    <span>
-                        JOGADORES
-                    </span>
-
-                    <strong id="online-table-player-count">
-                        0 / 8
-                    </strong>
-
-                </div>
-
+            <div
+                id="mesa-player-modal"
+                class="mesa-overlay"
+                style="display:none;"
+            >
 
                 <div
-                    id="online-table-player-list"
-                    class="online-table-player-list"
+                    id="mesa-player-modal-content"
+                    class="mesa-module-box"
                 >
-
-                    <div class="online-table-empty">
-
-                        Nenhum jogador entrou na mesa.
-
-                    </div>
-
                 </div>
 
             </div>
 
         `;
-
-
-        // ======================================
-        // TELA CHEIA
-        // ======================================
-
-        painel.style.width =
-            "100%";
-
-        painel.style.minWidth =
-            "100%";
-
-        painel.style.minHeight =
-            "100%";
-
-        painel.style.margin =
-            "0";
-
-        painel.style.boxSizing =
-            "border-box";
 
 
         document.body.appendChild(
@@ -986,606 +731,102 @@
         );
 
 
-        configurarEstilosConfiguracoes();
+        configurarEstilosMesa();
 
-        configurarEstilosCards();
-
-        configurarModulosMesa();
-
-        configurarConfiguracoesMesa();
+        configurarEventosMesa();
 
         atualizarPermissoesConfiguracoes();
 
+        atualizarListaJogadores();
+
     }
 
 
     // ==========================================
-    // ESTILOS DAS CONFIGURAÇÕES
+    // TELA INICIAL
     // ==========================================
 
-    function configurarEstilosConfiguracoes() {
+    function criarTelaInicial() {
 
-        if (
-            document.getElementById(
-                "mesa-settings-style"
-            )
-        ) {
+        return `
 
-            return;
+            <div class="mesa-screen-home">
 
-        }
+                <div class="mesa-screen-symbol">
+                    🎲
+                </div>
 
+                <h3>
+                    MESA DE RPG
+                </h3>
 
-        const style =
-            document.createElement("style");
+                <p>
+                    Aguardando uma ação...
+                </p>
 
+                <span>
+                    Selecione um módulo abaixo.
+                </span>
 
-        style.id =
-            "mesa-settings-style";
-
-
-        style.textContent = `
-
-            .mesa-setting-option {
-
-                width:100%;
-
-                display:flex;
-
-                align-items:center;
-
-                gap:12px;
-
-                padding:12px;
-
-                margin-bottom:8px;
-
-                border:1px solid rgba(
-                    255,
-                    255,
-                    255,
-                    0.08
-                );
-
-                border-radius:12px;
-
-                background:rgba(
-                    255,
-                    255,
-                    255,
-                    0.035
-                );
-
-                color:#f5f0ff;
-
-                text-align:left;
-
-                cursor:pointer;
-
-                transition:
-                    background 0.2s ease,
-                    border-color 0.2s ease,
-                    transform 0.2s ease;
-
-            }
-
-
-            .mesa-setting-option:hover {
-
-                background:rgba(
-                    124,
-                    58,
-                    237,
-                    0.10
-                );
-
-                border-color:#68408a;
-
-                transform:translateY(-1px);
-
-            }
-
-
-            .mesa-setting-option > span {
-
-                width:34px;
-
-                height:34px;
-
-                display:flex;
-
-                align-items:center;
-
-                justify-content:center;
-
-                border-radius:10px;
-
-                background:#1b1424;
-
-                font-size:18px;
-
-                flex-shrink:0;
-
-            }
-
-
-            .mesa-setting-option div {
-
-                display:flex;
-
-                flex-direction:column;
-
-                gap:3px;
-
-            }
-
-
-            .mesa-setting-option strong {
-
-                font-size:12px;
-
-            }
-
-
-            .mesa-setting-option small {
-
-                color:#8f839d;
-
-                font-size:9px;
-
-            }
-
-
-            .mesa-setting-action {
-
-                width:100%;
-
-                padding:12px;
-
-                border:1px solid #68408a;
-
-                border-radius:12px;
-
-                background:#1b1424;
-
-                color:#d8c7e8;
-
-                font-weight:bold;
-
-                cursor:pointer;
-
-                transition:
-                    background 0.2s ease,
-                    border-color 0.2s ease,
-                    transform 0.2s ease;
-
-            }
-
-
-            .mesa-setting-action:hover {
-
-                background:#241633;
-
-                border-color:#8b5cf6;
-
-                transform:translateY(-1px);
-
-            }
-
-
-            #mesa-settings-panel {
-
-                animation:mesaSettingsOpen 0.2s ease;
-
-            }
-
-
-            @keyframes mesaSettingsOpen {
-
-                from {
-
-                    opacity:0;
-
-                }
-
-                to {
-
-                    opacity:1;
-
-                }
-
-            }
-
-
-            @media (max-width:380px) {
-
-                #mesa-settings-panel {
-
-                    padding:10px;
-
-                }
-
-            }
+            </div>
 
         `;
 
-
-        document.head.appendChild(
-            style
-        );
-
     }
 
 
     // ==========================================
-    // ESTILOS DOS CARDS
+    // BOTÃO DE CONFIGURAÇÃO
     // ==========================================
 
-    function configurarEstilosCards() {
-
-        if (
-            document.getElementById(
-                "mesa-player-cards-style"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        const style =
-            document.createElement("style");
-
-
-        style.id =
-            "mesa-player-cards-style";
-
-
-        style.textContent = `
-
-            .online-table-player-list {
-
-                display:grid;
-
-                grid-template-columns:
-                    repeat(2, minmax(0, 1fr));
-
-                gap:10px;
-
-            }
-
-
-            .mesa-player-card {
-
-                position:relative;
-
-                min-height:155px;
-
-                padding:12px;
-
-                border-radius:16px;
-
-                border:1px solid #68408a;
-
-                background:
-                    linear-gradient(
-                        145deg,
-                        #171020,
-                        #0b0910
-                    );
-
-                box-shadow:
-                    0 0 18px rgba(
-                        124,
-                        58,
-                        237,
-                        0.12
-                    );
-
-                overflow:hidden;
-
-                cursor:pointer;
-
-                transition:
-                    transform 0.2s ease,
-                    border-color 0.2s ease,
-                    box-shadow 0.2s ease;
-
-            }
-
-
-            .mesa-player-card:hover {
-
-                transform:translateY(-2px);
-
-                border-color:#8b5cf6;
-
-                box-shadow:
-                    0 0 22px rgba(
-                        124,
-                        58,
-                        237,
-                        0.24
-                    );
-
-            }
-
-
-            .mesa-player-card::before {
-
-                content:"";
-
-                position:absolute;
-
-                top:0;
-
-                left:0;
-
-                right:0;
-
-                height:3px;
-
-                background:
-                    linear-gradient(
-                        90deg,
-                        #6d28d9,
-                        #c084fc
-                    );
-
-            }
-
-
-            .mesa-player-card-empty {
-
-                display:flex;
-
-                flex-direction:column;
-
-                justify-content:center;
-
-                align-items:center;
-
-                min-height:155px;
-
-                padding:12px;
-
-                border-radius:16px;
-
-                border:1px dashed
-                    rgba(
-                        255,
-                        255,
-                        255,
-                        0.12
-                    );
-
-                background:
-                    rgba(
-                        255,
-                        255,
-                        255,
-                        0.025
-                    );
-
-                text-align:center;
-
-                color:#75687f;
-
-            }
-
-
-            .mesa-player-card-top {
-
-                display:flex;
-
-                align-items:center;
-
-                gap:10px;
-
-                margin-bottom:10px;
-
-            }
-
-
-            .mesa-player-avatar {
-
-                width:48px;
-
-                height:48px;
-
-                border-radius:50%;
-
-                display:flex;
-
-                align-items:center;
-
-                justify-content:center;
-
-                flex-shrink:0;
-
-                border:1px solid #8b5cf6;
-
-                background:
-                    radial-gradient(
-                        circle,
-                        #35205a,
-                        #100b18
-                    );
-
-                color:#d8b4fe;
-
-                font-size:22px;
-
-                overflow:hidden;
-
-            }
-
-
-            .mesa-player-avatar img {
-
-                width:100%;
-
-                height:100%;
-
-                object-fit:cover;
-
-            }
-
-
-            .mesa-player-card-name {
-
-                min-width:0;
-
-                flex:1;
-
-            }
-
-
-            .mesa-player-card-name strong {
-
-                display:block;
-
-                font-size:13px;
-
-                white-space:nowrap;
-
-                overflow:hidden;
-
-                text-overflow:ellipsis;
-
-            }
-
-
-            .mesa-player-card-name small {
-
-                display:block;
-
-                margin-top:3px;
-
-                color:#8f839d;
-
-                font-size:9px;
-
-            }
-
-
-            .mesa-player-card-info {
-
-                display:grid;
-
-                grid-template-columns:
-                    1fr 1fr;
-
-                gap:6px;
-
-            }
-
-
-            .mesa-player-card-info div {
-
-                padding:7px;
-
-                border-radius:9px;
-
-                background:
-                    rgba(
-                        255,
-                        255,
-                        255,
-                        0.035
-                    );
-
-                border:
-                    1px solid rgba(
-                        255,
-                        255,
-                        255,
-                        0.06
-                    );
-
-            }
-
-
-            .mesa-player-card-info span {
-
-                display:block;
-
-                color:#75687f;
-
-                font-size:8px;
-
-                margin-bottom:3px;
-
-            }
-
-
-            .mesa-player-card-info strong {
-
-                display:block;
-
-                color:#e9d5ff;
-
-                font-size:10px;
-
-                white-space:nowrap;
-
-                overflow:hidden;
-
-                text-overflow:ellipsis;
-
-            }
-
-
-            .mesa-player-card-footer {
-
-                display:flex;
-
-                justify-content:space-between;
-
-                align-items:center;
-
-                margin-top:8px;
-
-                color:#75687f;
-
-                font-size:8px;
-
-            }
-
-
-            .mesa-player-card-status {
-
-                color:#c084fc;
-
-            }
-
-
-            @media (max-width:380px) {
-
-                .online-table-player-list {
-
-                    grid-template-columns:1fr;
-
-                }
-
-            }
+    function criarBotaoConfiguracao(
+        ferramenta,
+        icone,
+        titulo,
+        descricao
+    ) {
+
+        return `
+
+            <button
+                type="button"
+                class="mesa-setting-option"
+                data-master-tool="${escaparHTML(
+                    ferramenta
+                )}"
+                data-player-tool="${escaparHTML(
+                    ferramenta
+                )}"
+            >
+
+                <span>
+                    ${icone}
+                </span>
+
+                <div>
+
+                    <strong>
+                        ${escaparHTML(titulo)}
+                    </strong>
+
+                    <small>
+                        ${escaparHTML(descricao)}
+                    </small>
+
+                </div>
+
+            </button>
 
         `;
 
-
-        document.head.appendChild(
-            style
-        );
-
     }
 
 
     // ==========================================
-    // CONFIGURAÇÕES DA MESA
+    // CONFIGURAR EVENTOS
     // ==========================================
 
-    function configurarConfiguracoesMesa() {
+    function configurarEventosMesa() {
 
         const painel =
             document.getElementById(
@@ -1600,9 +841,15 @@
         }
 
 
-        const botao =
+        const settingsButton =
             document.getElementById(
                 "mesa-settings-button"
+            );
+
+
+        const settingsClose =
+            document.getElementById(
+                "mesa-settings-close"
             );
 
 
@@ -1612,41 +859,27 @@
             );
 
 
-        const fechar =
-            document.getElementById(
-                "mesa-settings-close"
-            );
-
-
-        const atualizar =
+        const refresh =
             document.getElementById(
                 "mesa-refresh-button"
             );
 
 
-        if (botao) {
+        if (settingsButton) {
 
-            botao.addEventListener(
+            settingsButton.addEventListener(
                 "click",
-                function () {
-
-                    abrirConfiguracoesMesa();
-
-                }
+                abrirConfiguracoesMesa
             );
 
         }
 
 
-        if (fechar) {
+        if (settingsClose) {
 
-            fechar.addEventListener(
+            settingsClose.addEventListener(
                 "click",
-                function () {
-
-                    fecharConfiguracoesMesa();
-
-                }
+                fecharConfiguracoesMesa
             );
 
         }
@@ -1672,15 +905,11 @@
         }
 
 
-        if (atualizar) {
+        if (refresh) {
 
-            atualizar.addEventListener(
+            refresh.addEventListener(
                 "click",
-                async function () {
-
-                    await atualizarMesaSemRecarregar();
-
-                }
+                atualizarMesaSemRecarregar
             );
 
         }
@@ -1688,21 +917,48 @@
 
         painel
             .querySelectorAll(
-                "[data-master-tool]"
+                "[data-table-module]"
             )
             .forEach(
-                function (botaoFerramenta) {
+                function (botao) {
 
-                    botaoFerramenta.addEventListener(
+                    botao.addEventListener(
                         "click",
                         function () {
 
-                            const ferramenta =
-                                botaoFerramenta.dataset.masterTool;
+                            abrirModulo(
+                                botao.dataset.tableModule
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+
+        painel
+            .querySelectorAll(
+                "[data-master-tool]"
+            )
+            .forEach(
+                function (botao) {
+
+                    botao.addEventListener(
+                        "click",
+                        function () {
+
+                            if (
+                                !usuarioEhMestre()
+                            ) {
+
+                                return;
+
+                            }
 
 
                             selecionarFerramentaMestre(
-                                ferramenta
+                                botao.dataset.masterTool
                             );
 
                         }
@@ -1717,18 +973,14 @@
                 "[data-player-tool]"
             )
             .forEach(
-                function (botaoFerramenta) {
+                function (botao) {
 
-                    botaoFerramenta.addEventListener(
+                    botao.addEventListener(
                         "click",
                         function () {
 
-                            const ferramenta =
-                                botaoFerramenta.dataset.playerTool;
-
-
                             selecionarFerramentaJogador(
-                                ferramenta
+                                botao.dataset.playerTool
                             );
 
                         }
@@ -1737,22 +989,1972 @@
                 }
             );
 
+
+        const bossButton =
+            document.getElementById(
+                "mesa-boss-button"
+            );
+
+
+        if (bossButton) {
+
+            bossButton.addEventListener(
+                "click",
+                function () {
+
+                    if (
+                        usuarioEhMestre()
+                    ) {
+
+                        ativarBoss();
+
+                    }
+
+                }
+            );
+
+        }
+
     }
 
 
     // ==========================================
-    // ABRIR CONFIGURAÇÕES
+    // ESTILOS
+    // ==========================================
+
+    function configurarEstilosMesa() {
+
+        if (
+            document.getElementById(
+                "mesa-functional-style"
+            )
+        ) {
+
+            return;
+
+        }
+
+
+        const style =
+            document.createElement("style");
+
+
+        style.id =
+            "mesa-functional-style";
+
+
+        style.textContent = `
+
+            /* ==================================
+               BASE
+            ================================== */
+
+            #online-table-panel {
+
+                --mesa-accent:#7c3aed;
+                --mesa-glow:rgba(124,58,237,.25);
+
+                width:100%;
+                min-height:100vh;
+
+                box-sizing:border-box;
+
+                padding:12px;
+
+                background:
+                    radial-gradient(
+                        circle at 50% 15%,
+                        rgba(124,58,237,.08),
+                        transparent 40%
+                    ),
+                    #05030a;
+
+                color:#f5f0ff;
+
+            }
+
+
+            .mesa-main {
+
+                width:100%;
+                max-width:1500px;
+
+                margin:0 auto;
+
+            }
+
+
+            /* ==================================
+               HEADER
+            ================================== */
+
+            .mesa-header {
+
+                display:flex;
+
+                align-items:center;
+
+                justify-content:space-between;
+
+                gap:12px;
+
+                padding:10px 4px 16px;
+
+            }
+
+
+            .mesa-header-label {
+
+                color:#8f839d;
+
+                font-size:9px;
+
+                letter-spacing:3px;
+
+            }
+
+
+            .mesa-header h2 {
+
+                margin:3px 0 0;
+
+                font-size:18px;
+
+            }
+
+
+            .mesa-header-actions {
+
+                display:flex;
+
+                align-items:center;
+
+                gap:8px;
+
+            }
+
+
+            .mesa-mode-status {
+
+                padding:8px 11px;
+
+                border-radius:10px;
+
+                border:1px solid var(--mesa-accent);
+
+                background:rgba(255,255,255,.035);
+
+                color:#ddd;
+
+                font-size:9px;
+
+                font-weight:bold;
+
+                white-space:nowrap;
+
+            }
+
+
+            .mesa-icon-button {
+
+                width:40px;
+
+                height:40px;
+
+                border:1px solid #68408a;
+
+                border-radius:11px;
+
+                background:#171020;
+
+                color:#fff;
+
+                cursor:pointer;
+
+                font-size:18px;
+
+            }
+
+
+            /* ==================================
+               MESTRE
+            ================================== */
+
+            .mesa-master {
+
+                display:flex;
+
+                flex-direction:column;
+
+                align-items:center;
+
+                gap:3px;
+
+                margin-bottom:8px;
+
+            }
+
+
+            .mesa-master span {
+
+                color:#8f839d;
+
+                font-size:8px;
+
+                letter-spacing:2px;
+
+            }
+
+
+            .mesa-master strong {
+
+                color:#e9d5ff;
+
+                font-size:12px;
+
+            }
+
+
+            /* ==================================
+               MESA
+            ================================== */
+
+            .rpg-table {
+
+                position:relative;
+
+                display:grid;
+
+                grid-template-columns:minmax(90px,170px) minmax(0,1fr) minmax(90px,170px);
+
+                gap:14px;
+
+                min-height:620px;
+
+                padding:22px;
+
+                border:2px solid var(--mesa-accent);
+
+                border-radius:32px;
+
+                background:
+                    radial-gradient(
+                        circle at center,
+                        rgba(124,58,237,.09),
+                        transparent 58%
+                    ),
+                    linear-gradient(
+                        145deg,
+                        #171020,
+                        #08060d
+                    );
+
+                box-shadow:
+                    0 0 35px var(--mesa-glow),
+                    inset 0 0 50px rgba(0,0,0,.45);
+
+                transition:
+                    border-color .25s ease,
+                    box-shadow .25s ease,
+                    background .25s ease;
+
+            }
+
+
+            .table-side {
+
+                display:flex;
+
+                flex-direction:column;
+
+                justify-content:space-around;
+
+                gap:10px;
+
+            }
+
+
+            .table-center {
+
+                min-width:0;
+
+                display:flex;
+
+                flex-direction:column;
+
+                justify-content:center;
+
+                gap:14px;
+
+            }
+
+
+            /* ==================================
+               ASSENTOS
+            ================================== */
+
+            .table-seat {
+
+                min-height:82px;
+
+                display:flex;
+
+                align-items:center;
+
+                justify-content:center;
+
+                padding:8px;
+
+                border:1px solid rgba(255,255,255,.09);
+
+                border-radius:18px;
+
+                background:
+                    rgba(255,255,255,.035);
+
+                box-shadow:
+                    inset 0 0 20px rgba(0,0,0,.2);
+
+                transition:
+                    transform .2s ease,
+                    border-color .2s ease,
+                    background .2s ease;
+
+                cursor:pointer;
+
+            }
+
+
+            .table-seat:hover {
+
+                transform:scale(1.025);
+
+                border-color:var(--mesa-accent);
+
+                background:
+                    rgba(124,58,237,.09);
+
+            }
+
+
+            .table-seat-content {
+
+                text-align:center;
+
+                min-width:0;
+
+            }
+
+
+            .table-seat-number {
+
+                display:block;
+
+                color:#75687f;
+
+                font-size:8px;
+
+                letter-spacing:1px;
+
+            }
+
+
+            .table-seat-character {
+
+                display:block;
+
+                margin-top:5px;
+
+                color:#e9d5ff;
+
+                font-size:10px;
+
+                overflow:hidden;
+
+                text-overflow:ellipsis;
+
+                white-space:nowrap;
+
+            }
+
+
+            /* ==================================
+               TELA CENTRAL
+            ================================== */
+
+            .mesa-screen {
+
+                position:relative;
+
+                width:100%;
+
+                min-height:300px;
+
+                border:1px solid rgba(255,255,255,.1);
+
+                border-radius:22px;
+
+                overflow:hidden;
+
+                background:
+                    #08060d;
+
+                box-shadow:
+                    inset 0 0 35px rgba(0,0,0,.5);
+
+            }
+
+
+            .mesa-screen-home {
+
+                min-height:300px;
+
+                display:flex;
+
+                flex-direction:column;
+
+                justify-content:center;
+
+                align-items:center;
+
+                text-align:center;
+
+                padding:25px;
+
+            }
+
+
+            .mesa-screen-symbol {
+
+                font-size:46px;
+
+                margin-bottom:10px;
+
+                filter:
+                    drop-shadow(
+                        0 0 15px
+                        var(--mesa-accent)
+                    );
+
+            }
+
+
+            .mesa-screen-home h3 {
+
+                margin:0;
+
+                font-size:18px;
+
+            }
+
+
+            .mesa-screen-home p {
+
+                margin:7px 0;
+
+                color:#a99bb4;
+
+                font-size:11px;
+
+            }
+
+
+            .mesa-screen-home span {
+
+                color:#655b6d;
+
+                font-size:9px;
+
+            }
+
+
+            /* ==================================
+               MÓDULOS
+            ================================== */
+
+            .table-modules {
+
+                display:grid;
+
+                grid-template-columns:
+                    repeat(7,minmax(0,1fr));
+
+                gap:7px;
+
+            }
+
+
+            .table-module {
+
+                min-width:0;
+
+                padding:9px 4px;
+
+                border:1px solid rgba(255,255,255,.08);
+
+                border-radius:11px;
+
+                background:#100c16;
+
+                color:#fff;
+
+                cursor:pointer;
+
+                transition:
+                    .2s ease;
+
+            }
+
+
+            .table-module:hover {
+
+                border-color:var(--mesa-accent);
+
+                background:
+                    rgba(124,58,237,.12);
+
+                transform:translateY(-2px);
+
+            }
+
+
+            .table-module span {
+
+                display:block;
+
+                font-size:18px;
+
+            }
+
+
+            .table-module small {
+
+                display:block;
+
+                margin-top:4px;
+
+                color:#8f839d;
+
+                font-size:7px;
+
+            }
+
+
+            /* ==================================
+               CHAT
+            ================================== */
+
+            .table-chat {
+
+                border:1px solid rgba(255,255,255,.07);
+
+                border-radius:14px;
+
+                background:rgba(0,0,0,.2);
+
+                overflow:hidden;
+
+            }
+
+
+            .table-chat-title {
+
+                padding:7px 10px;
+
+                border-bottom:1px solid rgba(255,255,255,.06);
+
+                color:#8f839d;
+
+                font-size:8px;
+
+                letter-spacing:1px;
+
+            }
+
+
+            .table-chat-messages {
+
+                min-height:35px;
+
+                max-height:60px;
+
+                overflow:auto;
+
+                padding:9px;
+
+                color:#a99bb4;
+
+                font-size:9px;
+
+            }
+
+
+            /* ==================================
+               CARDS
+            ================================== */
+
+            .online-table-players {
+
+                margin-top:15px;
+
+            }
+
+
+            .online-table-section-title {
+
+                display:flex;
+
+                justify-content:space-between;
+
+                align-items:center;
+
+                margin-bottom:9px;
+
+            }
+
+
+            .online-table-section-title span {
+
+                color:#8f839d;
+
+                font-size:9px;
+
+                letter-spacing:2px;
+
+            }
+
+
+            .online-table-section-title strong {
+
+                color:#c084fc;
+
+                font-size:10px;
+
+            }
+
+
+            .online-table-player-list {
+
+                display:grid;
+
+                grid-template-columns:
+                    repeat(4,minmax(0,1fr));
+
+                gap:10px;
+
+            }
+
+
+            .mesa-player-card {
+
+                position:relative;
+
+                min-height:150px;
+
+                padding:12px;
+
+                border-radius:17px;
+
+                border:1px solid #68408a;
+
+                background:
+                    linear-gradient(
+                        145deg,
+                        #171020,
+                        #0b0910
+                    );
+
+                box-shadow:
+                    0 0 18px rgba(124,58,237,.1);
+
+                overflow:hidden;
+
+                cursor:pointer;
+
+                transition:.2s ease;
+
+            }
+
+
+            .mesa-player-card:hover {
+
+                transform:translateY(-3px);
+
+                border-color:#a78bfa;
+
+                box-shadow:
+                    0 0 24px
+                    rgba(124,58,237,.25);
+
+            }
+
+
+            .mesa-player-card.selected {
+
+                border-color:#f0abfc;
+
+                box-shadow:
+                    0 0 28px
+                    rgba(192,132,252,.3);
+
+            }
+
+
+            .mesa-player-card::before {
+
+                content:"";
+
+                position:absolute;
+
+                top:0;
+                left:0;
+                right:0;
+
+                height:3px;
+
+                background:
+                    linear-gradient(
+                        90deg,
+                        #6d28d9,
+                        #c084fc
+                    );
+
+            }
+
+
+            .mesa-player-card-top {
+
+                display:flex;
+
+                gap:9px;
+
+                align-items:center;
+
+                margin-bottom:10px;
+
+            }
+
+
+            .mesa-player-avatar {
+
+                width:45px;
+
+                height:45px;
+
+                flex-shrink:0;
+
+                display:flex;
+
+                align-items:center;
+
+                justify-content:center;
+
+                border:1px solid #8b5cf6;
+
+                border-radius:50%;
+
+                background:#100b18;
+
+                overflow:hidden;
+
+                font-size:20px;
+
+            }
+
+
+            .mesa-player-avatar img {
+
+                width:100%;
+                height:100%;
+
+                object-fit:cover;
+
+            }
+
+
+            .mesa-player-card-name {
+
+                min-width:0;
+
+            }
+
+
+            .mesa-player-card-name strong {
+
+                display:block;
+
+                overflow:hidden;
+
+                text-overflow:ellipsis;
+
+                white-space:nowrap;
+
+                font-size:12px;
+
+            }
+
+
+            .mesa-player-card-name small {
+
+                color:#75687f;
+
+                font-size:8px;
+
+            }
+
+
+            .mesa-player-card-info {
+
+                display:grid;
+
+                grid-template-columns:1fr 1fr;
+
+                gap:5px;
+
+            }
+
+
+            .mesa-player-card-info div {
+
+                padding:6px;
+
+                border-radius:8px;
+
+                background:rgba(255,255,255,.035);
+
+            }
+
+
+            .mesa-player-card-info span {
+
+                display:block;
+
+                color:#75687f;
+
+                font-size:7px;
+
+            }
+
+
+            .mesa-player-card-info strong {
+
+                display:block;
+
+                margin-top:2px;
+
+                color:#e9d5ff;
+
+                font-size:9px;
+
+                overflow:hidden;
+
+                text-overflow:ellipsis;
+
+                white-space:nowrap;
+
+            }
+
+
+            .mesa-player-card-footer {
+
+                display:flex;
+
+                justify-content:space-between;
+
+                margin-top:8px;
+
+                color:#75687f;
+
+                font-size:7px;
+
+            }
+
+
+            .mesa-player-card-status {
+
+                color:#86efac;
+
+            }
+
+
+            .mesa-player-card-empty {
+
+                min-height:150px;
+
+                display:flex;
+
+                flex-direction:column;
+
+                align-items:center;
+
+                justify-content:center;
+
+                border:1px dashed rgba(255,255,255,.1);
+
+                border-radius:17px;
+
+                color:#75687f;
+
+                text-align:center;
+
+            }
+
+
+            /* ==================================
+               OVERLAYS
+            ================================== */
+
+            .mesa-overlay {
+
+                position:fixed;
+
+                inset:0;
+
+                z-index:99999;
+
+                display:flex;
+
+                align-items:center;
+
+                justify-content:center;
+
+                padding:15px;
+
+                background:
+                    rgba(3,2,8,.88);
+
+                backdrop-filter:blur(8px);
+
+                overflow:auto;
+
+            }
+
+
+            .mesa-settings-box,
+            .mesa-module-box {
+
+                width:100%;
+
+                max-width:540px;
+
+                max-height:90vh;
+
+                overflow:auto;
+
+                padding:18px;
+
+                border:1px solid #68408a;
+
+                border-radius:20px;
+
+                background:
+                    linear-gradient(
+                        160deg,
+                        #171020,
+                        #0b0910
+                    );
+
+                box-shadow:
+                    0 0 35px
+                    rgba(124,58,237,.25);
+
+            }
+
+
+            .mesa-panel-header {
+
+                display:flex;
+
+                justify-content:space-between;
+
+                gap:10px;
+
+                margin-bottom:15px;
+
+            }
+
+
+            .mesa-panel-header small {
+
+                color:#8f839d;
+
+                font-size:8px;
+
+                letter-spacing:2px;
+
+            }
+
+
+            .mesa-panel-header h2 {
+
+                margin:4px 0 0;
+
+                font-size:18px;
+
+            }
+
+
+            .mesa-close-button {
+
+                width:36px;
+                height:36px;
+
+                border:1px solid #68408a;
+
+                border-radius:50%;
+
+                background:#1b1424;
+
+                color:#fff;
+
+                cursor:pointer;
+
+            }
+
+
+            .mesa-settings-heading {
+
+                padding:11px;
+
+                margin-bottom:9px;
+
+                border-radius:11px;
+
+                background:rgba(255,255,255,.035);
+
+                color:#c084fc;
+
+                font-size:10px;
+
+                letter-spacing:1px;
+
+            }
+
+
+            .mesa-settings-heading.master {
+
+                border:1px solid #6f3aa8;
+
+                background:
+                    rgba(124,58,237,.08);
+
+            }
+
+
+            .mesa-setting-option {
+
+                width:100%;
+
+                display:flex;
+
+                align-items:center;
+
+                gap:11px;
+
+                padding:11px;
+
+                margin-bottom:7px;
+
+                border:1px solid rgba(255,255,255,.08);
+
+                border-radius:12px;
+
+                background:rgba(255,255,255,.035);
+
+                color:#fff;
+
+                text-align:left;
+
+                cursor:pointer;
+
+                transition:.2s ease;
+
+            }
+
+
+            .mesa-setting-option:hover {
+
+                border-color:#8b5cf6;
+
+                background:
+                    rgba(124,58,237,.1);
+
+            }
+
+
+            .mesa-setting-option > span {
+
+                width:34px;
+                height:34px;
+
+                display:flex;
+
+                align-items:center;
+                justify-content:center;
+
+                border-radius:9px;
+
+                background:#1b1424;
+
+                font-size:17px;
+
+            }
+
+
+            .mesa-setting-option div {
+
+                display:flex;
+
+                flex-direction:column;
+
+                gap:2px;
+
+            }
+
+
+            .mesa-setting-option strong {
+
+                font-size:11px;
+
+            }
+
+
+            .mesa-setting-option small {
+
+                color:#8f839d;
+
+                font-size:8px;
+
+            }
+
+
+            .mesa-settings-maintenance {
+
+                margin-top:15px;
+
+                padding-top:14px;
+
+                border-top:1px solid rgba(255,255,255,.07);
+
+            }
+
+
+            .mesa-settings-maintenance > small {
+
+                display:block;
+
+                margin-bottom:8px;
+
+                color:#75687f;
+
+                font-size:8px;
+
+            }
+
+
+            .mesa-setting-action,
+            .mesa-boss-button {
+
+                width:100%;
+
+                padding:11px;
+
+                border-radius:11px;
+
+                cursor:pointer;
+
+                font-weight:bold;
+
+            }
+
+
+            .mesa-setting-action {
+
+                border:1px solid #68408a;
+
+                background:#1b1424;
+
+                color:#d8c7e8;
+
+            }
+
+
+            .mesa-boss-button {
+
+                margin-top:12px;
+
+                border:1px solid #ef4444;
+
+                background:rgba(239,68,68,.12);
+
+                color:#fca5a5;
+
+            }
+
+
+            .mesa-refresh-status {
+
+                min-height:15px;
+
+                margin-top:7px;
+
+                color:#75687f;
+
+                text-align:center;
+
+                font-size:8px;
+
+            }
+
+
+            /* ==================================
+               PAINÉIS DE MÓDULO
+            ================================== */
+
+            .mesa-module-title {
+
+                color:#c084fc;
+
+                font-size:9px;
+
+                letter-spacing:2px;
+
+            }
+
+
+            .mesa-module-box h2 {
+
+                margin:5px 0 15px;
+
+                font-size:20px;
+
+            }
+
+
+            .mesa-data-grid {
+
+                display:grid;
+
+                grid-template-columns:1fr 1fr;
+
+                gap:8px;
+
+            }
+
+
+            .mesa-data-item {
+
+                padding:10px;
+
+                border:1px solid rgba(255,255,255,.07);
+
+                border-radius:10px;
+
+                background:rgba(255,255,255,.035);
+
+            }
+
+
+            .mesa-data-item span {
+
+                display:block;
+
+                color:#75687f;
+
+                font-size:7px;
+
+            }
+
+
+            .mesa-data-item strong {
+
+                display:block;
+
+                margin-top:3px;
+
+                color:#e9d5ff;
+
+                font-size:11px;
+
+            }
+
+
+            .mesa-module-actions {
+
+                display:flex;
+
+                flex-wrap:wrap;
+
+                gap:7px;
+
+                margin-top:15px;
+
+            }
+
+
+            .mesa-module-action {
+
+                flex:1;
+
+                min-width:120px;
+
+                padding:10px;
+
+                border:1px solid #68408a;
+
+                border-radius:10px;
+
+                background:#171020;
+
+                color:#e9d5ff;
+
+                cursor:pointer;
+
+            }
+
+
+            /* ==================================
+               STATUS
+            ================================== */
+
+            .mesa-hp-bar {
+
+                height:12px;
+
+                margin:7px 0 15px;
+
+                border-radius:99px;
+
+                overflow:hidden;
+
+                background:#241d2c;
+
+            }
+
+
+            .mesa-hp-fill {
+
+                height:100%;
+
+                width:100%;
+
+                background:#ef4444;
+
+                transition:.3s ease;
+
+            }
+
+
+            /* ==================================
+               MAPA
+            ================================== */
+
+            .mesa-map-wrap {
+
+                position:relative;
+
+                height:430px;
+
+                overflow:hidden;
+
+                border-radius:14px;
+
+                background:#05070c;
+
+                touch-action:none;
+
+                cursor:grab;
+
+            }
+
+
+            .mesa-map-wrap.dragging {
+
+                cursor:grabbing;
+
+            }
+
+
+            .mesa-map-svg {
+
+                width:100%;
+
+                height:100%;
+
+                display:block;
+
+                user-select:none;
+
+            }
+
+
+            .mesa-map-region {
+
+                fill:rgba(14,165,164,.13);
+
+                stroke:#0ea5a4;
+
+                stroke-width:3;
+
+                cursor:pointer;
+
+                transition:.2s ease;
+
+            }
+
+
+            .mesa-map-region:hover {
+
+                fill:rgba(14,165,164,.25);
+
+            }
+
+
+            .mesa-map-label {
+
+                fill:#d8c7e8;
+
+                font-size:20px;
+
+                pointer-events:none;
+
+                text-anchor:middle;
+
+            }
+
+
+            .mesa-map-player {
+
+                fill:#c084fc;
+
+                stroke:#fff;
+
+                stroke-width:3;
+
+                cursor:pointer;
+
+            }
+
+
+            .mesa-map-portal {
+
+                fill:#7c3aed;
+
+                stroke:#ddd6fe;
+
+                stroke-width:3;
+
+                animation:mesaPortalPulse 1.6s infinite;
+
+            }
+
+
+            @keyframes mesaPortalPulse {
+
+                0%,100% {
+                    opacity:.55;
+                    transform:scale(1);
+                    transform-origin:center;
+                }
+
+                50% {
+                    opacity:1;
+                    transform:scale(1.25);
+                    transform-origin:center;
+                }
+
+            }
+
+
+            .mesa-map-controls {
+
+                position:absolute;
+
+                top:8px;
+
+                right:8px;
+
+                display:flex;
+
+                gap:5px;
+
+                z-index:2;
+
+            }
+
+
+            .mesa-map-controls button {
+
+                width:32px;
+                height:32px;
+
+                border:1px solid #68408a;
+
+                border-radius:8px;
+
+                background:#100b18;
+
+                color:#fff;
+
+                cursor:pointer;
+
+            }
+
+
+            /* ==================================
+               CTE
+            ================================== */
+
+            .mesa-cte {
+
+                min-height:300px;
+
+                display:flex;
+
+                flex-direction:column;
+
+                justify-content:center;
+
+                align-items:center;
+
+                text-align:center;
+
+                padding:20px;
+
+                border:1px solid #eab308;
+
+                background:
+                    radial-gradient(
+                        circle,
+                        rgba(234,179,8,.12),
+                        transparent 65%
+                    );
+
+            }
+
+
+            .mesa-cte-timer {
+
+                margin:15px 0;
+
+                font-size:55px;
+
+                font-weight:900;
+
+                color:#fde047;
+
+                text-shadow:
+                    0 0 20px rgba(234,179,8,.5);
+
+            }
+
+
+            .mesa-cte-button {
+
+                padding:14px 25px;
+
+                border:1px solid #eab308;
+
+                border-radius:12px;
+
+                background:#302707;
+
+                color:#fef08a;
+
+                font-weight:bold;
+
+                cursor:pointer;
+
+            }
+
+
+            /* ==================================
+               COMBATE
+            ================================== */
+
+            .mesa-combat {
+
+                min-height:300px;
+
+                padding:20px;
+
+                background:
+                    radial-gradient(
+                        circle,
+                        rgba(239,68,68,.13),
+                        transparent 65%
+                    );
+
+            }
+
+
+            .mesa-combat-title {
+
+                color:#fca5a5;
+
+                font-size:22px;
+
+                font-weight:bold;
+
+            }
+
+
+            /* ==================================
+               BOSS
+            ================================== */
+
+            .mesa-boss-flash {
+
+                animation:
+                    mesaBossFlash .42s ease-in-out
+                    0s 8 alternate;
+
+            }
+
+
+            @keyframes mesaBossFlash {
+
+                from {
+
+                    border-color:#7f1d1d;
+
+                    box-shadow:
+                        0 0 30px
+                        rgba(239,68,68,.3);
+
+                }
+
+                to {
+
+                    border-color:#ff0000;
+
+                    box-shadow:
+                        0 0 75px
+                        rgba(239,0,0,.95);
+
+                }
+
+            }
+
+
+            .mesa-boss-alert {
+
+                position:absolute;
+
+                inset:0;
+
+                z-index:20;
+
+                display:flex;
+
+                align-items:center;
+
+                justify-content:center;
+
+                padding:20px;
+
+                background:
+                    rgba(90,0,0,.3);
+
+                pointer-events:none;
+
+            }
+
+
+            .mesa-boss-alert-box {
+
+                padding:22px;
+
+                border:2px solid #ef4444;
+
+                border-radius:18px;
+
+                background:#180606;
+
+                color:#fecaca;
+
+                text-align:center;
+
+                box-shadow:
+                    0 0 40px
+                    rgba(239,68,68,.7);
+
+            }
+
+
+            .mesa-boss-alert-box strong {
+
+                display:block;
+
+                font-size:28px;
+
+                color:#f87171;
+
+            }
+
+
+            .mesa-boss-alert-box span {
+
+                display:block;
+
+                margin-top:7px;
+
+                font-size:10px;
+
+                letter-spacing:2px;
+
+            }
+
+
+            /* ==================================
+               ESTADOS
+            ================================== */
+
+            .rpg-table.mesa-state-interface {
+
+                --mesa-accent:#22c55e;
+
+                --mesa-glow:rgba(34,197,94,.25);
+
+            }
+
+
+            .rpg-table.mesa-state-combat {
+
+                --mesa-accent:#ef4444;
+
+                --mesa-glow:rgba(239,68,68,.3);
+
+            }
+
+
+            .rpg-table.mesa-state-cte {
+
+                --mesa-accent:#eab308;
+
+                --mesa-glow:rgba(234,179,8,.3);
+
+            }
+
+
+            .rpg-table.mesa-state-map {
+
+                --mesa-accent:#3b82f6;
+
+                --mesa-glow:rgba(59,130,246,.25);
+
+            }
+
+
+            /* ==================================
+               RESPONSIVO
+            ================================== */
+
+            @media (max-width:900px) {
+
+                .rpg-table {
+
+                    grid-template-columns:
+                        85px minmax(0,1fr) 85px;
+
+                    min-height:560px;
+
+                    padding:12px;
+
+                    gap:8px;
+
+                }
+
+
+                .table-seat {
+
+                    min-height:70px;
+
+                }
+
+
+                .table-modules {
+
+                    grid-template-columns:
+                        repeat(4,minmax(0,1fr));
+
+                }
+
+
+                .online-table-player-list {
+
+                    grid-template-columns:
+                        repeat(2,minmax(0,1fr));
+
+                }
+
+            }
+
+
+            @media (max-width:600px) {
+
+                #online-table-panel {
+
+                    padding:7px;
+
+                }
+
+
+                .mesa-header h2 {
+
+                    font-size:15px;
+
+                }
+
+
+                .mesa-mode-status {
+
+                    display:none;
+
+                }
+
+
+                .rpg-table {
+
+                    grid-template-columns:
+                        58px minmax(0,1fr) 58px;
+
+                    min-height:500px;
+
+                    border-radius:22px;
+
+                    padding:8px;
+
+                }
+
+
+                .table-seat {
+
+                    min-height:62px;
+
+                    border-radius:12px;
+
+                }
+
+
+                .table-seat-number {
+
+                    font-size:6px;
+
+                }
+
+
+                .table-seat-character {
+
+                    font-size:7px;
+
+                }
+
+
+                .mesa-screen {
+
+                    min-height:240px;
+
+                }
+
+
+                .mesa-screen-home {
+
+                    min-height:240px;
+
+                }
+
+
+                .mesa-map-wrap {
+
+                    height:350px;
+
+                }
+
+
+                .online-table-player-list {
+
+                    grid-template-columns:1fr 1fr;
+
+                }
+
+
+                .mesa-player-card {
+
+                    min-height:135px;
+
+                    padding:9px;
+
+                }
+
+
+                .mesa-player-avatar {
+
+                    width:38px;
+
+                    height:38px;
+
+                }
+
+
+                .mesa-player-card-info {
+
+                    gap:3px;
+
+                }
+
+            }
+
+
+            @media (max-width:380px) {
+
+                .rpg-table {
+
+                    grid-template-columns:
+                        48px minmax(0,1fr) 48px;
+
+                }
+
+
+                .table-modules {
+
+                    grid-template-columns:
+                        repeat(3,minmax(0,1fr));
+
+                }
+
+
+                .online-table-player-list {
+
+                    grid-template-columns:1fr;
+
+                }
+
+            }
+
+        `;
+
+
+        document.head.appendChild(
+            style
+        );
+
+    }
+
+
+    // ==========================================
+    // CONFIGURAÇÕES
     // ==========================================
 
     function abrirConfiguracoesMesa() {
 
-        const settings =
+        const painel =
             document.getElementById(
                 "mesa-settings-panel"
             );
 
 
-        if (!settings) {
+        if (!painel) {
 
             return;
 
@@ -1762,8 +2964,8 @@
         atualizarPermissoesConfiguracoes();
 
 
-        settings.style.display =
-            "block";
+        painel.style.display =
+            "flex";
 
 
         document.body.style.overflow =
@@ -1772,40 +2974,36 @@
     }
 
 
-    // ==========================================
-    // FECHAR CONFIGURAÇÕES
-    // ==========================================
-
     function fecharConfiguracoesMesa() {
 
-        const settings =
+        const painel =
             document.getElementById(
                 "mesa-settings-panel"
             );
 
 
-        if (!settings) {
+        if (!painel) {
 
             return;
 
         }
 
 
-        settings.style.display =
+        painel.style.display =
             "none";
 
 
         document.body.style.overflow =
-            "hidden";
+            "";
 
     }
 
 
-    // ==========================================
-    // ATUALIZAR PERMISSÕES
-    // ==========================================
-
     function atualizarPermissoesConfiguracoes() {
+
+        const mestre =
+            usuarioEhMestre();
+
 
         const masterArea =
             document.getElementById(
@@ -1817,16 +3015,6 @@
             document.getElementById(
                 "mesa-player-settings"
             );
-
-
-        const botao =
-            document.getElementById(
-                "mesa-settings-button"
-            );
-
-
-        const mestre =
-            usuarioEhMestre();
 
 
         if (masterArea) {
@@ -1848,1478 +3036,272 @@
 
         }
 
-
-        if (botao) {
-
-            botao.title =
-                mestre
-                    ? "Configurações do Mestre"
-                    : "Configurações";
-
-        }
-
     }
 
 
     // ==========================================
-    // SELECIONAR FERRAMENTA DO MESTRE
+    // FERRAMENTAS DO MESTRE
     // ==========================================
 
     function selecionarFerramentaMestre(
         ferramenta
     ) {
 
-        if (!usuarioEhMestre()) {
-
-            console.log(
-                "🔒 Acesso negado à ferramenta:",
-                ferramenta
-            );
+        if (
+            !usuarioEhMestre()
+        ) {
 
             return;
 
         }
 
 
-        console.log(
-            "👑 Ferramenta do Mestre selecionada:",
-            ferramenta
-        );
+        fecharConfiguracoesMesa();
 
 
-        mostrarAvisoConfiguracao(
-            `🛠️ ${obterNomeFerramenta(
-                ferramenta
-            )} será aberto aqui.`
-        );
+        const mapa = {
+
+            players:
+                "players",
+
+            characters:
+                "character",
+
+            status:
+                "status",
+
+            needs:
+                "needs",
+
+            inventory:
+                "inventory",
+
+            combat:
+                "combat",
+
+            events:
+                "cte",
+
+            map:
+                "map"
+
+        };
+
+
+        const modulo =
+            mapa[ferramenta];
+
+
+        if (modulo) {
+
+            abrirModulo(modulo);
+
+        }
 
     }
 
 
     // ==========================================
-    // SELECIONAR FERRAMENTA DO JOGADOR
+    // FERRAMENTAS DO JOGADOR
     // ==========================================
 
     function selecionarFerramentaJogador(
         ferramenta
     ) {
 
-        console.log(
-            "⚙️ Opção do jogador selecionada:",
-            ferramenta
-        );
+        fecharConfiguracoesMesa();
 
 
-        mostrarAvisoConfiguracao(
-            `⚙️ ${obterNomeFerramenta(
-                ferramenta
-            )}`
-        );
-
-    }
-
-
-    // ==========================================
-    // NOME DA FERRAMENTA
-    // ==========================================
-
-    function obterNomeFerramenta(
-        ferramenta
-    ) {
-
-        const nomes = {
-
-            players:
-                "Jogadores",
-
-            characters:
-                "Personagens",
-
-            status:
-                "Status",
-
-            needs:
-                "Fome e Sede",
-
-            inventory:
-                "Inventário",
-
-            combat:
-                "Combate",
-
-            events:
-                "Eventos / QTE",
-
-            map:
-                "Mapa",
-
-            interface:
-                "Interface",
-
-            help:
-                "Ajuda"
-
-        };
-
-
-        return (
-            nomes[ferramenta] ||
-            "Ferramenta"
-
-        );
-
-    }
-
-
-    // ==========================================
-    // AVISO DA CONFIGURAÇÃO
-    // ==========================================
-
-    function mostrarAvisoConfiguracao(
-        texto
-    ) {
-
-        const existente =
-            document.getElementById(
-                "mesa-settings-message"
-            );
-
-
-        if (existente) {
-
-            existente.remove();
-
-        }
-
-
-        const mensagem =
-            document.createElement("div");
-
-
-        mensagem.id =
-            "mesa-settings-message";
-
-
-        mensagem.textContent =
-            texto;
-
-
-        mensagem.style.cssText = `
-
-            margin-top:12px;
-
-            padding:10px;
-
-            border-radius:10px;
-
-            border:1px solid #68408a;
-
-            background:rgba(
-                124,
-                58,
-                237,
-                0.08
-            );
-
-            color:#c084fc;
-
-            text-align:center;
-
-            font-size:10px;
-
-        `;
-
-
-        const settings =
-            document.querySelector(
-                "#mesa-settings-panel > div"
-            );
-
-
-        if (settings) {
-
-            settings.appendChild(
-                mensagem
-            );
-
-        }
-
-
-        setTimeout(
-            function () {
-
-                if (
-                    mensagem.parentNode
-                ) {
-
-                    mensagem.remove();
-
-                }
-
-            },
-            2500
-        );
-
-    }
-
-
-    // ==========================================
-    // ATUALIZAR MESA SEM RECARREGAR
-    // ==========================================
-
-    async function atualizarMesaSemRecarregar() {
-
-        const status =
-            document.getElementById(
-                "mesa-refresh-status"
-            );
-
-
-        if (status) {
-
-            status.textContent =
-                "🔄 Sincronizando...";
-
-        }
-
-
-        try {
-
-            const modoAtual =
-                window.rpgMesa.mode;
-
-
-            await carregarJogadoresMesa();
-
-
-            definirModoMesa(
-                modoAtual
-            );
-
-
-            if (status) {
-
-                status.textContent =
-                    "✅ Mesa atualizada sem perder o estado.";
-
-            }
-
-
-            mostrarNotificacaoMesa(
-                "🔄 Mesa sincronizada"
-            );
-
-
-        } catch (erro) {
-
-            console.error(
-                "❌ Erro ao atualizar mesa:",
-                erro
-            );
-
-
-            if (status) {
-
-                status.textContent =
-                    "❌ Não foi possível atualizar.";
-
-            }
-
-        }
-
-
-        setTimeout(
-            function () {
-
-                if (status) {
-
-                    status.textContent =
-                        "";
-
-                }
-
-            },
-            3500
-        );
-
-    }
-
-
-    // ==========================================
-    // NOTIFICAÇÃO
-    // ==========================================
-
-    function mostrarNotificacaoMesa(
-        texto
-    ) {
-
-        const antiga =
-            document.getElementById(
-                "mesa-system-notification"
-            );
-
-
-        if (antiga) {
-
-            antiga.remove();
-
-        }
-
-
-        const notificacao =
-            document.createElement("div");
-
-
-        notificacao.id =
-            "mesa-system-notification";
-
-
-        notificacao.textContent =
-            texto;
-
-
-        notificacao.style.cssText = `
-
-            position:fixed;
-
-            left:50%;
-
-            bottom:22px;
-
-            transform:translateX(-50%);
-
-            z-index:10000;
-
-            padding:10px 15px;
-
-            border-radius:12px;
-
-            border:1px solid #68408a;
-
-            background:#100b18;
-
-            color:#e9d5ff;
-
-            box-shadow:
-                0 0 20px rgba(
-                    124,
-                    58,
-                    237,
-                    0.25
-                );
-
-            font-size:11px;
-
-            pointer-events:none;
-
-        `;
-
-
-        document.body.appendChild(
-            notificacao
-        );
-
-
-        setTimeout(
-            function () {
-
-                if (
-                    notificacao.parentNode
-                ) {
-
-                    notificacao.remove();
-
-                }
-
-            },
-            2500
-        );
-
-    }
-
-
-    // ==========================================
-    // CRIAR ASSENTO
-    // ==========================================
-
-    function criarAssento(numero) {
-
-        return `
-
-            <div
-                class="table-seat"
-                data-seat="${numero}"
-                data-player-id=""
-                data-character-id=""
-            >
-
-                <div class="table-seat-content">
-
-                    <strong class="table-seat-number">
-                        LUGAR ${numero}
-                    </strong>
-
-                    <small class="table-seat-character">
-                        VAZIO
-                    </small>
-
-                </div>
-
-            </div>
-
-        `;
-
-    }
-
-
-    // ==========================================
-    // CARREGAR JOGADORES
-    // ==========================================
-
-    async function carregarJogadoresMesa() {
-
-        let tentativas = 0;
-
-        const limite = 40;
-
-
-        while (
-            tentativas < limite
+        if (
+            ferramenta === "interface"
         ) {
 
-            if (
-                window.rpgAuth &&
-                Array.isArray(
-                    window.rpgAuth.campaignCharacters
-                )
-            ) {
-
-                if (
-                    window.rpgAuth.campaignCharacters.length > 0 ||
-                    tentativas >= 4
-                ) {
-
-                    break;
-
-                }
-
-            }
-
-
-            await esperar(250);
-
-            tentativas++;
-
-        }
-
-
-        const membros =
-            Array.isArray(
-                window.rpgAuth?.campaignMembers
-            )
-                ? window.rpgAuth.campaignMembers
-                : [];
-
-
-        const personagens =
-            Array.isArray(
-                window.rpgAuth?.campaignCharacters
-            )
-                ? window.rpgAuth.campaignCharacters
-                : [];
-
-
-        const jogadores = [];
-
-
-        for (
-            const membro
-            of membros
-        ) {
-
-            if (!membro?.user_id) {
-
-                continue;
-
-            }
-
-
-            if (
-                String(membro.user_id) ===
-                String(window.rpgMesa.master)
-            ) {
-
-                continue;
-
-            }
-
-
-            const personagem =
-                personagens.find(
-                    function (item) {
-
-                        return (
-                            item &&
-                            String(item.user_id) ===
-                            String(membro.user_id)
-                        );
-
-                    }
-                );
-
-
-            if (!personagem) {
-
-                jogadores.push({
-
-                    playerId:
-                        membro.user_id,
-
-                    characterId:
-                        "",
-
-                    character:
-                        null
-
-                });
-
-
-                continue;
-
-            }
-
-
-            jogadores.push({
-
-                playerId:
-                    membro.user_id,
-
-                characterId:
-                    personagem.id || "",
-
-                character:
-                    personagem
-
-            });
-
-        }
-
-
-        window.rpgMesa.players =
-            jogadores;
-
-
-        preencherAssentosAutomaticamente();
-
-        atualizarListaJogadores();
-
-        atualizarContadorJogadores();
-
-        atualizarMensagemMesa();
-
-    }
-
-
-    // ==========================================
-    // PREENCHER ASSENTOS
-    // ==========================================
-
-    function preencherAssentosAutomaticamente() {
-
-        const painel =
-            document.getElementById(
-                "online-table-panel"
-            );
-
-
-        if (!painel) {
+            abrirModulo("interface");
 
             return;
 
         }
 
 
-        for (
-            let numero = 1;
-            numero <= window.rpgMesa.maxPlayers;
-            numero++
+        if (
+            ferramenta === "help"
         ) {
 
-            limparAssento(numero);
+            abrirModulo("help");
+
+        }
+
+    }
+
+
+    // ==========================================
+    // ABRIR MÓDULO
+    // ==========================================
+
+    function abrirModulo(
+        modulo
+    ) {
+
+        const tela =
+            document.getElementById(
+                "mesa-screen"
+            );
+
+
+        if (!tela) {
+
+            return;
 
         }
 
 
-        const jogadores =
-            Array.isArray(
-                window.rpgMesa.players
-            )
-                ? window.rpgMesa.players
-                : [];
+        window.rpgMesa.activeModule =
+            modulo;
 
 
-        let assento =
-            1;
+        switch (modulo) {
 
+            case "character":
 
-        for (
-            const jogador
-            of jogadores
-        ) {
+                definirModoMesa(
+                    "campaign"
+                );
 
-            if (
-                assento >
-                window.rpgMesa.maxPlayers
-            ) {
+                tela.innerHTML =
+                    criarTelaPersonagem(
+                        obterPersonagemSelecionado()
+                    );
 
                 break;
 
-            }
 
+            case "status":
 
-            preencherAssento(
-                assento,
-                jogador.character,
-                jogador.playerId
-            );
-
-
-            assento++;
-
-        }
-
-    }
-
-
-    // ==========================================
-    // ATUALIZAR CARDS DOS JOGADORES
-    // ==========================================
-
-    function atualizarListaJogadores() {
-
-        const lista =
-            document.getElementById(
-                "online-table-player-list"
-            );
-
-
-        if (!lista) {
-
-            return;
-
-        }
-
-
-        const jogadores =
-            Array.isArray(
-                window.rpgMesa.players
-            )
-                ? window.rpgMesa.players
-                : [];
-
-
-        // --------------------------------------
-        // MOSTRAR SOMENTE 4 CARDS
-        // --------------------------------------
-
-        const quantidadeCards = 4;
-
-
-        let html = "";
-
-
-        for (
-            let indice = 0;
-            indice < quantidadeCards;
-            indice++
-        ) {
-
-            const jogador =
-                jogadores[indice];
-
-
-            if (!jogador) {
-
-                html += criarCardJogadorVazio(
-                    indice + 1
+                definirModoMesa(
+                    "campaign"
                 );
 
-                continue;
-
-            }
-
-
-            html += criarCardJogador(
-                jogador,
-                indice + 1
-            );
-
-        }
-
-
-        lista.innerHTML =
-            html;
-
-
-        lista
-            .querySelectorAll(
-                "[data-player-card]"
-            )
-            .forEach(
-                function (card) {
-
-                    card.addEventListener(
-                        "click",
-                        function () {
-
-                            const playerId =
-                                card.dataset.playerId;
-
-
-                            const characterId =
-                                card.dataset.characterId;
-
-
-                            console.log(
-                                "🎴 Card do jogador selecionado:",
-                                {
-                                    playerId,
-                                    characterId
-                                }
-                            );
-
-                        }
+                tela.innerHTML =
+                    criarTelaStatus(
+                        obterPersonagemSelecionado()
                     );
 
-                }
-            );
+                break;
 
-    }
 
+            case "affinity":
 
-    // ==========================================
-    // CARD DE JOGADOR
-    // ==========================================
-
-    function criarCardJogador(
-        jogador,
-        numero
-    ) {
-
-        const personagem =
-            jogador.character;
-
-
-        const nome =
-            personagem?.name ||
-            personagem?.nome ||
-            "Sem personagem";
-
-
-        const classe =
-            personagem?.class ||
-            personagem?.classe ||
-            "Classe não definida";
-
-
-        const raca =
-            personagem?.race ||
-            personagem?.raca ||
-            "Raça não definida";
-
-
-        const nivel =
-            personagem?.level ||
-            personagem?.nivel ||
-            1;
-
-
-        const imagem =
-            personagem?.image ||
-            personagem?.image_url ||
-            personagem?.avatar ||
-            "";
-
-
-        const confirmado =
-            personagem?.confirmed === true ||
-            personagem?.confirmado === true;
-
-
-        const avatar =
-            imagem
-                ? `
-                    <img
-                        src="${escaparHTML(imagem)}"
-                        alt=""
-                    >
-                  `
-                : "🎭";
-
-
-        return `
-
-            <div
-                class="mesa-player-card"
-                data-player-card="true"
-                data-player-id="${escaparHTML(
-                    jogador.playerId
-                )}"
-                data-character-id="${escaparHTML(
-                    jogador.characterId
-                )}"
-            >
-
-                <div class="mesa-player-card-top">
-
-                    <div class="mesa-player-avatar">
-
-                        ${avatar}
-
-                    </div>
-
-
-                    <div class="mesa-player-card-name">
-
-                        <strong>
-                            ${escaparHTML(nome)}
-                        </strong>
-
-                        <small>
-                            LUGAR ${numero}
-                        </small>
-
-                    </div>
-
-                </div>
-
-
-                <div class="mesa-player-card-info">
-
-                    <div>
-
-                        <span>
-                            CLASSE
-                        </span>
-
-                        <strong>
-                            ${escaparHTML(classe)}
-                        </strong>
-
-                    </div>
-
-
-                    <div>
-
-                        <span>
-                            RAÇA
-                        </span>
-
-                        <strong>
-                            ${escaparHTML(raca)}
-                        </strong>
-
-                    </div>
-
-
-                    <div>
-
-                        <span>
-                            NÍVEL
-                        </span>
-
-                        <strong>
-                            ${escaparHTML(nivel)}
-                        </strong>
-
-                    </div>
-
-
-                    <div>
-
-                        <span>
-                            ESTADO
-                        </span>
-
-                        <strong>
-                            ${confirmado
-                                ? "CONFIRMADO"
-                                : "PENDENTE"
-                            }
-                        </strong>
-
-                    </div>
-
-                </div>
-
-
-                <div class="mesa-player-card-footer">
-
-                    <span>
-                        🎴 PERSONAGEM
-                    </span>
-
-                    <span class="mesa-player-card-status">
-
-                        ● ONLINE
-
-                    </span>
-
-                </div>
-
-            </div>
-
-        `;
-
-    }
-
-
-    // ==========================================
-    // CARD VAZIO
-    // ==========================================
-
-    function criarCardJogadorVazio(
-        numero
-    ) {
-
-        return `
-
-            <div class="mesa-player-card-empty">
-
-                <strong
-                    style="
-                        font-size:12px;
-                        color:#8f839d;
-                    "
-                >
-                    LUGAR ${numero}
-                </strong>
-
-                <small
-                    style="
-                        margin-top:6px;
-                        font-size:9px;
-                    "
-                >
-                    Aguardando jogador...
-
-                </small>
-
-            </div>
-
-        `;
-
-    }
-
-
-    // ==========================================
-    // PREENCHER ASSENTO
-    // ==========================================
-
-    function preencherAssento(
-        numero,
-        personagem,
-        playerId = ""
-    ) {
-
-        const painel =
-            document.getElementById(
-                "online-table-panel"
-            );
-
-
-        if (!painel) {
-
-            return;
-
-        }
-
-
-        const assento =
-            painel.querySelector(
-                `.table-seat[data-seat="${numero}"]`
-            );
-
-
-        if (!assento) {
-
-            return;
-
-        }
-
-
-        const nome =
-            personagem?.name ||
-            personagem?.nome ||
-            "VAZIO";
-
-
-        const campoNome =
-            assento.querySelector(
-                ".table-seat-character"
-            );
-
-
-        const campoNumero =
-            assento.querySelector(
-                ".table-seat-number"
-            );
-
-
-        if (campoNome) {
-
-            campoNome.textContent =
-                nome;
-
-        }
-
-
-        if (campoNumero) {
-
-            campoNumero.textContent =
-                `LUGAR ${numero}`;
-
-        }
-
-
-        assento.dataset.playerId =
-            playerId || "";
-
-
-        assento.dataset.characterId =
-            personagem?.id || "";
-
-    }
-
-
-    // ==========================================
-    // LIMPAR ASSENTO
-    // ==========================================
-
-    function limparAssento(numero) {
-
-        const painel =
-            document.getElementById(
-                "online-table-panel"
-            );
-
-
-        if (!painel) {
-
-            return;
-
-        }
-
-
-        const assento =
-            painel.querySelector(
-                `.table-seat[data-seat="${numero}"]`
-            );
-
-
-        if (!assento) {
-
-            return;
-
-        }
-
-
-        const campoNome =
-            assento.querySelector(
-                ".table-seat-character"
-            );
-
-
-        if (campoNome) {
-
-            campoNome.textContent =
-                "VAZIO";
-
-        }
-
-
-        assento.dataset.playerId =
-            "";
-
-
-        assento.dataset.characterId =
-            "";
-
-    }
-
-
-    // ==========================================
-    // CONTADOR
-    // ==========================================
-
-    function atualizarContadorJogadores() {
-
-        const contador =
-            document.getElementById(
-                "online-table-player-count"
-            );
-
-
-        if (!contador) {
-
-            return;
-
-        }
-
-
-        const jogadores =
-            Array.isArray(
-                window.rpgMesa.players
-            )
-                ? window.rpgMesa.players.length
-                : 0;
-
-
-        contador.textContent =
-            `${Math.min(
-                jogadores,
-                window.rpgMesa.maxPlayers
-            )} / ${window.rpgMesa.maxPlayers}`;
-
-    }
-
-
-    // ==========================================
-    // MENSAGEM DA MESA
-    // ==========================================
-
-    function atualizarMensagemMesa() {
-
-        const mensagem =
-            document.getElementById(
-                "online-table-chat-messages"
-            );
-
-
-        if (!mensagem) {
-
-            return;
-
-        }
-
-
-        const jogadores =
-            Array.isArray(
-                window.rpgMesa.players
-            )
-                ? window.rpgMesa.players
-                : [];
-
-
-        if (
-            jogadores.length === 0
-        ) {
-
-            mensagem.textContent =
-                "A mesa está pronta. Aguardando os jogadores...";
-
-            return;
-
-        }
-
-
-        const quantidade =
-            Math.min(
-                jogadores.length,
-                window.rpgMesa.maxPlayers
-            );
-
-
-        mensagem.textContent =
-            `${quantidade} jogador${quantidade === 1 ? "" : "es"} presente${quantidade === 1 ? "" : "s"} na mesa.`;
-
-    }
-
-
-    // ==========================================
-    // MÓDULOS
-    // ==========================================
-
-    function configurarModulosMesa() {
-
-        const painel =
-            document.getElementById(
-                "online-table-panel"
-            );
-
-
-        if (!painel) {
-
-            return;
-
-        }
-
-
-        const botoes =
-            painel.querySelectorAll(
-                "[data-table-module]"
-            );
-
-
-        botoes.forEach(
-            function (botao) {
-
-                botao.addEventListener(
-                    "click",
-                    function (evento) {
-
-                        evento.stopPropagation();
-
-
-                        const modulo =
-                            botao.dataset.tableModule;
-
-
-                        console.log(
-                            "🎴 Módulo da mesa selecionado:",
-                            modulo
-                        );
-
-                    }
+                definirModoMesa(
+                    "campaign"
                 );
 
-            }
-        );
+                tela.innerHTML =
+                    criarTelaAfinidades(
+                        obterPersonagemSelecionado()
+                    );
 
-    }
-
-
-    // ==========================================
-    // MODO DA MESA
-    // ==========================================
-
-    function definirModoMesa(modo) {
-
-        const painel =
-            document.getElementById(
-                "online-table-panel"
-            );
+                break;
 
 
-        if (!painel) {
+            case "inventory":
 
-            return;
-
-        }
-
-
-        window.rpgMesa.mode =
-            modo;
-
-
-        if (
-            modo === "battle"
-        ) {
-
-            painel.classList.add(
-                "battle-mode"
-            );
-
-
-            const status =
-                painel.querySelector(
-                    ".online-table-status"
+                definirModoMesa(
+                    "campaign"
                 );
 
+                tela.innerHTML =
+                    criarTelaInventario(
+                        obterPersonagemSelecionado()
+                    );
 
-            if (status) {
-
-                status.innerHTML =
-                    "🔴 BATALHA";
-
-            }
-
-
-        } else {
-
-            painel.classList.remove(
-                "battle-mode"
-            );
+                break;
 
 
-            const status =
-                painel.querySelector(
-                    ".online-table-status"
+            case "map":
+
+                definirModoMesa(
+                    "map"
                 );
 
+                tela.innerHTML =
+                    criarTelaMapa();
 
-            if (status) {
+                configurarMapa();
 
-                status.innerHTML =
-                    "🟢 CAMPANHA";
+                break;
 
-            }
 
-        }
+            case "combat":
 
-    }
+                definirModoMesa(
+                    "combat"
+                );
 
+                tela.innerHTML =
+                    criarTelaCombate();
 
-    // ==========================================
-    // DISPONIBILIZAR MODO
-    // ==========================================
+                break;
 
-    window.definirModoMesa =
-        definirModoMesa;
 
+            case "cte":
 
-    // ==========================================
-    // FUNÇÕES PÚBLICAS
-    // ==========================================
+                definirModoMesa(
+                    "cte"
+                );
 
-    window.rpgMesa.preencherAssento =
-        preencherAssento;
+                tela.innerHTML =
+                    criarTelaCTE();
 
+                break;
 
-    window.rpgMesa.limparAssento =
-        limparAssento;
 
+            case "interface":
 
-    window.rpgMesa.atualizarContadorJogadores =
-        atualizarContadorJogadores;
+                definirModoMesa(
+                    "interface"
+                );
 
+                tela.innerHTML =
+                    criarTelaInterface();
 
-    window.rpgMesa.carregarJogadores =
-        carregarJogadoresMesa;
+                break;
 
 
-    window.rpgMesa.atualizarJogadores =
-        carregarJogadoresMesa;
+            case "needs":
 
+                definirModoMesa(
+                    "campaign"
+                );
 
-    window.rpgMesa.atualizarMesa =
-        atualizarMesaSemRecarregar;
+                tela.innerHTML =
+                    criarTelaNecessidades(
+                        obterPersonagemSelecionado()
+                    );
 
+                break;
 
-    window.rpgMesa.abrirConfiguracoes =
-        abrirConfiguracoesMesa;
 
+            case "players":
 
-    window.rpgMesa.fecharConfiguracoes =
-        fecharConfiguracoesMesa;
+                definirModoMesa(
+                    "campaign"
+                );
 
+                tela.innerHTML =
+                    criarTelaJogadores();
 
-    window.rpgMesa.usuarioEhMestre =
-        usuarioEhMestre;
+                configurarSelecaoJogadores();
 
+                break;
 
-    window.rpgMesa.obterJogadores =
-        function () {
 
-            return Array.isArray(
-                window.rpgMesa.players
-            )
-                ? window.rpgMesa.players
-                : [];
+            case "help":
 
-        };
+                definirModoMesa(
+                    "campaign"
+                );
 
+                tela.innerHTML =
+                    criarTelaAjuda();
 
-    // ==========================================
-    // NOME DO MESTRE
-    // ==========================================
-
-    function obterNomeMestre() {
-
-        const user =
-            window.rpgAuth?.user;
-
-
-        if (!user) {
-
-            return "Mestre";
-
-        }
-
-
-        const nome =
-            user.user_metadata?.name;
-
-
-        const nomeCompleto =
-            user.user_metadata?.full_name;
-
-
-        if (
-            nome &&
-            !String(nome).includes("@")
-        ) {
-
-            return nome;
-
-        }
-
-
-        if (
-            nomeCompleto &&
-            !String(nomeCompleto).includes("@")
-        ) {
-
-            return nomeCompleto;
-
-        }
-
-
-        return "Mestre";
-
-    }
-
-
-    // ==========================================
-    // ESCAPAR HTML
-    // ==========================================
-
-    function escaparHTML(valor) {
-
-        return String(valor ?? "")
-            .replace(
-                /&/g,
-                "&amp;"
-            )
-            .replace(
-                /</g,
-                "&lt;"
-            )
-            .replace(
-                />/g,
-                "&gt;"
-            )
-            .replace(
-                /"/g,
-                "&quot;"
-            )
-            .replace(
-                /'/g,
-                "&#039;"
-            );
-
-    }
-
-
-    // ==========================================
-    // DOM PRONTO
-    // ==========================================
-
-    if (
-        document.readyState ===
-        "loading"
-    ) {
-
-        document.addEventListener(
-            "DOMContentLoaded",
-            iniciarMesa
-        );
-
-    } else {
-
-        iniciarMesa();
-
-    }
-
-
-})();
+                break
