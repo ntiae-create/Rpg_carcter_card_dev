@@ -1,86 +1,47 @@
 /* =========================================================
-   MESA ONLINE — RPG
-   VISUAL PRINCIPAL
+   MESA RPG — NOVO LAYOUT
+   MESA RETANGULAR + CADEIRAS LATERAIS
 ========================================================= */
 
 * {
     box-sizing: border-box;
 }
 
-:root {
-    --bg: #05040a;
-    --bg-2: #0b0812;
-    --panel: #100c18;
-    --panel-2: #151020;
-
-    --purple: #8b5cf6;
-    --purple-light: #c4b5fd;
-    --purple-dark: #5b21b6;
-
-    --blue: #38bdf8;
-    --green: #4ade80;
-    --red: #ef4444;
-    --yellow: #facc15;
-
-    --text: #f5f3ff;
-    --muted: #91899f;
-    --muted-2: #625b6d;
-
-    --border: rgba(139, 92, 246, 0.28);
-    --border-soft: rgba(255, 255, 255, 0.07);
-
-    --shadow:
-        0 20px 60px rgba(0, 0, 0, 0.65);
-}
-
-
-/* =========================================================
-   BASE
-========================================================= */
-
 html,
 body {
-    margin: 0;
-    padding: 0;
-
     width: 100%;
-    min-height: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+}
+
+body {
+    font-family: Arial, sans-serif;
 
     background:
         radial-gradient(
-            circle at 50% -10%,
-            rgba(91, 33, 182, 0.32),
-            transparent 42%
-        ),
-        radial-gradient(
-            circle at 10% 90%,
-            rgba(56, 189, 248, 0.05),
-            transparent 35%
-        ),
-        var(--bg);
+            circle at 50% 20%,
+            #241044 0%,
+            #0b0712 42%,
+            #030207 100%
+        );
 
-    color: var(--text);
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
+    color: #f5f0ff;
 }
 
 
 /* =========================================================
-   MESA
+   ÁREA PRINCIPAL
 ========================================================= */
 
 #rpg-mesa {
-    position: relative;
-
     width: 100%;
-    min-height: 100vh;
+    height: 100dvh;
 
-    padding: 12px;
+    display: flex;
+    flex-direction: column;
 
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 
@@ -89,37 +50,39 @@ body {
 ========================================================= */
 
 #mesa-header {
-    position: relative;
+    flex: 0 0 auto;
+
+    min-height: 72px;
 
     display: flex;
-
     align-items: center;
     justify-content: space-between;
 
-    gap: 12px;
-
-    width: 100%;
-
-    margin-bottom: 12px;
-
-    padding: 12px 14px;
-
-    border: 1px solid var(--border-soft);
-    border-radius: 16px;
+    padding: 10px 18px;
 
     background:
         linear-gradient(
-            135deg,
-            rgba(21, 16, 32, 0.96),
-            rgba(8, 6, 13, 0.96)
+            180deg,
+            rgba(24, 14, 36, 0.96),
+            rgba(10, 7, 16, 0.96)
         );
 
-    box-shadow: var(--shadow);
+    border-bottom: 1px solid rgba(168, 85, 247, 0.35);
 
-    backdrop-filter: blur(12px);
+    box-shadow:
+        0 5px 25px rgba(0, 0, 0, 0.35);
 }
 
 .mesa-header-info {
+    display: flex;
+    align-items: center;
+    gap: 35px;
+
+    min-width: 0;
+}
+
+.mesa-campanha,
+.mesa-mestre {
     min-width: 0;
 }
 
@@ -129,55 +92,45 @@ body {
     margin-bottom: 3px;
 
     font-size: 8px;
-
     letter-spacing: 2px;
 
-    text-transform: uppercase;
-
-    color: var(--muted);
+    color: #887a96;
 }
 
-#mesa-campanha-nome {
+.mesa-campanha h1 {
     margin: 0;
 
+    max-width: 280px;
+
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     font-size: 17px;
-    font-weight: 700;
-
-    white-space: nowrap;
-    text-overflow: ellipsis;
 }
 
-#mesa-mestre-nome {
-    margin-top: 3px;
+.mesa-mestre strong {
+    font-size: 13px;
 
-    font-size: 10px;
-
-    color: var(--muted);
+    color: #d8b4fe;
 }
-
-
-/* =========================================================
-   ESTADO
-========================================================= */
 
 #mesa-estado {
+    flex: 0 0 auto;
+
     display: flex;
-
     align-items: center;
-
     gap: 7px;
 
-    flex-shrink: 0;
+    padding: 7px 11px;
 
-    padding: 7px 9px;
-
+    border: 1px solid rgba(168, 85, 247, 0.35);
     border-radius: 20px;
 
-    background: rgba(255, 255, 255, 0.035);
+    background: rgba(124, 58, 237, 0.08);
 
-    border: 1px solid var(--border-soft);
+    font-size: 9px;
+    letter-spacing: 1px;
 }
 
 #mesa-estado-indicador {
@@ -186,80 +139,94 @@ body {
 
     border-radius: 50%;
 
-    background: var(--green);
+    background: #a855f7;
 
     box-shadow:
-        0 0 10px rgba(74, 222, 128, 0.8);
-}
-
-#mesa-estado-texto {
-    font-size: 9px;
-
-    color: #d8d1e4;
+        0 0 10px #a855f7;
 }
 
 
 /* =========================================================
-   LAYOUT
+   LAYOUT DA MESA
 ========================================================= */
 
 #mesa-layout {
-    display: flex;
+    flex: 1;
 
-    flex-direction: column;
+    min-height: 0;
 
     width: 100%;
 
-    gap: 12px;
-}
-
-
-/* =========================================================
-   ÁREA DOS 8 JOGADORES
-========================================================= */
-
-#assentos-jogadores {
     display: grid;
 
     grid-template-columns:
-        repeat(2, minmax(0, 1fr));
+        minmax(155px, 190px)
+        minmax(0, 1fr)
+        minmax(155px, 190px);
 
-    gap: 8px;
+    gap: 14px;
 
-    width: 100%;
+    padding: 14px;
+
+    overflow: hidden;
 }
 
 
 /* =========================================================
-   CARD DO JOGADOR
+   CONTAINER DOS JOGADORES
+========================================================= */
+
+#assentos-jogadores {
+    min-height: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    padding: 3px;
+
+    scrollbar-width: thin;
+    scrollbar-color: #5b3478 transparent;
+}
+
+
+/* =========================================================
+   CARDS DOS PLAYERS
 ========================================================= */
 
 .jogador-card {
     position: relative;
 
-    min-height: 74px;
+    flex: 0 0 auto;
+
+    width: 100%;
+    min-height: 112px;
+
+    display: flex;
+    align-items: center;
 
     padding: 10px;
 
-    display: flex;
-
-    align-items: center;
-
-    overflow: hidden;
-
-    border-radius: 15px;
-
-    border: 1px solid var(--border-soft);
+    border-radius: 18px;
 
     background:
         linear-gradient(
             145deg,
-            rgba(24, 18, 35, 0.96),
-            rgba(10, 8, 15, 0.96)
+            rgba(31, 20, 45, 0.98),
+            rgba(11, 8, 17, 0.98)
         );
 
+    border: 1px solid rgba(139, 92, 246, 0.32);
+
     box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.35);
+        0 8px 20px rgba(0, 0, 0, 0.3),
+        inset 0 0 18px rgba(124, 58, 237, 0.035);
+
+    overflow: hidden;
 
     transition:
         transform 0.2s ease,
@@ -267,8 +234,20 @@ body {
         box-shadow 0.2s ease;
 }
 
+.jogador-card:hover {
+    transform: translateY(-2px);
 
-/* brilho lateral */
+    border-color: rgba(168, 85, 247, 0.7);
+
+    box-shadow:
+        0 10px 25px rgba(0, 0, 0, 0.4),
+        0 0 18px rgba(124, 58, 237, 0.12);
+}
+
+
+/* =========================================================
+   EFEITO DE CADEIRA
+========================================================= */
 
 .jogador-card::before {
     content: "";
@@ -276,119 +255,93 @@ body {
     position: absolute;
 
     left: 0;
-    top: 12px;
-    bottom: 12px;
+    top: 0;
+    bottom: 0;
 
-    width: 2px;
-
-    border-radius: 5px;
+    width: 4px;
 
     background:
         linear-gradient(
-            to bottom,
-            transparent,
-            var(--purple),
-            transparent
+            180deg,
+            #7c3aed,
+            #c084fc
         );
 
-    opacity: 0.45;
+    opacity: 0.7;
 }
 
-
-/* jogador confirmado */
-
-.jogador-card.confirmado {
-    border-color:
-        rgba(139, 92, 246, 0.45);
-
-    box-shadow:
-        0 8px 28px rgba(91, 33, 182, 0.18);
-}
-
-.jogador-card.confirmado::before {
-    opacity: 1;
-}
-
-
-/* vaga */
-
-.jogador-card.vazio {
-    opacity: 0.62;
+.jogador-card.vazio::before {
+    opacity: 0.2;
 }
 
 
 /* =========================================================
-   NÚMERO DO ASSENTO
+   NÚMERO
 ========================================================= */
 
 .jogador-numero {
-    display: flex;
+    position: absolute;
 
+    top: 7px;
+    right: 9px;
+
+    width: 25px;
+    height: 25px;
+
+    display: flex;
     align-items: center;
     justify-content: center;
 
-    flex-shrink: 0;
+    border-radius: 50%;
 
-    width: 30px;
-    height: 30px;
+    background: rgba(124, 58, 237, 0.13);
 
-    margin-right: 9px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
 
-    border-radius: 9px;
-
-    background:
-        linear-gradient(
-            145deg,
-            rgba(139, 92, 246, 0.18),
-            rgba(255, 255, 255, 0.025)
-        );
-
-    border: 1px solid rgba(139, 92, 246, 0.22);
-
-    color: var(--purple-light);
+    color: #a78bfa;
 
     font-size: 9px;
-
-    font-weight: 700;
-
-    letter-spacing: 1px;
+    font-weight: bold;
 }
 
 
 /* =========================================================
-   CONTEÚDO DO JOGADOR
+   CONTEÚDO DO PLAYER
 ========================================================= */
 
 .jogador-card-conteudo {
-    min-width: 0;
+    width: 100%;
 
-    flex: 1;
+    padding-left: 7px;
+    padding-right: 25px;
 }
 
 .jogador-nome {
     display: block;
 
+    margin-bottom: 4px;
+
+    font-size: 14px;
+
+    color: #f5f0ff;
+
     overflow: hidden;
-
-    font-size: 11px;
-
-    white-space: nowrap;
     text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .jogador-classe {
     display: block;
 
-    margin-top: 3px;
+    margin-bottom: 10px;
+
+    font-size: 9px;
+
+    color: #9587a3;
 
     overflow: hidden;
-
-    font-size: 8px;
-
-    white-space: nowrap;
     text-overflow: ellipsis;
-
-    color: var(--muted);
+    white-space: nowrap;
 }
 
 
@@ -399,149 +352,101 @@ body {
 .jogador-status {
     display: flex;
 
-    gap: 8px;
-
-    margin-top: 6px;
+    gap: 6px;
 }
 
 .status-mini {
+    flex: 1;
+
+    padding: 5px 4px;
+
+    text-align: center;
+
+    border-radius: 7px;
+
+    background: rgba(255, 255, 255, 0.035);
+
+    border: 1px solid rgba(255, 255, 255, 0.055);
+
     font-size: 8px;
 
-    color: #bdb5c8;
+    color: #b9aec5;
 }
 
 
 /* =========================================================
-   TELA CENTRAL
+   MESA CENTRAL
 ========================================================= */
 
 #tela-mesa {
-    position: relative;
-
-    width: 100%;
-
-    min-height: 430px;
+    min-width: 0;
+    min-height: 0;
 
     display: flex;
-
     flex-direction: column;
 
-    overflow: hidden;
+    position: relative;
 
-    border-radius: 22px;
-
-    border: 1px solid
-        rgba(139, 92, 246, 0.35);
+    border-radius: 28px;
 
     background:
-        radial-gradient(
-            circle at 50% 25%,
-            rgba(91, 33, 182, 0.14),
-            transparent 48%
-        ),
         linear-gradient(
             145deg,
-            #100b18,
-            #07060b
+            #171020,
+            #09070d
         );
 
+    border: 1px solid rgba(168, 85, 247, 0.48);
+
     box-shadow:
-        0 25px 70px rgba(0, 0, 0, 0.65),
-        inset 0 0 50px rgba(139, 92, 246, 0.035);
+        0 20px 50px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(124, 58, 237, 0.08),
+        inset 0 0 50px rgba(124, 58, 237, 0.035);
+
+    overflow: hidden;
 }
 
 
 /* =========================================================
-   LINHAS DECORATIVAS DA TELA
-========================================================= */
-
-#tela-mesa::before {
-    content: "";
-
-    position: absolute;
-
-    top: 0;
-    left: 18%;
-    right: 18%;
-
-    height: 1px;
-
-    background:
-        linear-gradient(
-            90deg,
-            transparent,
-            rgba(196, 181, 253, 0.7),
-            transparent
-        );
-
-    opacity: 0.6;
-}
-
-#tela-mesa::after {
-    content: "";
-
-    position: absolute;
-
-    width: 250px;
-    height: 250px;
-
-    left: 50%;
-    top: 45%;
-
-    transform: translate(-50%, -50%);
-
-    border-radius: 50%;
-
-    border:
-        1px solid rgba(139, 92, 246, 0.055);
-
-    box-shadow:
-        0 0 80px rgba(139, 92, 246, 0.04);
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   HEADER DA TELA
+   CABEÇALHO DA MESA
 ========================================================= */
 
 #tela-mesa-header {
-    position: relative;
-    z-index: 2;
+    flex: 0 0 auto;
+
+    min-height: 58px;
 
     display: flex;
 
     align-items: center;
     justify-content: space-between;
 
-    gap: 10px;
+    padding: 10px 16px;
 
-    padding: 13px 16px;
-
-    border-bottom:
-        1px solid rgba(255, 255, 255, 0.055);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 
     background:
-        rgba(0, 0, 0, 0.15);
+        rgba(0, 0, 0, 0.18);
 }
 
 .tela-label {
     display: block;
 
-    font-size: 8px;
+    margin-bottom: 3px;
 
-    text-transform: uppercase;
+    font-size: 8px;
 
     letter-spacing: 2px;
 
-    color: var(--muted);
+    color: #776b83;
 }
 
 #tela-mesa-titulo {
-    margin: 3px 0 0;
+    margin: 0;
 
-    font-size: 15px;
+    font-size: 18px;
+
+    color: #eee5f7;
 }
 
 
@@ -550,17 +455,24 @@ body {
 ========================================================= */
 
 #mesa-conexao {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
     font-size: 8px;
 
-    color: var(--muted);
+    color: #8f839d;
 }
 
-.conexao-conectada {
-    color: var(--green);
-}
+#conexao-indicador {
+    width: 7px;
+    height: 7px;
 
-.conexao-desconectada {
-    color: var(--red);
+    border-radius: 50%;
+
+    background: #f59e0b;
 }
 
 
@@ -569,117 +481,84 @@ body {
 ========================================================= */
 
 #tela-mesa-conteudo {
-    position: relative;
-    z-index: 1;
-
     flex: 1;
+
+    min-height: 0;
+
+    overflow-y: auto;
 
     padding: 18px;
 
-    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #5b3478 transparent;
 }
-
-
-/* =========================================================
-   MÓDULOS
-========================================================= */
 
 .modulo-mesa {
     width: 100%;
+    min-height: 100%;
 }
 
 .modulo-mesa[hidden] {
     display: none !important;
 }
 
-.modulo-placeholder {
-    min-height: 340px;
 
+/* =========================================================
+   INTERFACE
+========================================================= */
+
+#modulo-interface {
     display: flex;
-
-    flex-direction: column;
 
     align-items: center;
     justify-content: center;
 
     text-align: center;
-
-    color: var(--muted);
 }
 
-.modulo-icone {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    width: 72px;
-    height: 72px;
-
-    margin-bottom: 15px;
-
-    border-radius: 50%;
-
-    border:
-        1px solid rgba(139, 92, 246, 0.35);
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(139, 92, 246, 0.18),
-            rgba(139, 92, 246, 0.02)
-        );
-
-    font-size: 30px;
-
-    box-shadow:
-        0 0 35px rgba(139, 92, 246, 0.12);
+.interface-boas-vindas {
+    max-width: 500px;
+    margin: auto;
 }
 
-.modulo-placeholder h3 {
-    margin: 0 0 6px;
+.interface-boas-vindas h3 {
+    margin: 0 0 10px;
 
-    color: var(--text);
+    font-size: 25px;
 
-    font-size: 17px;
+    color: #d8b4fe;
 }
 
-.modulo-placeholder p {
-    max-width: 280px;
-
+.interface-boas-vindas p {
     margin: 0;
 
-    font-size: 10px;
+    color: #82758d;
 
-    line-height: 1.6;
+    font-size: 12px;
 
-    color: var(--muted);
+    line-height: 1.7;
 }
 
 
 /* =========================================================
-   NAVEGAÇÃO DOS MÓDULOS
+   NAVEGAÇÃO
 ========================================================= */
 
 #mesa-modulos {
-    position: relative;
-    z-index: 5;
+    flex: 0 0 auto;
 
     display: flex;
 
-    gap: 5px;
+    gap: 6px;
 
-    width: 100%;
-
-    padding: 8px;
+    padding: 9px;
 
     overflow-x: auto;
 
-    border-top:
-        1px solid rgba(255, 255, 255, 0.055);
-
     background:
-        rgba(5, 4, 9, 0.9);
+        rgba(0, 0, 0, 0.25);
+
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 
     scrollbar-width: none;
 }
@@ -688,20 +567,20 @@ body {
     display: none;
 }
 
-.modulo-btn {
+#mesa-modulos button {
     flex: 0 0 auto;
 
-    min-width: 58px;
+    min-width: 72px;
 
-    padding: 9px 8px;
+    padding: 8px 9px;
 
-    border: 1px solid transparent;
+    border: 1px solid rgba(139, 92, 246, 0.2);
 
     border-radius: 10px;
 
-    background: transparent;
+    background: rgba(255, 255, 255, 0.025);
 
-    color: var(--muted);
+    color: #93869f;
 
     font-size: 8px;
 
@@ -709,207 +588,17 @@ body {
 
     transition:
         background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease;
+        border-color 0.2s ease,
+        color 0.2s ease;
 }
 
-.modulo-btn:hover {
-    color: var(--text);
+#mesa-modulos button:hover,
+#mesa-modulos button.ativo {
+    background: rgba(124, 58, 237, 0.16);
 
-    background:
-        rgba(255, 255, 255, 0.035);
-}
+    border-color: rgba(168, 85, 247, 0.5);
 
-.modulo-btn.ativo {
-    color: var(--purple-light);
-
-    border-color:
-        rgba(139, 92, 246, 0.3);
-
-    background:
-        rgba(139, 92, 246, 0.12);
-
-    box-shadow:
-        0 0 18px rgba(139, 92, 246, 0.08);
-}
-
-
-/* =========================================================
-   PERSONAGEM
-========================================================= */
-
-#modulo-personagem,
-#modulo-status,
-#modulo-afinidade,
-#modulo-inventario {
-    max-width: 650px;
-
-    margin: 0 auto;
-}
-
-#modulo-personagem h3,
-#modulo-status h3,
-#modulo-afinidade h3,
-#modulo-inventario h3 {
-    margin-top: 0;
-
-    font-size: 18px;
-}
-
-#modulo-personagem p,
-#modulo-status p,
-#modulo-afinidade p,
-#modulo-inventario p {
-    color: var(--muted);
-
-    font-size: 10px;
-
-    line-height: 1.7;
-}
-
-
-/* =========================================================
-   MAPA
-========================================================= */
-
-#modulo-mapa {
-    min-height: 340px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 16px;
-
-    border:
-        1px solid rgba(56, 189, 248, 0.15);
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(56, 189, 248, 0.06),
-            transparent 60%
-        );
-}
-
-
-/* =========================================================
-   COMBATE
-========================================================= */
-
-#modulo-combate {
-    min-height: 340px;
-
-    padding: 15px;
-
-    border-radius: 16px;
-
-    border:
-        1px solid rgba(239, 68, 68, 0.16);
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(239, 68, 68, 0.055),
-            transparent 65%
-        );
-}
-
-
-/* =========================================================
-   CTE
-========================================================= */
-
-#modulo-cte {
-    min-height: 340px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-}
-
-#cte-timer {
-    font-size: 52px;
-
-    font-weight: 800;
-
-    letter-spacing: 3px;
-
-    color: var(--purple-light);
-
-    text-shadow:
-        0 0 25px rgba(139, 92, 246, 0.55);
-}
-
-#cte-status {
-    margin-top: 8px;
-
-    font-size: 9px;
-
-    letter-spacing: 2px;
-
-    text-transform: uppercase;
-
-    color: var(--muted);
-}
-
-
-/* =========================================================
-   DUNGEON
-========================================================= */
-
-#modulo-dungeon {
-    min-height: 340px;
-}
-
-
-/* =========================================================
-   BOSS
-========================================================= */
-
-#modulo-boss {
-    position: relative;
-
-    min-height: 340px;
-
-    display: flex;
-
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    border-radius: 18px;
-
-    background:
-        radial-gradient(
-            circle,
-            rgba(239, 68, 68, 0.13),
-            transparent 62%
-        );
-}
-
-#boss-alerta {
-    font-size: 26px;
-
-    font-weight: 900;
-
-    letter-spacing: 3px;
-
-    color: #fca5a5;
-
-    text-transform: uppercase;
-
-    text-shadow:
-        0 0 25px rgba(239, 68, 68, 0.8);
+    color: #d8b4fe;
 }
 
 
@@ -917,92 +606,60 @@ body {
    PAINEL DO MESTRE
 ========================================================= */
 
-#painel-mestre {
-    width: 100%;
+.painel-administrativo {
+    position: fixed;
 
-    padding: 15px;
+    right: 15px;
+    bottom: 15px;
 
-    border-radius: 18px;
+    z-index: 100;
 
-    border:
-        1px solid rgba(139, 92, 246, 0.28);
+    width: min(360px, calc(100% - 30px));
+
+    max-height: calc(100dvh - 100px);
+
+    overflow-y: auto;
+
+    padding: 18px;
+
+    border-radius: 20px;
 
     background:
         linear-gradient(
             145deg,
-            rgba(20, 14, 29, 0.98),
-            rgba(8, 6, 12, 0.98)
+            #191022,
+            #09070e
         );
 
+    border: 1px solid #6f3aa8;
+
     box-shadow:
-        0 15px 45px rgba(0, 0, 0, 0.5);
+        0 20px 60px rgba(0, 0, 0, 0.65),
+        0 0 35px rgba(124, 58, 237, 0.2);
 }
 
-#painel-mestre[hidden] {
+.painel-administrativo[hidden] {
     display: none !important;
 }
 
-#painel-mestre h3 {
-    margin: 0 0 14px;
-
-    font-size: 13px;
-
-    color: var(--purple-light);
-
-    letter-spacing: 1px;
+.painel-header {
+    margin-bottom: 15px;
 }
 
+.painel-header h2 {
+    margin: 0;
 
-/* =========================================================
-   CONTROLES DO MESTRE
-========================================================= */
+    font-size: 17px;
 
-.master-control,
-.master-controls,
-.control {
-    width: 100%;
+    color: #d8b4fe;
 }
 
-.control {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    margin-bottom: 8px;
-}
-
-.control label {
-    flex: 1;
+.painel-header p {
+    margin: 5px 0 0;
 
     font-size: 9px;
 
-    color: #c9c2d2;
-}
-
-.control button {
-    min-width: 34px;
-    height: 30px;
-
-    border: 1px solid rgba(139, 92, 246, 0.28);
-
-    border-radius: 8px;
-
-    background:
-        rgba(139, 92, 246, 0.08);
-
-    color: var(--purple-light);
-
-    cursor: pointer;
-}
-
-.control button:hover {
-    background:
-        rgba(139, 92, 246, 0.18);
-
-    border-color:
-        rgba(139, 92, 246, 0.55);
+    color: #81758c;
 }
 
 
@@ -1010,41 +667,37 @@ body {
    BOTÃO MESTRE
 ========================================================= */
 
-#abrir-painel-mestre {
-    width: 100%;
+.botao-mestre {
+    position: fixed;
 
-    padding: 11px 14px;
+    right: 15px;
+    bottom: 15px;
 
-    border:
-        1px solid rgba(139, 92, 246, 0.35);
+    z-index: 90;
 
-    border-radius: 12px;
+    padding: 11px 15px;
 
-    background:
-        linear-gradient(
-            135deg,
-            rgba(91, 33, 182, 0.2),
-            rgba(139, 92, 246, 0.06)
-        );
+    border: 1px solid #68408a;
 
-    color: var(--purple-light);
+    border-radius: 13px;
 
-    font-size: 10px;
+    background: #171020;
 
-    font-weight: 700;
+    color: #d8b4fe;
+
+    font-size: 11px;
+    font-weight: bold;
 
     cursor: pointer;
 
-    transition:
-        transform 0.2s ease,
-        background 0.2s ease;
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
-#abrir-painel-mestre:hover {
-    transform: translateY(-1px);
+.botao-mestre:hover {
+    border-color: #a855f7;
 
-    background:
-        rgba(139, 92, 246, 0.16);
+    background: #21142f;
 }
 
 
@@ -1058,40 +711,13 @@ body {
     left: 50%;
     bottom: 20px;
 
-    z-index: 100;
+    z-index: 200;
 
     transform: translateX(-50%);
 
-    width: calc(100% - 30px);
-
-    max-width: 420px;
+    width: min(400px, calc(100% - 30px));
 
     pointer-events: none;
-}
-
-.mesa-notificacao {
-    margin-top: 8px;
-
-    padding: 11px 14px;
-
-    border-radius: 12px;
-
-    border:
-        1px solid rgba(139, 92, 246, 0.3);
-
-    background:
-        rgba(15, 10, 22, 0.96);
-
-    box-shadow:
-        0 15px 35px rgba(0, 0, 0, 0.55);
-
-    color: #ddd6e8;
-
-    font-size: 10px;
-
-    text-align: center;
-
-    backdrop-filter: blur(10px);
 }
 
 
@@ -1099,12 +725,12 @@ body {
    MODAL
 ========================================================= */
 
-#mesa-modal {
+.mesa-modal {
     position: fixed;
 
     inset: 0;
 
-    z-index: 200;
+    z-index: 300;
 
     display: flex;
 
@@ -1114,90 +740,144 @@ body {
     padding: 20px;
 
     background:
-        rgba(0, 0, 0, 0.75);
+        rgba(0, 0, 0, 0.72);
 
-    backdrop-filter: blur(8px);
+    backdrop-filter: blur(5px);
 }
 
-#mesa-modal[hidden] {
+.mesa-modal[hidden] {
     display: none !important;
 }
 
-#mesa-modal-conteudo {
-    width: 100%;
+.mesa-modal-conteudo {
+    position: relative;
 
-    max-width: 420px;
+    width: min(500px, 100%);
 
-    padding: 20px;
+    max-height: 85dvh;
 
-    border-radius: 18px;
+    overflow-y: auto;
 
-    border:
-        1px solid rgba(139, 92, 246, 0.35);
+    padding: 22px;
+
+    border-radius: 20px;
 
     background:
         linear-gradient(
             145deg,
-            #171020,
-            #09070e
+            #1a1124,
+            #09070d
         );
+
+    border: 1px solid #6f3aa8;
 
     box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.7);
 }
 
+.mesa-modal-fechar {
+    position: absolute;
+
+    top: 10px;
+    right: 10px;
+
+    width: 30px;
+    height: 30px;
+
+    border: 1px solid #68408a;
+
+    border-radius: 50%;
+
+    background: #171020;
+
+    color: #d8b4fe;
+
+    font-size: 18px;
+
+    cursor: pointer;
+}
+
 
 /* =========================================================
-   MODOS
+   CTE
 ========================================================= */
 
-#rpg-mesa.modo-combate {
-    --purple: #ef4444;
+#modulo-cte {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
 }
 
-#rpg-mesa.modo-cte {
-    --purple: #c084fc;
+.cte-container {
+    width: min(500px, 100%);
+
+    margin: auto;
 }
+
+.cte-container h3 {
+    margin: 0 0 15px;
+
+    color: #c084fc;
+
+    font-size: 22px;
+}
+
+.cte-timer {
+    font-size: clamp(45px, 10vw, 80px);
+
+    font-weight: bold;
+
+    letter-spacing: 4px;
+
+    color: #f5f0ff;
+
+    text-shadow:
+        0 0 25px rgba(168, 85, 247, 0.5);
+}
+
+
+/* =========================================================
+   BOSS
+========================================================= */
 
 #rpg-mesa.modo-boss {
     animation:
-        mesaBossPulse 1.4s infinite;
+        mesaBossPulse 1s infinite alternate;
 }
 
 @keyframes mesaBossPulse {
-    0%,
-    100% {
+    from {
         box-shadow:
-            inset 0 0 0 rgba(239, 68, 68, 0);
+            inset 0 0 0 rgba(255, 0, 0, 0);
     }
 
-    50% {
+    to {
         box-shadow:
-            inset 0 0 80px rgba(239, 68, 68, 0.09);
+            inset 0 0 100px rgba(120, 0, 0, 0.25);
     }
 }
 
+#modulo-boss {
+    display: flex;
 
-/* =========================================================
-   ANIMAÇÃO CTE
-========================================================= */
+    align-items: center;
+    justify-content: center;
 
-#modulo-cte.cte-ativo #cte-timer {
-    animation:
-        ctePulse 1s infinite;
+    text-align: center;
 }
 
-@keyframes ctePulse {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+.boss-alerta {
+    font-size: clamp(25px, 6vw, 50px);
 
-    50% {
-        transform: scale(1.035);
-        opacity: 0.75;
-    }
+    font-weight: bold;
+
+    color: #ffb4b4;
+
+    text-shadow:
+        0 0 25px rgba(255, 0, 0, 0.5);
 }
 
 
@@ -1205,91 +885,276 @@ body {
    TABLET
 ========================================================= */
 
-@media (min-width: 600px) {
-
-    #rpg-mesa {
-        padding: 18px;
-    }
-
-    #assentos-jogadores {
-        grid-template-columns:
-            repeat(4, minmax(0, 1fr));
-    }
-
-    .jogador-card {
-        min-height: 82px;
-    }
-
-    #tela-mesa {
-        min-height: 520px;
-    }
-
-}
-
-
-/* =========================================================
-   DESKTOP
-========================================================= */
-
-@media (min-width: 1000px) {
-
-    #rpg-mesa {
-        max-width: 1250px;
-
-        margin: 0 auto;
-
-        padding: 24px;
-    }
+@media (max-width: 850px) {
 
     #mesa-layout {
-        display: grid;
-
         grid-template-columns:
-            250px
-            minmax(0, 1fr);
+            minmax(125px, 155px)
+            minmax(0, 1fr)
+            minmax(125px, 155px);
 
-        align-items: start;
-    }
+        gap: 9px;
 
-    #assentos-jogadores {
-        grid-column: 1;
-
-        grid-template-columns: 1fr;
-
-        max-height: 720px;
-
-        overflow-y: auto;
-    }
-
-    #tela-mesa {
-        grid-column: 2;
-
-        min-height: 650px;
-    }
-
-    #painel-mestre {
-        grid-column: 1 / -1;
+        padding: 9px;
     }
 
     .jogador-card {
-        min-height: 82px;
+        min-height: 100px;
+    }
+
+    .jogador-nome {
+        font-size: 12px;
+    }
+
+    .jogador-classe {
+        font-size: 8px;
     }
 
 }
 
 
 /* =========================================================
-   REDUÇÃO DE MOVIMENTO
+   CELULAR
 ========================================================= */
 
-@media (prefers-reduced-motion: reduce) {
+@media (max-width: 600px) {
 
-    *,
-    *::before,
-    *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
+    #mesa-header {
+        min-height: 58px;
+
+        padding: 8px 10px;
     }
 
+    .mesa-header-info {
+        gap: 12px;
+    }
+
+    .mesa-mestre {
+        display: none;
+    }
+
+    .mesa-campanha h1 {
+        max-width: 170px;
+
+        font-size: 13px;
+    }
+
+    #mesa-estado {
+        padding: 6px 8px;
+
+        font-size: 7px;
+    }
+
+
+    /* =============================================
+       MESA + COLUNA DE CADEIRAS
+    ============================================= */
+
+    #mesa-layout {
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            118px;
+
+        gap: 8px;
+
+        padding: 8px;
+    }
+
+
+    /* =============================================
+       JOGADORES À DIREITA
+    ============================================= */
+
+    #assentos-jogadores {
+
+        grid-column: 2;
+
+        grid-row: 1;
+
+        gap: 8px;
+
+        padding: 2px;
+
+        order: 2;
+    }
+
+
+    /* =============================================
+       MESA
+    ============================================= */
+
+    #tela-mesa {
+
+        grid-column: 1;
+
+        grid-row: 1;
+
+        order: 1;
+
+        border-radius: 20px;
+    }
+
+
+    /* =============================================
+       CARDS VERTICAIS
+    ============================================= */
+
+    .jogador-card {
+
+        min-height: 96px;
+
+        padding: 8px;
+
+        border-radius: 15px;
+    }
+
+    .jogador-card-conteudo {
+
+        padding-left: 5px;
+        padding-right: 20px;
+    }
+
+    .jogador-numero {
+
+        width: 21px;
+        height: 21px;
+
+        top: 6px;
+        right: 6px;
+
+        font-size: 7px;
+    }
+
+    .jogador-nome {
+
+        font-size: 10px;
+    }
+
+    .jogador-classe {
+
+        margin-bottom: 7px;
+
+        font-size: 7px;
+    }
+
+    .status-mini {
+
+        padding: 4px 2px;
+
+        font-size: 6px;
+    }
+
+
+    /* =============================================
+       CONTEÚDO DA MESA
+    ============================================= */
+
+    #tela-mesa-header {
+
+        min-height: 50px;
+
+        padding: 8px 10px;
+    }
+
+    #tela-mesa-titulo {
+
+        font-size: 14px;
+    }
+
+    #tela-mesa-conteudo {
+
+        padding: 10px;
+    }
+
+    .interface-boas-vindas h3 {
+
+        font-size: 19px;
+    }
+
+    .interface-boas-vindas p {
+
+        font-size: 9px;
+    }
+
+
+    /* =============================================
+       NAVEGAÇÃO
+    ============================================= */
+
+    #mesa-modulos {
+
+        padding: 6px;
+
+        gap: 4px;
+    }
+
+    #mesa-modulos button {
+
+        min-width: 58px;
+
+        padding: 7px 5px;
+
+        font-size: 7px;
+    }
+
+}
+
+
+/* =========================================================
+   CELULARES MUITO PEQUENOS
+========================================================= */
+
+@media (max-width: 380px) {
+
+    #mesa-layout {
+
+        grid-template-columns:
+            minmax(0, 1fr)
+            105px;
+    }
+
+    .jogador-card {
+
+        min-height: 88px;
+    }
+
+    .jogador-nome {
+
+        font-size: 9px;
+    }
+
+    .status-mini {
+
+        font-size: 5px;
+    }
+
+}
+
+
+/* =========================================================
+   SCROLLBARS
+========================================================= */
+
+#assentos-jogadores::-webkit-scrollbar,
+#tela-mesa-conteudo::-webkit-scrollbar,
+.painel-administrativo::-webkit-scrollbar,
+.mesa-modal-conteudo::-webkit-scrollbar {
+    width: 5px;
+}
+
+#assentos-jogadores::-webkit-scrollbar-track,
+#tela-mesa-conteudo::-webkit-scrollbar-track,
+.painel-administrativo::-webkit-scrollbar-track,
+.mesa-modal-conteudo::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+#assentos-jogadores::-webkit-scrollbar-thumb,
+#tela-mesa-conteudo::-webkit-scrollbar-thumb,
+.painel-administrativo::-webkit-scrollbar-thumb,
+.mesa-modal-conteudo::-webkit-scrollbar-thumb {
+    background: #4b2863;
+
+    border-radius: 10px;
 }
