@@ -1,4 +1,11 @@
-// ==========================================
+function escaparHTML(valor) {
+    return String(valor ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}// ==========================================
 // MESA ONLINE — RPG
 // PASSO 6 — MESA FUNCIONAL
 // ==========================================
