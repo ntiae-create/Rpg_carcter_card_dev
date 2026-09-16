@@ -532,6 +532,10 @@ function atualizarInterfaceConfirmacao() {
     }
 
 
+    /* =====================================================
+       PERSONAGEM CONFIRMADO
+    ===================================================== */
+
     if (
         character.confirmed === true
     ) {
@@ -560,12 +564,118 @@ function atualizarInterfaceConfirmacao() {
                 Nome, raça, classe e afinidade estão bloqueados.
             </div>
 
+            <button
+                id="continue-campaign-button"
+                type="button"
+                style="
+                    width:100%;
+                    margin-top:15px;
+                    padding:13px;
+                    border:1px solid #8b5cf6;
+                    border-radius:11px;
+                    background:
+                        linear-gradient(
+                            135deg,
+                            #241633,
+                            #171020
+                        );
+                    color:#e9d5ff;
+                    font-weight:bold;
+                    cursor:pointer;
+                    font-size:12px;
+                    letter-spacing:1px;
+                    box-shadow:
+                        0 0 15px rgba(139,92,246,0.18);
+                    transition:
+                        transform 0.2s ease,
+                        box-shadow 0.2s ease,
+                        border-color 0.2s ease;
+                "
+            >
+                🎲 CONTINUAR CAMPANHA
+            </button>
+
         `;
+
+
+        const continueButton =
+            get(
+                "continue-campaign-button"
+            );
+
+
+        if (continueButton) {
+
+            continueButton.addEventListener(
+                "click",
+                function (event) {
+
+                    event.stopPropagation();
+
+
+                    /*
+                       Pequeno efeito visual
+                       antes de iniciar a transição.
+                    */
+
+                    continueButton.style.transform =
+                        "scale(0.98)";
+
+
+                    setTimeout(
+                        function () {
+
+                            continueButton.style.transform =
+                                "";
+
+                            irParaMesa();
+
+                        },
+                        100
+                    );
+
+                }
+            );
+
+
+            continueButton.addEventListener(
+                "mouseenter",
+                function () {
+
+                    continueButton.style.borderColor =
+                        "#a855f7";
+
+                    continueButton.style.boxShadow =
+                        "0 0 22px rgba(168,85,247,0.3)";
+
+                }
+            );
+
+
+            continueButton.addEventListener(
+                "mouseleave",
+                function () {
+
+                    continueButton.style.borderColor =
+                        "#8b5cf6";
+
+                    continueButton.style.boxShadow =
+                        "0 0 15px rgba(139,92,246,0.18)";
+
+                }
+            );
+
+        }
+
 
         return;
 
     }
 
+
+    /* =====================================================
+       PERSONAGEM NÃO CONFIRMADO
+    ===================================================== */
 
     panel.innerHTML = `
 
@@ -952,14 +1062,6 @@ function mostrarMesaComoTela() {
         criarTelaMesa();
 
 
-    /*
-       A Mesa é movida para dentro
-       da tela exclusiva.
-
-       Isso NÃO destrói a Mesa.
-       Apenas muda o elemento de lugar.
-    */
-
     tela.appendChild(
         mesa
     );
@@ -1011,6 +1113,62 @@ function irParaMesa() {
 
 
     /*
+       Se a Mesa já estiver na tela,
+       não precisamos esperar novamente.
+    */
+
+    const mesaExistente =
+        get(
+            "online-table-panel"
+        );
+
+
+    if (mesaExistente) {
+
+        setTimeout(
+            function () {
+
+                const sucesso =
+                    mostrarMesaComoTela();
+
+
+                if (!sucesso) {
+
+                    return;
+
+                }
+
+
+                transicao.style.opacity =
+                    "0";
+
+
+                setTimeout(
+                    function () {
+
+                        if (
+                            transicao.parentNode
+                        ) {
+
+                            transicao.remove();
+
+                        }
+
+                    },
+                    500
+                );
+
+            },
+            500
+        );
+
+
+        return;
+
+    }
+
+
+    /*
        Espera a Mesa ser criada
        pelo mesa.js.
     */
@@ -1035,12 +1193,6 @@ function irParaMesa() {
                     );
 
 
-                    /*
-                       Mantém a tela de carregamento
-                       por um pequeno instante para
-                       a transição ficar perceptível.
-                    */
-
                     setTimeout(
                         function () {
 
@@ -1054,11 +1206,6 @@ function irParaMesa() {
 
                             }
 
-
-                            /*
-                               Retira a tela
-                               de carregamento.
-                            */
 
                             transicao.style.opacity =
                                 "0";
@@ -1181,7 +1328,6 @@ function irParaMesa() {
 
                     }
 
-
                 }
 
             },
@@ -1277,8 +1423,7 @@ function confirmarPersonagem() {
 
     /*
        =====================================================
-       PASSO 3
-       TRANSIÇÃO PARA A MESA
+       PRIMEIRA ENTRADA NA MESA
        =====================================================
     */
 
