@@ -21,6 +21,22 @@ function obterNomeMestre() {
     );
 }
 window.obterNomeMestre = obterNomeMestre;
+function criarAssento(numero) {
+    const assento = document.createElement("div");
+
+    assento.className = "mesa-seat";
+    assento.dataset.seat = numero;
+
+    assento.innerHTML = `
+        <div class="mesa-seat-number">${numero}</div>
+        <div class="mesa-seat-content">
+            <div class="mesa-seat-icon">👤</div>
+            <div class="mesa-seat-name">Aguardando jogador</div>
+        </div>
+    `;
+
+    return assento;
+}
 // ==========================================
 // MESA ONLINE — RPG
 // PASSO 6 — MESA FUNCIONAL
