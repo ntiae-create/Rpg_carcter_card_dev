@@ -196,6 +196,23 @@ function criarEstadoInicial() {
         imageURL: "",
 
 
+        /* =================================================
+           NECESSIDADES
+        ================================================= */
+
+        needs: {
+
+            hunger: 100,
+
+            thirst: 100
+
+        },
+
+
+        /* =================================================
+           RECURSOS
+        ================================================= */
+
         resources: {
 
             hp: race.hp,
@@ -208,6 +225,10 @@ function criarEstadoInicial() {
 
         },
 
+
+        /* =================================================
+           ATRIBUTOS
+        ================================================= */
 
         attributes: {
 
@@ -228,6 +249,10 @@ function criarEstadoInicial() {
 
         attributePoints: 3,
 
+
+        /* =================================================
+           COMBATE
+        ================================================= */
 
         combat: {
 
@@ -270,6 +295,10 @@ function criarEstadoInicial() {
 
         },
 
+
+        /* =================================================
+           INVENTÁRIO
+        ================================================= */
 
         inventory: {
 
@@ -327,10 +356,77 @@ function carregarPersonagem() {
             criarEstadoInicial();
 
 
-        return mesclarObjetos(
-            base,
-            data
-        );
+        const personagem =
+            mesclarObjetos(
+                base,
+                data
+            );
+
+
+        /*
+           Compatibilidade com personagens
+           criados antes do sistema de Fome/Sede.
+        */
+
+        if (
+            !personagem.needs ||
+            typeof personagem.needs !== "object"
+        ) {
+
+            personagem.needs = {
+
+                hunger: 100,
+
+                thirst: 100
+
+            };
+
+        }
+
+
+        if (
+            typeof personagem.needs.hunger !==
+            "number"
+        ) {
+
+            personagem.needs.hunger =
+                100;
+
+        }
+
+
+        if (
+            typeof personagem.needs.thirst !==
+            "number"
+        ) {
+
+            personagem.needs.thirst =
+                100;
+
+        }
+
+
+        personagem.needs.hunger =
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    personagem.needs.hunger
+                )
+            );
+
+
+        personagem.needs.thirst =
+            Math.max(
+                0,
+                Math.min(
+                    100,
+                    personagem.needs.thirst
+                )
+            );
+
+
+        return personagem;
 
     }
 
@@ -443,6 +539,212 @@ function limitarNumero(
 
 
 /* =========================================================
+   NECESSIDADES — FOME E SEDE
+========================================================= */
+
+function obterFome() {
+
+    if (
+        !character.needs
+    ) {
+
+        character.needs = {
+
+            hunger: 100,
+
+            thirst: 100
+
+        };
+
+    }
+
+
+    return character.needs.hunger;
+
+}
+
+
+function obterSede() {
+
+    if (
+        !character.needs
+    ) {
+
+        character.needs = {
+
+            hunger: 100,
+
+            thirst: 100
+
+        };
+
+    }
+
+
+    return character.needs.thirst;
+
+}
+
+
+/* =========================================================
+   ALTERAR FOME
+========================================================= */
+
+function definirFome(valor) {
+
+    if (
+        !character.needs
+    ) {
+
+        character.needs = {
+
+            hunger: 100,
+
+            thirst: 100
+
+        };
+
+    }
+
+
+    character.needs.hunger =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Number(valor) || 0
+            )
+        );
+
+
+    salvarPersonagem();
+
+}
+
+
+/* =========================================================
+   ALTERAR SEDE
+========================================================= */
+
+function definirSede(valor) {
+
+    if (
+        !character.needs
+    ) {
+
+        character.needs = {
+
+            hunger: 100,
+
+            thirst: 100
+
+        };
+
+    }
+
+
+    character.needs.thirst =
+        Math.max(
+            0,
+            Math.min(
+                100,
+                Number(valor) || 0
+            )
+        );
+
+
+    salvarPersonagem();
+
+}
+
+
+/* =========================================================
+   MODIFICAR FOME
+========================================================= */
+
+function alterarFome(valor) {
+
+    definirFome(
+        obterFome() +
+        Number(valor || 0)
+    );
+
+}
+
+
+/* =========================================================
+   MODIFICAR SEDE
+========================================================= */
+
+function alterarSede(valor) {
+
+    definirSede(
+        obterSede() +
+        Number(valor || 0)
+    );
+
+}
+
+
+/* =========================================================
+   ESTADO DA NECESSIDADE
+========================================================= */
+
+function obterEstadoNecessidade(
+    valor
+) {
+
+    if (
+        valor <= 0
+    ) {
+
+        return "CRÍTICO";
+
+    }
+
+
+    if (
+        valor <= 20
+    ) {
+
+        return "MUITO BAIXO";
+
+    }
+
+
+    if (
+        valor <= 40
+    ) {
+
+        return "BAIXO";
+
+    }
+
+
+    if (
+        valor <= 60
+    ) {
+
+        return "MODERADO";
+
+    }
+
+
+    if (
+        valor <= 80
+    ) {
+
+        return "BOM";
+
+    }
+
+
+    return "EXCELENTE";
+
+}
+
+
+/* =========================================================
    CONFIRMAÇÃO DO PERSONAGEM
 ========================================================= */
 
@@ -532,10 +834,6 @@ function atualizarInterfaceConfirmacao() {
     }
 
 
-    /* =====================================================
-       PERSONAGEM CONFIRMADO
-    ===================================================== */
-
     if (
         character.confirmed === true
     ) {
@@ -613,11 +911,6 @@ function atualizarInterfaceConfirmacao() {
                     event.stopPropagation();
 
 
-                    /*
-                       Pequeno efeito visual
-                       antes de iniciar a transição.
-                    */
-
                     continueButton.style.transform =
                         "scale(0.98)";
 
@@ -672,10 +965,6 @@ function atualizarInterfaceConfirmacao() {
 
     }
 
-
-    /* =====================================================
-       PERSONAGEM NÃO CONFIRMADO
-    ===================================================== */
 
     panel.innerHTML = `
 
@@ -1112,11 +1401,6 @@ function irParaMesa() {
         40;
 
 
-    /*
-       Se a Mesa já estiver na tela,
-       não precisamos esperar novamente.
-    */
-
     const mesaExistente =
         get(
             "online-table-panel"
@@ -1167,11 +1451,6 @@ function irParaMesa() {
 
     }
 
-
-    /*
-       Espera a Mesa ser criada
-       pelo mesa.js.
-    */
 
     const procurarMesa =
         setInterval(
@@ -1365,31 +1644,15 @@ function confirmarPersonagem() {
     }
 
 
-    /*
-       Marca o personagem como confirmado.
-    */
-
     character.confirmed =
         true;
 
 
-    /*
-       Salva imediatamente.
-    */
-
     salvarPersonagem();
 
 
-    /*
-       Bloqueia os campos.
-    */
-
     aplicarBloqueioDefinicoes();
 
-
-    /*
-       Atualiza a interface.
-    */
 
     atualizarInterface();
 
@@ -1397,16 +1660,8 @@ function confirmarPersonagem() {
     atualizarInterfaceConfirmacao();
 
 
-    /*
-       Garante novamente o bloqueio.
-    */
-
     aplicarBloqueioDefinicoes();
 
-
-    /*
-       Mensagem visual.
-    */
 
     if (
         typeof mostrarResultadoSupabase ===
@@ -1420,12 +1675,6 @@ function confirmarPersonagem() {
 
     }
 
-
-    /*
-       =====================================================
-       PRIMEIRA ENTRADA NA MESA
-       =====================================================
-    */
 
     setTimeout(
         irParaMesa,
@@ -2428,10 +2677,6 @@ function mostrarResultadoSupabase(
 
 function atualizarInterface() {
 
-    /* =====================================================
-       PERSONAGEM
-    ===================================================== */
-
     const name =
         get("character-name");
 
@@ -2479,10 +2724,6 @@ function atualizarInterface() {
 
     }
 
-
-    /* =====================================================
-       XP DO PERSONAGEM
-    ===================================================== */
 
     const xpText =
         get("character-xp-text");
@@ -2539,23 +2780,11 @@ function atualizarInterface() {
     }
 
 
-    /* =====================================================
-       BRASÃO
-    ===================================================== */
-
     atualizarBrasao();
 
 
-    /* =====================================================
-       STATUS
-    ===================================================== */
-
     StatusModule.atualizarStatus();
 
-
-    /* =====================================================
-       COMBATE
-    ===================================================== */
 
     if (
         typeof CombatModule !==
@@ -2567,10 +2796,6 @@ function atualizarInterface() {
     }
 
 
-    /* =====================================================
-       INVENTÁRIO
-    ===================================================== */
-
     if (
         typeof InventoryModule !==
         "undefined"
@@ -2581,44 +2806,20 @@ function atualizarInterface() {
     }
 
 
-    /* =====================================================
-       IMAGEM
-    ===================================================== */
-
     CharacterModule.atualizarImagem();
 
-
-    /* =====================================================
-       EDITOR DO PERSONAGEM
-    ===================================================== */
 
     CharacterModule.sincronizarEditor();
 
 
-    /* =====================================================
-       BLOQUEIO DAS DEFINIÇÕES
-    ===================================================== */
-
     aplicarBloqueioDefinicoes();
 
-
-    /* =====================================================
-       CONFIRMAÇÃO
-    ===================================================== */
 
     atualizarInterfaceConfirmacao();
 
 
-    /* =====================================================
-       EFEITO ELEMENTAL
-    ===================================================== */
-
     StatusModule.aplicarEfeitoElemental();
 
-
-    /* =====================================================
-       ESTADO VISUAL DOS ELEMENTOS
-    ===================================================== */
 
     StatusModule.configurarEstadoElementos();
 
