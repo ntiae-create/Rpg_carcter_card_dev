@@ -1,14 +1,14 @@
 /* ============================================================
    MESA RPG ONLINE
    mesa.js
-   NÚCLEO / ORQUESTRADOR DA MESA
+   NÚCLEO PRINCIPAL DA MESA
 ============================================================ */
 
 "use strict";
 
 
 /* ============================================================
-   CONFIGURAÇÃO
+   CONFIGURAÇÃO PRINCIPAL
 ============================================================ */
 
 const MESA_CONFIG = {
@@ -21,65 +21,127 @@ const MESA_CONFIG = {
         BATALHA: "batalha"
     },
 
+    /* -----------------------------------------
+       CONFIGURAÇÃO DO CTE
+    ----------------------------------------- */
+
     cte: {
-        disponivel: true
+
+        disponivel: true,
+
+        /*
+            Tempo padrão do CTE.
+
+            2000 = 2 segundos
+        */
+
+        duracoes: {
+
+            facil: 3000,
+
+            normal: 2000,
+
+            dificil: 1000,
+
+            extremo: 500
+
+        },
+
+        dificuldadePadrao: "normal",
+
+        /*
+            Quantidade de alvos.
+            Por enquanto 1.
+
+            Futuramente podemos ter:
+            1 alvo
+            3 alvos
+            sequência
+            etc.
+        */
+
+        quantidadeAlvos: 1
+
     }
 
 };
 
 
 /* ============================================================
-   ESTADO GLOBAL DA MESA
+   ESTADO DA MESA
 ============================================================ */
-
-/*
-    Este objeto representa o estado atual da sessão.
-
-    IMPORTANTE:
-    Os dados dos jogadores ficarão aqui futuramente.
-    Quando entrarmos em batalha, eles NÃO serão recriados.
-
-    Exemplo:
-
-    Player 1
-    HP: 73/100
-
-    entra em batalha
-    ↓
-    sofre dano
-    ↓
-    HP: 51/100
-
-    volta para a mesa
-    ↓
-    continua com 51/100
-*/
 
 const mesaState = {
 
-    modoAtual: MESA_CONFIG.modos.NORMAL,
+    /* -----------------------------------------
+       MODO ATUAL
+    ----------------------------------------- */
+
+    modoAtual:
+        MESA_CONFIG.modos.NORMAL,
+
+
+    /* -----------------------------------------
+       CAMPANHA
+    ----------------------------------------- */
 
     campanha: {
+
+        id: null,
+
         nome: "Campanha"
+
     },
+
+
+    /* -----------------------------------------
+       CTE
+    ----------------------------------------- */
 
     cte: {
 
         ativo: false,
 
-        tipo: null,
+        id: null,
+
+        dificuldade:
+            MESA_CONFIG.cte.dificuldadePadrao,
+
+        duracao: 2000,
+
+        iniciadoEm: null,
+
+        encerradoEm: null,
+
+        alvo: null,
+
+        resultado: null,
+
+        jogadorAlvo: null,
 
         dados: null
 
     },
+
+
+    /* -----------------------------------------
+       BATALHA
+    ----------------------------------------- */
 
     batalha: {
 
         ativa: false,
 
+        id: null,
+
         dados: null
 
     },
+
+
+    /* -----------------------------------------
+       AVENTURA
+    ----------------------------------------- */
 
     aventura: {
 
@@ -91,41 +153,70 @@ const mesaState = {
 
     },
 
+
+    /* -----------------------------------------
+       JOGADORES
+    ----------------------------------------- */
+
     jogadores: Array.from(
-        { length: MESA_CONFIG.maxJogadores },
+        {
+            length:
+                MESA_CONFIG.maxJogadores
+        },
         (_, index) => {
 
             return {
 
                 id: index + 1,
 
-                nome: `Player ${index + 1}`,
+                nome:
+                    `Player ${index + 1}`,
 
                 conectado: false,
 
+                avatar: null,
+
+                raca: null,
+
+                classe: null,
+
+
                 hp: {
+
                     atual: 100,
+
                     maximo: 100
+
                 },
+
 
                 mana: {
+
                     atual: 100,
+
                     maximo: 100
+
                 },
 
+
                 status: [],
+
 
                 fome: 100,
 
                 sede: 100,
 
+
                 habilidades: [],
+
 
                 passiva: null,
 
                 passivaClasse: null,
 
+
                 inventario: [],
+
 
                 emBatalha: false
 
@@ -167,14 +258,26 @@ const MesaUI = {
 
 
 /* ============================================================
+   TIMER INTERNO DO CTE
+============================================================ */
+
+let cteTimer = null;
+
+let cteAnimationFrame = null;
+
+
+/* ============================================================
    INICIALIZAÇÃO
 ============================================================ */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
 
-    inicializarMesa();
+        inicializarMesa();
 
-});
+    }
+);
 
 
 function inicializarMesa() {
@@ -187,6 +290,8 @@ function inicializarMesa() {
 
     atualizarModoVisual();
 
+    atualizarCardsIniciais();
+
     console.log(
         "🎲 Mesa RPG inicializada.",
         mesaState
@@ -196,37 +301,64 @@ function inicializarMesa() {
 
 
 /* ============================================================
-   OBTER ELEMENTOS
+   ELEMENTOS DA INTERFACE
 ============================================================ */
 
 function obterElementos() {
 
     MesaUI.container =
-        document.getElementById("online-table-panel");
+        document.getElementById(
+            "online-table-panel"
+        );
+
 
     MesaUI.layout =
-        document.querySelector(".mesa-layout");
+        document.querySelector(
+            ".mesa-layout"
+        );
+
 
     MesaUI.jogadores =
-        document.getElementById("jogadores");
+        document.getElementById(
+            "jogadores"
+        );
+
 
     MesaUI.stage =
-        document.getElementById("mesa-stage");
+        document.getElementById(
+            "mesa-stage"
+        );
+
 
     MesaUI.screen =
-        document.getElementById("mesa-screen");
+        document.getElementById(
+            "mesa-screen"
+        );
+
 
     MesaUI.screenContent =
-        document.getElementById("mesa-screen-content");
+        document.getElementById(
+            "mesa-screen-content"
+        );
+
 
     MesaUI.settingsButton =
-        document.getElementById("btn-configuracoes");
+        document.getElementById(
+            "btn-configuracoes"
+        );
+
 
     MesaUI.masterMenu =
-        document.getElementById("master-menu");
+        document.getElementById(
+            "master-menu"
+        );
+
 
     MesaUI.nomeCampanha =
-        document.getElementById("nome-campanha");
+        document.getElementById(
+            "nome-campanha"
+        );
+
 
     MesaUI.masterButtons =
         Array.from(
@@ -244,8 +376,9 @@ function obterElementos() {
 
 function registrarEventos() {
 
+
     /* -----------------------------------------
-       BOTÃO DE CONFIGURAÇÕES
+       BOTÃO DO MESTRE
     ----------------------------------------- */
 
     if (MesaUI.settingsButton) {
@@ -259,28 +392,32 @@ function registrarEventos() {
 
 
     /* -----------------------------------------
-       BOTÕES DO MESTRE
+       BOTÕES DO MENU DO MESTRE
     ----------------------------------------- */
 
-    MesaUI.masterButtons.forEach(button => {
+    MesaUI.masterButtons.forEach(
+        button => {
 
-        button.addEventListener(
-            "click",
-            () => {
+            button.addEventListener(
+                "click",
+                () => {
 
-                const acao =
-                    button.dataset.masterAction;
+                    const acao =
+                        button.dataset.masterAction;
 
-                executarAcaoMestre(acao);
+                    executarAcaoMestre(
+                        acao
+                    );
 
-            }
-        );
+                }
+            );
 
-    });
+        }
+    );
 
 
     /* -----------------------------------------
-       FECHAR MENU CLICANDO FORA
+       CLICAR FORA DO MENU
     ----------------------------------------- */
 
     if (MesaUI.masterMenu) {
@@ -305,14 +442,16 @@ function registrarEventos() {
 
 
     /* -----------------------------------------
-       TECLA ESC
+       ESC
     ----------------------------------------- */
 
     document.addEventListener(
         "keydown",
         evento => {
 
-            if (evento.key === "Escape") {
+            if (
+                evento.key === "Escape"
+            ) {
 
                 fecharMenuMestre();
 
@@ -327,23 +466,33 @@ function registrarEventos() {
     ----------------------------------------- */
 
     const cards =
-        document.querySelectorAll(".player-card");
-
-    cards.forEach(card => {
-
-        card.addEventListener(
-            "click",
-            () => {
-
-                const playerId =
-                    Number(card.dataset.player);
-
-                selecionarJogador(playerId);
-
-            }
+        document.querySelectorAll(
+            ".player-card"
         );
 
-    });
+
+    cards.forEach(
+        card => {
+
+            card.addEventListener(
+                "click",
+                () => {
+
+                    const playerId =
+                        Number(
+                            card.dataset.player
+                        );
+
+
+                    selecionarJogador(
+                        playerId
+                    );
+
+                }
+            );
+
+        }
+    );
 
 }
 
@@ -355,8 +504,11 @@ function registrarEventos() {
 function abrirMenuMestre() {
 
     if (!MesaUI.masterMenu) {
+
         return;
+
     }
+
 
     MesaUI.masterMenu.hidden = false;
 
@@ -366,8 +518,11 @@ function abrirMenuMestre() {
 function fecharMenuMestre() {
 
     if (!MesaUI.masterMenu) {
+
         return;
+
     }
+
 
     MesaUI.masterMenu.hidden = true;
 
@@ -377,10 +532,15 @@ function fecharMenuMestre() {
 function alternarMenuMestre() {
 
     if (!MesaUI.masterMenu) {
+
         return;
+
     }
 
-    if (MesaUI.masterMenu.hidden) {
+
+    if (
+        MesaUI.masterMenu.hidden
+    ) {
 
         abrirMenuMestre();
 
@@ -397,20 +557,27 @@ function alternarMenuMestre() {
    AÇÕES DO MESTRE
 ============================================================ */
 
-function executarAcaoMestre(acao) {
+function executarAcaoMestre(
+    acao
+) {
 
     switch (acao) {
 
+
         case "mapa":
 
-            abrirAventura("mapa");
+            abrirAventura(
+                "mapa"
+            );
 
             break;
 
 
         case "dungeon":
 
-            abrirAventura("dungeon");
+            abrirAventura(
+                "dungeon"
+            );
 
             break;
 
@@ -439,7 +606,8 @@ function executarAcaoMestre(acao) {
         default:
 
             console.warn(
-                `Ação do Mestre desconhecida: ${acao}`
+                "Ação do Mestre desconhecida:",
+                acao
             );
 
     }
@@ -451,32 +619,49 @@ function executarAcaoMestre(acao) {
    MODO DA MESA
 ============================================================ */
 
-function mudarModo(novoModo) {
+function mudarModo(
+    novoModo
+) {
 
-    const modosValidos = Object.values(
-        MESA_CONFIG.modos
-    );
-
-    if (!modosValidos.includes(novoModo)) {
-
-        console.warn(
-            `Modo inválido: ${novoModo}`
+    const modosValidos =
+        Object.values(
+            MESA_CONFIG.modos
         );
 
-        return;
+
+    if (
+        !modosValidos.includes(
+            novoModo
+        )
+    ) {
+
+        console.warn(
+            "Modo inválido:",
+            novoModo
+        );
+
+        return false;
 
     }
 
-    mesaState.modoAtual = novoModo;
+
+    mesaState.modoAtual =
+        novoModo;
+
 
     atualizarModoVisual();
+
 
     emitirEventoMesa(
         "modoAlterado",
         {
-            modo: novoModo
+            modo:
+                novoModo
         }
     );
+
+
+    return true;
 
 }
 
@@ -484,8 +669,11 @@ function mudarModo(novoModo) {
 function atualizarModoVisual() {
 
     if (!MesaUI.container) {
+
         return;
+
     }
+
 
     MesaUI.container.dataset.mesaModo =
         mesaState.modoAtual;
@@ -494,7 +682,7 @@ function atualizarModoVisual() {
 
 
 /* ============================================================
-   MESA NORMAL
+   VOLTAR PARA A MESA NORMAL
 ============================================================ */
 
 function voltarParaMesaNormal() {
@@ -502,17 +690,23 @@ function voltarParaMesaNormal() {
     mesaState.modoAtual =
         MESA_CONFIG.modos.NORMAL;
 
-    mesaState.aventura.ativa = false;
 
-    mesaState.aventura.tipo = null;
+    mesaState.aventura.ativa =
+        false;
+
+
+    mesaState.aventura.tipo =
+        null;
+
 
     atualizarModoVisual();
 
+
     mostrarTelaPrincipal();
 
+
     emitirEventoMesa(
-        "mesaNormal",
-        {}
+        "mesaNormal"
     );
 
 }
@@ -522,39 +716,52 @@ function voltarParaMesaNormal() {
    AVENTURA
 ============================================================ */
 
-function abrirAventura(tipo, dados = null) {
+function abrirAventura(
+    tipo,
+    dados = null
+) {
 
     fecharMenuMestre();
 
-    mesaState.aventura.ativa = true;
 
-    mesaState.aventura.tipo = tipo;
+    mesaState.aventura.ativa =
+        true;
 
-    mesaState.aventura.dados = dados;
+
+    mesaState.aventura.tipo =
+        tipo;
+
+
+    mesaState.aventura.dados =
+        dados;
+
 
     mudarModo(
         MESA_CONFIG.modos.AVENTURA
     );
 
+
     switch (tipo) {
+
 
         case "mapa":
 
             mostrarTela(
                 `
-                    <div class="mesa-view mesa-map-view">
+                <div class="mesa-view mesa-map-view">
 
-                        <div class="mesa-view-icon">
-                            🗺️
-                        </div>
-
-                        <h2>Mapa</h2>
-
-                        <p>
-                            O mapa da aventura aparecerá aqui.
-                        </p>
-
+                    <div class="mesa-view-icon">
+                        🗺️
                     </div>
+
+                    <h2>Mapa</h2>
+
+                    <p>
+                        O mapa da aventura
+                        aparecerá aqui.
+                    </p>
+
+                </div>
                 `
             );
 
@@ -565,19 +772,20 @@ function abrirAventura(tipo, dados = null) {
 
             mostrarTela(
                 `
-                    <div class="mesa-view mesa-dungeon-view">
+                <div class="mesa-view mesa-dungeon-view">
 
-                        <div class="mesa-view-icon">
-                            🏰
-                        </div>
-
-                        <h2>Dungeon</h2>
-
-                        <p>
-                            A dungeon da aventura aparecerá aqui.
-                        </p>
-
+                    <div class="mesa-view-icon">
+                        🏰
                     </div>
+
+                    <h2>Dungeon</h2>
+
+                    <p>
+                        A dungeon da aventura
+                        aparecerá aqui.
+                    </p>
+
+                </div>
                 `
             );
 
@@ -594,8 +802,11 @@ function abrirAventura(tipo, dados = null) {
     emitirEventoMesa(
         "aventuraAberta",
         {
+
             tipo,
+
             dados
+
         }
     );
 
@@ -603,70 +814,71 @@ function abrirAventura(tipo, dados = null) {
 
 
 /* ============================================================
-   BATALHA
+   INICIAR BATALHA
 ============================================================ */
 
-/*
-    IMPORTANTE:
-
-    Esta função NÃO monta a interface completa da batalha.
-
-    Ela apenas muda o estado da sessão e prepara
-    a transferência para o futuro sistema:
-
-        mesa-batalha.js
-
-    Assim não misturamos as responsabilidades.
-*/
-
-function iniciarBatalha(dados = null) {
+function iniciarBatalha(
+    dados = null
+) {
 
     fecharMenuMestre();
 
-    mesaState.batalha.ativa = true;
 
-    mesaState.batalha.dados = dados;
+    mesaState.batalha.ativa =
+        true;
+
+
+    mesaState.batalha.dados =
+        dados;
+
+
+    mesaState.batalha.id =
+        gerarId("batalha");
+
 
     mudarModo(
         MESA_CONFIG.modos.BATALHA
     );
 
 
-    /* -----------------------------------------
-       MARCAR JOGADORES COMO EM BATALHA
-    ----------------------------------------- */
+    /*
+        NÃO resetamos os personagens.
 
-    mesaState.jogadores.forEach(jogador => {
+        Apenas marcamos quem está
+        participando da batalha.
+    */
 
-        if (jogador.conectado) {
+    mesaState.jogadores.forEach(
+        jogador => {
 
-            jogador.emBatalha = true;
+            if (
+                jogador.conectado
+            ) {
+
+                jogador.emBatalha =
+                    true;
+
+            }
 
         }
+    );
 
-    });
-
-
-    /*
-        O futuro mesa-batalha.js poderá
-        assumir daqui.
-    */
 
     mostrarTela(
         `
-            <div class="mesa-view mesa-battle-loading">
+        <div class="mesa-view mesa-battle-loading">
 
-                <div class="mesa-view-icon">
-                    ⚔️
-                </div>
-
-                <h2>Combate iniciado</h2>
-
-                <p>
-                    Preparando a Mesa de Batalha...
-                </p>
-
+            <div class="mesa-view-icon">
+                ⚔️
             </div>
+
+            <h2>Combate iniciado</h2>
+
+            <p>
+                Preparando a Mesa de Batalha...
+            </p>
+
+        </div>
         `
     );
 
@@ -674,22 +886,26 @@ function iniciarBatalha(dados = null) {
     emitirEventoMesa(
         "batalhaIniciada",
         {
+
+            batalhaId:
+                mesaState.batalha.id,
+
             dados,
 
             jogadores:
                 mesaState.jogadores
+
         }
     );
 
 
     /*
-        Se mesa-batalha.js estiver carregado,
-        damos a ele a oportunidade de assumir
-        a interface.
+        Futuro mesa-batalha.js
     */
 
     if (
-        typeof window.inicializarMesaBatalha ===
+        typeof window
+            .inicializarMesaBatalha ===
         "function"
     ) {
 
@@ -706,24 +922,38 @@ function iniciarBatalha(dados = null) {
    FINALIZAR BATALHA
 ============================================================ */
 
-function finalizarBatalha(resultado = null) {
+function finalizarBatalha(
+    resultado = null
+) {
 
-    mesaState.batalha.ativa = false;
+    mesaState.batalha.ativa =
+        false;
 
-    mesaState.batalha.dados = null;
+
+    mesaState.batalha.id =
+        null;
 
 
-    mesaState.jogadores.forEach(jogador => {
+    mesaState.batalha.dados =
+        null;
 
-        jogador.emBatalha = false;
 
-    });
+    mesaState.jogadores.forEach(
+        jogador => {
+
+            jogador.emBatalha =
+                false;
+
+        }
+    );
 
 
     emitirEventoMesa(
         "batalhaFinalizada",
         {
+
             resultado
+
         }
     );
 
@@ -737,126 +967,362 @@ function finalizarBatalha(resultado = null) {
    BOSS
 ============================================================ */
 
-function iniciarBoss(dados = null) {
+function iniciarBoss(
+    dados = null
+) {
 
     fecharMenuMestre();
 
-    /*
-        Boss também será tratado como
-        um tipo especial de batalha.
 
-        Não criamos uma segunda estrutura
-        de jogadores.
-    */
-
-    iniciarBatalha({
-
-        tipo: "boss",
-
-        dados
-
-    });
-
-}
-
-
-/* ============================================================
-   CTE
-============================================================ */
-
-/*
-    O CTE é GLOBAL.
-
-    Ele NÃO depende do modo atual da mesa.
-
-    Pode ser aberto:
-
-        Mesa Normal
-        Mesa de Aventura
-        Mesa de Batalha
-
-    sem destruir o estado atual.
-*/
-
-function abrirCTE(tipo = "padrao", dados = null) {
-
-    fecharMenuMestre();
-
-    mesaState.cte.ativo = true;
-
-    mesaState.cte.tipo = tipo;
-
-    mesaState.cte.dados = dados;
-
-
-    /*
-        O CTE fica sobre o conteúdo atual.
-
-        Não mudamos:
-
-            mesaState.modoAtual
-
-        Portanto, se estivermos em batalha,
-        continuamos em batalha depois do CTE.
-    */
-
-    mostrarCTE();
-
-
-    emitirEventoMesa(
-        "cteAberto",
+    iniciarBatalha(
         {
-            tipo,
-            dados,
 
-            modoAtual:
-                mesaState.modoAtual
+            tipo: "boss",
+
+            dados
+
         }
     );
 
 }
 
 
-function mostrarCTE() {
+/* ============================================================
+   CTE
+   CLICK TIME EVENT
+============================================================ */
 
-    mostrarTela(
-        `
-            <div class="mesa-view mesa-cte-view">
+/*
+    O CTE é GLOBAL.
 
-                <div class="mesa-view-icon">
-                    🎲
-                </div>
+    Pode ser iniciado em:
 
-                <h2>CTE</h2>
+        NORMAL
+        AVENTURA
+        BATALHA
 
-                <p>
-                    Evento narrativo em andamento.
-                </p>
+    Ele NÃO muda o modo atual.
 
-                <button
-                    type="button"
-                    class="mesa-cte-close"
-                    id="btn-fechar-cte"
-                >
-                    Continuar
-                </button>
+    Exemplo:
 
-            </div>
-        `
-    );
+        batalha
+           ↓
+        CTE
+           ↓
+        batalha
+
+*/
 
 
-    const botao =
-        document.getElementById(
-            "btn-fechar-cte"
+function abrirCTE(
+    tipo = "normal",
+    dados = {}
+) {
+
+    if (
+        !MESA_CONFIG.cte.disponivel
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Se já existir um CTE ativo,
+        não criamos outro por cima.
+    */
+
+    if (
+        mesaState.cte.ativo
+    ) {
+
+        console.warn(
+            "Já existe um CTE ativo."
+        );
+
+        return;
+
+    }
+
+
+    fecharMenuMestre();
+
+
+    const dificuldade =
+        obterDificuldadeCTE(
+            tipo,
+            dados
         );
 
 
-    if (botao) {
+    const duracao =
+        obterDuracaoCTE(
+            dificuldade,
+            dados
+        );
 
-        botao.addEventListener(
-            "click",
-            fecharCTE
+
+    mesaState.cte = {
+
+        ativo: true,
+
+        id:
+            gerarId("cte"),
+
+        dificuldade,
+
+        duracao,
+
+        iniciadoEm:
+            Date.now(),
+
+        encerradoEm:
+            null,
+
+        alvo: null,
+
+        resultado: null,
+
+        jogadorAlvo:
+            dados.jogadorAlvo ??
+            null,
+
+        dados
+
+    };
+
+
+    emitirEventoMesa(
+        "cteIniciado",
+        {
+
+            id:
+                mesaState.cte.id,
+
+            dificuldade,
+
+            duracao,
+
+            iniciadoEm:
+                mesaState.cte.iniciadoEm,
+
+            jogadorAlvo:
+                mesaState.cte.jogadorAlvo,
+
+            modoAnterior:
+                mesaState.modoAtual,
+
+            dados
+
+        }
+    );
+
+
+    criarCTEVisual();
+
+
+    iniciarTimerCTE();
+
+}
+
+
+/* ============================================================
+   DIFICULDADE DO CTE
+============================================================ */
+
+function obterDificuldadeCTE(
+    tipo,
+    dados
+) {
+
+    if (
+        dados &&
+        dados.dificuldade &&
+        MESA_CONFIG.cte.duracoes[
+            dados.dificuldade
+        ]
+    ) {
+
+        return dados.dificuldade;
+
+    }
+
+
+    if (
+        MESA_CONFIG.cte.duracoes[
+            tipo
+        ]
+    ) {
+
+        return tipo;
+
+    }
+
+
+    return MESA_CONFIG
+        .cte
+        .dificuldadePadrao;
+
+}
+
+
+/* ============================================================
+   DURAÇÃO DO CTE
+============================================================ */
+
+function obterDuracaoCTE(
+    dificuldade,
+    dados
+) {
+
+    /*
+        Podemos sobrescrever a duração
+        manualmente no futuro.
+
+        Exemplo:
+
+        abrirCTE("normal", {
+            duracao: 1500
+        })
+    */
+
+    if (
+        dados &&
+        Number.isFinite(
+            Number(
+                dados.duracao
+            )
+        )
+    ) {
+
+        return Math.max(
+            100,
+            Number(
+                dados.duracao
+            )
+        );
+
+    }
+
+
+    return (
+        MESA_CONFIG
+            .cte
+            .duracoes[
+                dificuldade
+            ] ||
+        2000
+    );
+
+}
+
+
+/* ============================================================
+   CRIAR O CTE NA TELA
+============================================================ */
+
+function criarCTEVisual() {
+
+    if (
+        !MesaUI.screenContent
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+        Escolhemos uma posição aleatória
+        dentro do palco.
+
+        Mantemos uma margem para que
+        o alvo nunca apareça grudado
+        nas bordas.
+    */
+
+    const posicao =
+        gerarPosicaoAlvo();
+
+
+    mesaState.cte.alvo =
+        posicao;
+
+
+    MesaUI.screenContent.innerHTML =
+
+        `
+        <div
+            class="cte-overlay"
+            id="cte-overlay"
+        >
+
+            <div class="cte-info">
+
+                <span class="cte-label">
+                    ⚡ CTE
+                </span>
+
+                <span
+                    class="cte-timer"
+                    id="cte-timer"
+                >
+                    2.00
+                </span>
+
+            </div>
+
+
+            <button
+                type="button"
+                id="cte-target"
+                class="cte-target"
+                aria-label="Acertar CTE"
+                style="
+                    left:${posicao.x}%;
+                    top:${posicao.y}%;
+                "
+            >
+
+                <span>
+                    TAP!
+                </span>
+
+            </button>
+
+        </div>
+        `;
+
+
+    const alvo =
+        document.getElementById(
+            "cte-target"
+        );
+
+
+    if (alvo) {
+
+        /*
+            pointerdown funciona tanto
+            com toque quanto com mouse.
+
+            Isso é importante porque a
+            aplicação será usada no celular.
+        */
+
+        alvo.addEventListener(
+            "pointerdown",
+            evento => {
+
+                evento.preventDefault();
+
+                processarAcertoCTE();
+
+            },
+            {
+                once: true
+            }
         );
 
     }
@@ -864,36 +1330,491 @@ function mostrarCTE() {
 }
 
 
-function fecharCTE() {
+/* ============================================================
+   POSIÇÃO DO ALVO
+============================================================ */
 
-    mesaState.cte.ativo = false;
+function gerarPosicaoAlvo() {
 
-    mesaState.cte.tipo = null;
+    /*
+        Valores em porcentagem.
 
-    mesaState.cte.dados = null;
+        Margens de segurança:
+
+        X: 15% → 85%
+        Y: 22% → 78%
+
+        Assim o alvo fica sempre
+        dentro da área útil.
+    */
+
+    const x =
+        15 +
+        Math.random() * 70;
+
+
+    const y =
+        22 +
+        Math.random() * 56;
+
+
+    return {
+
+        x:
+            Number(
+                x.toFixed(2)
+            ),
+
+        y:
+            Number(
+                y.toFixed(2)
+            )
+
+    };
+
+}
+
+
+/* ============================================================
+   TIMER DO CTE
+============================================================ */
+
+function iniciarTimerCTE() {
+
+    limparTimerCTE();
+
+
+    const inicio =
+        mesaState.cte.iniciadoEm;
+
+
+    const duracao =
+        mesaState.cte.duracao;
+
+
+    atualizarTimerCTE();
+
+
+    function atualizarTimerCTE() {
+
+        if (
+            !mesaState.cte.ativo
+        ) {
+
+            return;
+
+        }
+
+
+        const agora =
+            Date.now();
+
+
+        const decorrido =
+            agora - inicio;
+
+
+        const restante =
+            Math.max(
+                0,
+                duracao - decorrido
+            );
+
+
+        atualizarTextoTimer(
+            restante
+        );
+
+
+        if (
+            restante <= 0
+        ) {
+
+            finalizarCTE(
+                "falha",
+                "tempo_esgotado"
+            );
+
+            return;
+
+        }
+
+
+        cteAnimationFrame =
+            requestAnimationFrame(
+                atualizarTimerCTE
+            );
+
+    }
+
+
+    cteTimer =
+        setTimeout(
+            () => {
+
+                if (
+                    mesaState.cte.ativo
+                ) {
+
+                    finalizarCTE(
+                        "falha",
+                        "tempo_esgotado"
+                    );
+
+                }
+
+            },
+            duracao + 50
+        );
+
+}
+
+
+/* ============================================================
+   ATUALIZAR TEXTO DO TIMER
+============================================================ */
+
+function atualizarTextoTimer(
+    restante
+) {
+
+    const timer =
+        document.getElementById(
+            "cte-timer"
+        );
+
+
+    if (!timer) {
+
+        return;
+
+    }
+
+
+    const segundos =
+        restante / 1000;
+
+
+    timer.textContent =
+        segundos.toFixed(2);
+
+}
+
+
+/* ============================================================
+   ACERTO DO CTE
+============================================================ */
+
+function processarAcertoCTE() {
+
+    if (
+        !mesaState.cte.ativo
+    ) {
+
+        return;
+
+    }
+
+
+    const agora =
+        Date.now();
+
+
+    const decorrido =
+        agora -
+        mesaState.cte.iniciadoEm;
 
 
     /*
-        Retornamos ao sistema que estava
-        funcionando antes do CTE.
+        Segurança extra:
+
+        mesmo que o navegador demore
+        para processar o toque, verificamos
+        o timestamp real.
     */
 
-    restaurarTelaAnterior();
+    if (
+        decorrido >
+        mesaState.cte.duracao
+    ) {
+
+        finalizarCTE(
+            "falha",
+            "tempo_esgotado"
+        );
+
+        return;
+
+    }
 
 
-    emitirEventoMesa(
-        "cteFechado",
-        {}
+    const tempoRestante =
+        Math.max(
+            0,
+            mesaState.cte.duracao -
+            decorrido
+        );
+
+
+    finalizarCTE(
+        "sucesso",
+        "alvo_acertado",
+        {
+
+            tempoDecorrido:
+                decorrido,
+
+            tempoRestante
+
+        }
     );
 
 }
 
 
 /* ============================================================
-   RESTAURAR TELA
+   FINALIZAR CTE
+============================================================ */
+
+function finalizarCTE(
+    resultado,
+    motivo,
+    extras = {}
+) {
+
+    if (
+        !mesaState.cte.ativo
+    ) {
+
+        return;
+
+    }
+
+
+    limparTimerCTE();
+
+
+    mesaState.cte.ativo =
+        false;
+
+
+    mesaState.cte.encerradoEm =
+        Date.now();
+
+
+    mesaState.cte.resultado = {
+
+        resultado,
+
+        motivo,
+
+        ...extras
+
+    };
+
+
+    const dadosResultado = {
+
+        id:
+            mesaState.cte.id,
+
+        resultado,
+
+        motivo,
+
+        dificuldade:
+            mesaState.cte.dificuldade,
+
+        duracao:
+            mesaState.cte.duracao,
+
+        iniciadoEm:
+            mesaState.cte.iniciadoEm,
+
+        encerradoEm:
+            mesaState.cte.encerradoEm,
+
+        alvo:
+            mesaState.cte.alvo,
+
+        jogadorAlvo:
+            mesaState.cte.jogadorAlvo,
+
+        ...extras
+
+    };
+
+
+    /*
+        Mostramos o resultado por um
+        pequeno período antes de retornar
+        à mesa anterior.
+    */
+
+    mostrarResultadoCTE(
+        resultado,
+        motivo
+    );
+
+
+    emitirEventoMesa(
+        "cteFinalizado",
+        dadosResultado
+    );
+
+
+    setTimeout(
+        () => {
+
+            limparCTE();
+
+        },
+        900
+    );
+
+}
+
+
+/* ============================================================
+   RESULTADO VISUAL DO CTE
+============================================================ */
+
+function mostrarResultadoCTE(
+    resultado,
+    motivo
+) {
+
+    if (
+        !MesaUI.screenContent
+    ) {
+
+        return;
+
+    }
+
+
+    const sucesso =
+        resultado === "sucesso";
+
+
+    MesaUI.screenContent.innerHTML =
+
+        `
+        <div
+            class="
+                mesa-view
+                cte-result
+                ${sucesso
+                    ? "cte-success"
+                    : "cte-failure"}
+            "
+        >
+
+            <div class="mesa-view-icon">
+
+                ${
+                    sucesso
+                        ? "⚡"
+                        : "⌛"
+                }
+
+            </div>
+
+            <h2>
+
+                ${
+                    sucesso
+                        ? "ACERTO!"
+                        : "TEMPO ESGOTADO!"
+                }
+
+            </h2>
+
+            <p>
+
+                ${
+                    sucesso
+                        ? "CTE concluído com sucesso."
+                        : "O CTE não foi concluído a tempo."
+                }
+
+            </p>
+
+        </div>
+        `;
+
+}
+
+
+/* ============================================================
+   LIMPAR CTE
+============================================================ */
+
+function limparCTE() {
+
+    limparTimerCTE();
+
+
+    mesaState.cte.ativo =
+        false;
+
+
+    /*
+        Guardamos o resultado até o
+        próximo CTE para permitir que
+        outros sistemas o consultem.
+    */
+
+    restaurarTelaAnterior();
+
+}
+
+
+/* ============================================================
+   LIMPAR TIMER
+============================================================ */
+
+function limparTimerCTE() {
+
+    if (
+        cteTimer !== null
+    ) {
+
+        clearTimeout(
+            cteTimer
+        );
+
+        cteTimer = null;
+
+    }
+
+
+    if (
+        cteAnimationFrame !== null
+    ) {
+
+        cancelAnimationFrame(
+            cteAnimationFrame
+        );
+
+        cteAnimationFrame =
+            null;
+
+    }
+
+}
+
+
+/* ============================================================
+   TELA ANTERIOR
 ============================================================ */
 
 function restaurarTelaAnterior() {
+
+
+    /* -----------------------------------------
+       BATALHA
+    ----------------------------------------- */
 
     if (
         mesaState.modoAtual ===
@@ -901,7 +1822,8 @@ function restaurarTelaAnterior() {
     ) {
 
         if (
-            typeof window.restaurarMesaBatalha ===
+            typeof window
+                .restaurarMesaBatalha ===
             "function"
         ) {
 
@@ -913,27 +1835,33 @@ function restaurarTelaAnterior() {
 
         }
 
+
         mostrarTela(
             `
-                <div class="mesa-view">
+            <div class="mesa-view">
 
-                    <div class="mesa-view-icon">
-                        ⚔️
-                    </div>
-
-                    <h2>Combate</h2>
-
-                    <p>
-                        Mesa de batalha em andamento.
-                    </p>
-
+                <div class="mesa-view-icon">
+                    ⚔️
                 </div>
+
+                <h2>Combate</h2>
+
+                <p>
+                    Mesa de batalha em andamento.
+                </p>
+
+            </div>
             `
         );
 
         return;
+
     }
 
+
+    /* -----------------------------------------
+       AVENTURA
+    ----------------------------------------- */
 
     if (
         mesaState.modoAtual ===
@@ -941,7 +1869,8 @@ function restaurarTelaAnterior() {
     ) {
 
         if (
-            typeof window.restaurarMesaAventura ===
+            typeof window
+                .restaurarMesaAventura ===
             "function"
         ) {
 
@@ -953,12 +1882,17 @@ function restaurarTelaAnterior() {
 
         }
 
+
         mostrarTelaPrincipal();
 
         return;
 
     }
 
+
+    /* -----------------------------------------
+       NORMAL
+    ----------------------------------------- */
 
     mostrarTelaPrincipal();
 
@@ -973,30 +1907,37 @@ function mostrarTelaPrincipal() {
 
     mostrarTela(
         `
-            <div class="mesa-view mesa-main-view">
+        <div class="mesa-view mesa-main-view">
 
-                <div class="mesa-view-icon">
-                    🎲
-                </div>
-
-                <h2>Mesa de RPG</h2>
-
-                <p>
-                    Aguardando o início da aventura...
-                </p>
-
+            <div class="mesa-view-icon">
+                🎲
             </div>
+
+            <h2>Mesa de RPG</h2>
+
+            <p>
+                Aguardando o início da aventura...
+            </p>
+
+        </div>
         `
     );
 
 }
 
 
-function mostrarTela(conteudo) {
+function mostrarTela(
+    conteudo
+) {
 
-    if (!MesaUI.screenContent) {
+    if (
+        !MesaUI.screenContent
+    ) {
+
         return;
+
     }
+
 
     MesaUI.screenContent.innerHTML =
         conteudo;
@@ -1008,13 +1949,20 @@ function mostrarTela(conteudo) {
    JOGADORES
 ============================================================ */
 
-function selecionarJogador(playerId) {
+function selecionarJogador(
+    playerId
+) {
 
     const jogador =
-        obterJogador(playerId);
+        obterJogador(
+            playerId
+        );
+
 
     if (!jogador) {
+
         return;
+
     }
 
 
@@ -1027,19 +1975,22 @@ function selecionarJogador(playerId) {
     emitirEventoMesa(
         "jogadorSelecionado",
         {
+
             jogador
+
         }
     );
 
 
     /*
-        Quando mesa-jogadores.js existir,
-        ele poderá assumir a abertura
-        da ficha do personagem.
+        Quando mesa-jogadores.js
+        existir, ele assumirá
+        a abertura da ficha.
     */
 
     if (
-        typeof window.abrirFichaJogador ===
+        typeof window
+            .abrirFichaJogador ===
         "function"
     ) {
 
@@ -1052,25 +2003,238 @@ function selecionarJogador(playerId) {
 }
 
 
-function obterJogador(playerId) {
+function obterJogador(
+    playerId
+) {
 
-    return mesaState.jogadores.find(
-        jogador =>
-            jogador.id === playerId
+    return mesaState
+        .jogadores
+        .find(
+            jogador =>
+                jogador.id ===
+                playerId
+        );
+
+}
+
+
+/* ============================================================
+   ATUALIZAÇÃO DOS CARDS
+============================================================ */
+
+function atualizarCardsIniciais() {
+
+    mesaState.jogadores.forEach(
+        jogador => {
+
+            atualizarCardJogador(
+                jogador.id
+            );
+
+        }
+    );
+
+}
+
+
+function atualizarCardJogador(
+    playerId
+) {
+
+    const jogador =
+        obterJogador(
+            playerId
+        );
+
+
+    if (!jogador) {
+
+        return;
+
+    }
+
+
+    const card =
+        document.querySelector(
+            `.player-card[data-player="${playerId}"]`
+        );
+
+
+    if (!card) {
+
+        return;
+
+    }
+
+
+    const nome =
+        card.querySelector(
+            ".player-name"
+        );
+
+
+    const raca =
+        card.querySelector(
+            ".player-raca"
+        );
+
+
+    const classe =
+        card.querySelector(
+            ".player-classe"
+        );
+
+
+    const hpValue =
+        card.querySelector(
+            ".hp-value"
+        );
+
+
+    const manaValue =
+        card.querySelector(
+            ".mana-value"
+        );
+
+
+    const hpBar =
+        card.querySelector(
+            ".hp-bar span"
+        );
+
+
+    const manaBar =
+        card.querySelector(
+            ".mana-bar span"
+        );
+
+
+    if (nome) {
+
+        nome.textContent =
+            jogador.nome;
+
+    }
+
+
+    if (raca) {
+
+        raca.textContent =
+            jogador.raca ??
+            "Raça";
+
+    }
+
+
+    if (classe) {
+
+        classe.textContent =
+            jogador.classe ??
+            "Classe";
+
+    }
+
+
+    if (hpValue) {
+
+        hpValue.textContent =
+            `${jogador.hp.atual}/${jogador.hp.maximo}`;
+
+    }
+
+
+    if (manaValue) {
+
+        manaValue.textContent =
+            `${jogador.mana.atual}/${jogador.mana.maximo}`;
+
+    }
+
+
+    if (hpBar) {
+
+        hpBar.style.width =
+            calcularPorcentagem(
+                jogador.hp.atual,
+                jogador.hp.maximo
+            ) + "%";
+
+    }
+
+
+    if (manaBar) {
+
+        manaBar.style.width =
+            calcularPorcentagem(
+                jogador.mana.atual,
+                jogador.mana.maximo
+            ) + "%";
+
+    }
+
+
+    card.dataset.conectado =
+        jogador.conectado
+            ? "true"
+            : "false";
+
+
+    card.dataset.emBatalha =
+        jogador.emBatalha
+            ? "true"
+            : "false";
+
+}
+
+
+function calcularPorcentagem(
+    atual,
+    maximo
+) {
+
+    if (
+        !Number.isFinite(
+            Number(atual)
+        ) ||
+        !Number.isFinite(
+            Number(maximo)
+        ) ||
+        Number(maximo) <= 0
+    ) {
+
+        return 0;
+
+    }
+
+
+    return Math.max(
+        0,
+        Math.min(
+            100,
+            (
+                Number(atual) /
+                Number(maximo)
+            ) * 100
+        )
     );
 
 }
 
 
 /* ============================================================
-   NOME DA CAMPANHA
+   CAMPANHA
 ============================================================ */
 
 function atualizarNomeCampanha() {
 
-    if (!MesaUI.nomeCampanha) {
+    if (
+        !MesaUI.nomeCampanha
+    ) {
+
         return;
+
     }
+
 
     MesaUI.nomeCampanha.textContent =
         mesaState.campanha.nome;
@@ -1078,19 +2242,34 @@ function atualizarNomeCampanha() {
 }
 
 
-function definirNomeCampanha(nome) {
+function definirNomeCampanha(
+    nome
+) {
 
     if (
-        typeof nome !== "string" ||
-        !nome.trim()
+        typeof nome !==
+        "string"
     ) {
 
         return;
 
     }
 
-    mesaState.campanha.nome =
+
+    const nomeLimpo =
         nome.trim();
+
+
+    if (!nomeLimpo) {
+
+        return;
+
+    }
+
+
+    mesaState.campanha.nome =
+        nomeLimpo;
+
 
     atualizarNomeCampanha();
 
@@ -1098,8 +2277,12 @@ function definirNomeCampanha(nome) {
     emitirEventoMesa(
         "campanhaAlterada",
         {
+
             nome:
-                mesaState.campanha.nome
+                mesaState
+                    .campanha
+                    .nome
+
         }
     );
 
@@ -1107,24 +2290,13 @@ function definirNomeCampanha(nome) {
 
 
 /* ============================================================
-   EVENTOS INTERNOS DA MESA
+   EVENTOS INTERNOS
 ============================================================ */
 
-/*
-    Criamos um sistema simples de eventos
-    para os outros arquivos poderem conversar
-    com o mesa.js.
-
-    Exemplo:
-
-    mesa.js
-       ↓
-    "batalhaIniciada"
-       ↓
-    mesa-batalha.js
-*/
-
-function emitirEventoMesa(nome, dados = {}) {
+function emitirEventoMesa(
+    nome,
+    dados = {}
+) {
 
     document.dispatchEvent(
         new CustomEvent(
@@ -1139,31 +2311,39 @@ function emitirEventoMesa(nome, dados = {}) {
 
 
 /* ============================================================
+   GERADOR DE IDs
+============================================================ */
+
+function gerarId(
+    prefixo
+) {
+
+    const tempo =
+        Date.now()
+        .toString(36);
+
+
+    const aleatorio =
+        Math.random()
+        .toString(36)
+        .slice(2, 8);
+
+
+    return `${prefixo}_${tempo}_${aleatorio}`;
+
+}
+
+
+/* ============================================================
    API PÚBLICA
 ============================================================ */
 
-/*
-    Disponibilizamos somente funções que
-    outros arquivos realmente precisarão.
-
-    Os outros sistemas poderão utilizar:
-
-        window.MesaRPG.estado()
-
-        window.MesaRPG.batalha.iniciar()
-
-        window.MesaRPG.batalha.finalizar()
-
-        window.MesaRPG.cte.abrir()
-
-        window.MesaRPG.cte.fechar()
-
-        window.MesaRPG.aventura.abrir()
-
-        window.MesaRPG.modo.mudar()
-*/
-
 window.MesaRPG = {
+
+
+    /* -----------------------------------------
+       ESTADO
+    ----------------------------------------- */
 
     estado() {
 
@@ -1171,6 +2351,10 @@ window.MesaRPG = {
 
     },
 
+
+    /* -----------------------------------------
+       MODO
+    ----------------------------------------- */
 
     modo: {
 
@@ -1180,14 +2364,23 @@ window.MesaRPG = {
 
         },
 
-        mudar(novoModo) {
 
-            mudarModo(novoModo);
+        mudar(
+            novoModo
+        ) {
+
+            return mudarModo(
+                novoModo
+            );
 
         }
 
     },
 
+
+    /* -----------------------------------------
+       MESTRE
+    ----------------------------------------- */
 
     mestre: {
 
@@ -1197,11 +2390,13 @@ window.MesaRPG = {
 
         },
 
+
         fecharMenu() {
 
             fecharMenuMestre();
 
         },
+
 
         alternarMenu() {
 
@@ -1212,9 +2407,16 @@ window.MesaRPG = {
     },
 
 
+    /* -----------------------------------------
+       AVENTURA
+    ----------------------------------------- */
+
     aventura: {
 
-        abrir(tipo, dados = null) {
+        abrir(
+            tipo,
+            dados = null
+        ) {
 
             abrirAventura(
                 tipo,
@@ -1226,9 +2428,15 @@ window.MesaRPG = {
     },
 
 
+    /* -----------------------------------------
+       BATALHA
+    ----------------------------------------- */
+
     batalha: {
 
-        iniciar(dados = null) {
+        iniciar(
+            dados = null
+        ) {
 
             iniciarBatalha(
                 dados
@@ -1236,7 +2444,10 @@ window.MesaRPG = {
 
         },
 
-        finalizar(resultado = null) {
+
+        finalizar(
+            resultado = null
+        ) {
 
             finalizarBatalha(
                 resultado
@@ -1244,18 +2455,29 @@ window.MesaRPG = {
 
         },
 
+
         ativa() {
 
-            return mesaState.batalha.ativa;
+            return (
+                mesaState
+                    .batalha
+                    .ativa
+            );
 
         }
 
     },
 
 
+    /* -----------------------------------------
+       BOSS
+    ----------------------------------------- */
+
     boss: {
 
-        iniciar(dados = null) {
+        iniciar(
+            dados = null
+        ) {
 
             iniciarBoss(
                 dados
@@ -1266,9 +2488,16 @@ window.MesaRPG = {
     },
 
 
+    /* -----------------------------------------
+       CTE
+    ----------------------------------------- */
+
     cte: {
 
-        abrir(tipo = "padrao", dados = null) {
+        abrir(
+            tipo = "normal",
+            dados = {}
+        ) {
 
             abrirCTE(
                 tipo,
@@ -1277,41 +2506,92 @@ window.MesaRPG = {
 
         },
 
+
         fechar() {
 
-            fecharCTE();
+            if (
+                mesaState.cte.ativo
+            ) {
+
+                finalizarCTE(
+                    "falha",
+                    "cancelado"
+                );
+
+            }
 
         },
 
+
         ativo() {
 
-            return mesaState.cte.ativo;
+            return (
+                mesaState
+                    .cte
+                    .ativo
+            );
+
+        },
+
+
+        resultado() {
+
+            return (
+                mesaState
+                    .cte
+                    .resultado
+            );
 
         }
 
     },
 
+
+    /* -----------------------------------------
+       JOGADORES
+    ----------------------------------------- */
 
     jogadores: {
 
         todos() {
 
-            return mesaState.jogadores;
+            return (
+                mesaState
+                    .jogadores
+            );
 
         },
 
+
         obter(id) {
 
-            return obterJogador(id);
+            return obterJogador(
+                id
+            );
+
+        },
+
+
+        atualizarCard(id) {
+
+            atualizarCardJogador(
+                id
+            );
 
         }
 
     },
 
 
+    /* -----------------------------------------
+       CAMPANHA
+    ----------------------------------------- */
+
     campanha: {
 
-        definirNome(nome) {
+        definirNome(
+            nome
+        ) {
 
             definirNomeCampanha(
                 nome
@@ -1325,25 +2605,46 @@ window.MesaRPG = {
 
 
 /* ============================================================
-   DEBUG
+   FUNÇÕES GLOBAIS DE COMPATIBILIDADE
 ============================================================ */
 
-/*
-    Mantemos algumas funções disponíveis
-    no window para facilitar a integração
-    durante o desenvolvimento.
+window.iniciarBatalha =
+    iniciarBatalha;
 
-    Elas poderão ser removidas no futuro.
-*/
 
-window.iniciarBatalha = iniciarBatalha;
+window.finalizarBatalha =
+    finalizarBatalha;
 
-window.finalizarBatalha = finalizarBatalha;
 
-window.abrirCTE = abrirCTE;
+window.abrirCTE =
+    abrirCTE;
 
-window.fecharCTE = fecharCTE;
 
-window.abrirAventura = abrirAventura;
+window.fecharCTE =
+    () => {
 
-window.voltarParaMesaNormal = voltarParaMesaNormal;
+        if (
+            mesaState.cte.ativo
+        ) {
+
+            finalizarCTE(
+                "falha",
+                "cancelado"
+            );
+
+        }
+
+    };
+
+
+window.abrirAventura =
+    abrirAventura;
+
+
+window.voltarParaMesaNormal =
+    voltarParaMesaNormal;
+
+
+/* ============================================================
+   FIM DO MESA.JS
+============================================================ */
