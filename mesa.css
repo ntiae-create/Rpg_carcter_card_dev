@@ -1,8 +1,3 @@
-/* =========================================================
-   MESA RPG — NOVO LAYOUT
-   MESA RETANGULAR + CADEIRAS LATERAIS
-========================================================= */
-
 * {
     box-sizing: border-box;
 }
@@ -12,21 +7,108 @@ body {
     width: 100%;
     height: 100%;
     margin: 0;
+
     overflow: hidden;
+
+    background: #030207;
 }
 
 body {
     font-family: Arial, sans-serif;
+}
+
+
+/* =========================================================
+   MESA PRINCIPAL
+========================================================= */
+
+#online-table-panel {
+    --mesa-accent: #8b5cf6 !important;
+
+    width: 100% !important;
+    height: 100dvh !important;
+    min-height: 0 !important;
+
+    padding: 8px !important;
+
+    overflow: hidden !important;
 
     background:
         radial-gradient(
-            circle at 50% 20%,
-            #241044 0%,
-            #0b0712 42%,
-            #030207 100%
-        );
+            circle at 50% 45%,
+            rgba(124, 58, 237, 0.13),
+            transparent 48%
+        ),
+        #030207 !important;
 
-    color: #f5f0ff;
+    color: #f5f0ff !important;
+}
+
+
+/* =========================================================
+   CABEÇALHO
+========================================================= */
+
+#online-table-panel .mesa-header {
+    height: 58px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    padding: 5px 6px 10px !important;
+
+    margin: 0 !important;
+}
+
+#online-table-panel .mesa-header-label {
+    font-size: 8px !important;
+
+    letter-spacing: 2px !important;
+
+    color: #80738d !important;
+}
+
+#online-table-panel .mesa-header h2 {
+    margin: 3px 0 0 !important;
+
+    font-size: 17px !important;
+}
+
+#online-table-panel .mesa-header-actions {
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 7px !important;
+}
+
+#online-table-panel .mesa-mode-status {
+    padding: 7px 9px !important;
+
+    border: 1px solid rgba(139, 92, 246, 0.45) !important;
+
+    border-radius: 10px !important;
+
+    background: rgba(124, 58, 237, 0.08) !important;
+
+    font-size: 8px !important;
+}
+
+#online-table-panel .mesa-icon-button {
+    width: 36px !important;
+    height: 36px !important;
+
+    border: 1px solid #68408a !important;
+
+    border-radius: 10px !important;
+
+    background: #120d1b !important;
+
+    color: #fff !important;
+
+    font-size: 17px !important;
 }
 
 
@@ -34,244 +116,268 @@ body {
    ÁREA PRINCIPAL
 ========================================================= */
 
-#rpg-mesa {
-    width: 100%;
-    height: 100dvh;
+#online-table-panel .mesa-main {
+    width: 100% !important;
+    max-width: none !important;
 
-    display: flex;
-    flex-direction: column;
+    height: calc(100dvh - 58px) !important;
+    min-height: 0 !important;
 
-    overflow: hidden;
+    margin: 0 !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    overflow: hidden !important;
 }
 
 
 /* =========================================================
-   HEADER
+   MESTRE
 ========================================================= */
 
-#mesa-header {
-    flex: 0 0 auto;
+#online-table-panel .mesa-master {
+    flex: 0 0 auto !important;
 
-    min-height: 72px;
+    margin: 0 0 7px !important;
 
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex !important;
 
-    padding: 10px 18px;
+    flex-direction: column !important;
 
-    background:
-        linear-gradient(
-            180deg,
-            rgba(24, 14, 36, 0.96),
-            rgba(10, 7, 16, 0.96)
-        );
+    align-items: center !important;
 
-    border-bottom: 1px solid rgba(168, 85, 247, 0.35);
-
-    box-shadow:
-        0 5px 25px rgba(0, 0, 0, 0.35);
+    gap: 2px !important;
 }
 
-.mesa-header-info {
-    display: flex;
-    align-items: center;
-    gap: 35px;
+#online-table-panel .mesa-master span {
+    font-size: 7px !important;
 
-    min-width: 0;
+    letter-spacing: 2px !important;
+
+    color: #776a83 !important;
 }
 
-.mesa-campanha,
-.mesa-mestre {
-    min-width: 0;
-}
+#online-table-panel .mesa-master strong {
+    font-size: 10px !important;
 
-.mesa-label {
-    display: block;
-
-    margin-bottom: 3px;
-
-    font-size: 8px;
-    letter-spacing: 2px;
-
-    color: #887a96;
-}
-
-.mesa-campanha h1 {
-    margin: 0;
-
-    max-width: 280px;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
-    font-size: 17px;
-}
-
-.mesa-mestre strong {
-    font-size: 13px;
-
-    color: #d8b4fe;
-}
-
-#mesa-estado {
-    flex: 0 0 auto;
-
-    display: flex;
-    align-items: center;
-    gap: 7px;
-
-    padding: 7px 11px;
-
-    border: 1px solid rgba(168, 85, 247, 0.35);
-    border-radius: 20px;
-
-    background: rgba(124, 58, 237, 0.08);
-
-    font-size: 9px;
-    letter-spacing: 1px;
-}
-
-#mesa-estado-indicador {
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-
-    background: #a855f7;
-
-    box-shadow:
-        0 0 10px #a855f7;
+    color: #cdb5e5 !important;
 }
 
 
 /* =========================================================
-   LAYOUT DA MESA
+   ESCONDE A LISTA DUPLICADA DE JOGADORES
 ========================================================= */
 
-#mesa-layout {
-    flex: 1;
+#online-table-panel .online-table-players {
+    display: none !important;
+}
 
-    min-height: 0;
 
-    width: 100%;
+/* =========================================================
+   MESA
+========================================================= */
 
-    display: grid;
+#online-table-panel .rpg-table {
+    flex: 1 1 auto !important;
+
+    width: 100% !important;
+    min-height: 0 !important;
+    height: auto !important;
+
+    display: grid !important;
 
     grid-template-columns:
-        minmax(155px, 190px)
+        82px
         minmax(0, 1fr)
-        minmax(155px, 190px);
+        82px !important;
 
-    gap: 14px;
+    gap: 8px !important;
 
-    padding: 14px;
+    padding: 9px !important;
 
-    overflow: hidden;
+    border: 1px solid rgba(139, 92, 246, 0.55) !important;
+
+    border-radius: 25px !important;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(124, 58, 237, 0.11),
+            transparent 62%
+        ),
+        linear-gradient(
+            145deg,
+            #15101d,
+            #08060d
+        ) !important;
+
+    box-shadow:
+        0 0 35px rgba(124, 58, 237, 0.12),
+        inset 0 0 50px rgba(0, 0, 0, 0.5) !important;
+
+    overflow: hidden !important;
 }
 
 
 /* =========================================================
-   CONTAINER DOS JOGADORES
+   LADOS DA MESA
 ========================================================= */
 
-#assentos-jogadores {
-    min-height: 0;
+#online-table-panel .table-side {
+    min-width: 0 !important;
+    min-height: 0 !important;
 
-    display: flex;
-    flex-direction: column;
+    display: flex !important;
 
-    gap: 10px;
+    flex-direction: column !important;
 
-    overflow-y: auto;
-    overflow-x: hidden;
+    justify-content: space-around !important;
 
-    padding: 3px;
-
-    scrollbar-width: thin;
-    scrollbar-color: #5b3478 transparent;
+    gap: 7px !important;
 }
 
 
 /* =========================================================
-   CARDS DOS PLAYERS
+   CENTRO
 ========================================================= */
 
-.jogador-card {
-    position: relative;
+#online-table-panel .table-center {
+    min-width: 0 !important;
+    min-height: 0 !important;
 
-    flex: 0 0 auto;
+    display: flex !important;
 
-    width: 100%;
-    min-height: 112px;
+    flex-direction: column !important;
 
-    display: flex;
-    align-items: center;
+    justify-content: center !important;
 
-    padding: 10px;
+    gap: 9px !important;
 
-    border-radius: 18px;
+    overflow: hidden !important;
+}
+
+
+/* =========================================================
+   CADEIRAS
+========================================================= */
+
+#online-table-panel .table-seat {
+    flex: 1 1 0 !important;
+
+    min-height: 0 !important;
+
+    width: 100% !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    padding: 6px !important;
+
+    border: 1px solid rgba(139, 92, 246, 0.28) !important;
+
+    border-radius: 15px !important;
 
     background:
         linear-gradient(
             145deg,
-            rgba(31, 20, 45, 0.98),
-            rgba(11, 8, 17, 0.98)
-        );
-
-    border: 1px solid rgba(139, 92, 246, 0.32);
+            rgba(35, 23, 49, 0.95),
+            rgba(13, 9, 20, 0.98)
+        ) !important;
 
     box-shadow:
-        0 8px 20px rgba(0, 0, 0, 0.3),
-        inset 0 0 18px rgba(124, 58, 237, 0.035);
+        inset 0 0 15px rgba(124, 58, 237, 0.04) !important;
 
-    overflow: hidden;
+    cursor: pointer !important;
 
     transition:
         transform 0.2s ease,
         border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        background 0.2s ease !important;
 }
 
-.jogador-card:hover {
-    transform: translateY(-2px);
+#online-table-panel .table-seat:hover {
+    transform: scale(1.03) !important;
 
-    border-color: rgba(168, 85, 247, 0.7);
+    border-color: #a855f7 !important;
 
-    box-shadow:
-        0 10px 25px rgba(0, 0, 0, 0.4),
-        0 0 18px rgba(124, 58, 237, 0.12);
+    background:
+        rgba(124, 58, 237, 0.13) !important;
 }
 
 
 /* =========================================================
-   EFEITO DE CADEIRA
+   CADEIRA OCUPADA
 ========================================================= */
 
-.jogador-card::before {
-    content: "";
-
-    position: absolute;
-
-    left: 0;
-    top: 0;
-    bottom: 0;
-
-    width: 4px;
+#online-table-panel .table-seat.ocupado {
+    border-color: rgba(168, 85, 247, 0.65) !important;
 
     background:
         linear-gradient(
-            180deg,
-            #7c3aed,
-            #c084fc
-        );
+            145deg,
+            rgba(48, 27, 67, 0.95),
+            rgba(16, 9, 25, 0.98)
+        ) !important;
 
-    opacity: 0.7;
+    box-shadow:
+        0 0 14px rgba(124, 58, 237, 0.12),
+        inset 0 0 15px rgba(168, 85, 247, 0.05) !important;
 }
 
-.jogador-card.vazio::before {
-    opacity: 0.2;
+
+/* =========================================================
+   CONTEÚDO DA CADEIRA
+========================================================= */
+
+#online-table-panel .table-seat-content {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    gap: 3px !important;
+
+    text-align: center !important;
+}
+
+
+/* =========================================================
+   ÍCONE DO PERSONAGEM
+========================================================= */
+
+#online-table-panel .table-seat-icon {
+    width: 32px !important;
+    height: 32px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    border-radius: 50% !important;
+
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.2),
+            rgba(10, 7, 15, 0.8)
+        ) !important;
+
+    font-size: 17px !important;
 }
 
 
@@ -279,882 +385,354 @@ body {
    NÚMERO
 ========================================================= */
 
-.jogador-numero {
-    position: absolute;
+#online-table-panel .table-seat-number {
+    display: block !important;
 
-    top: 7px;
-    right: 9px;
+    color: #806f8f !important;
 
-    width: 25px;
-    height: 25px;
+    font-size: 7px !important;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 50%;
-
-    background: rgba(124, 58, 237, 0.13);
-
-    border: 1px solid rgba(168, 85, 247, 0.3);
-
-    color: #a78bfa;
-
-    font-size: 9px;
-    font-weight: bold;
+    letter-spacing: 1px !important;
 }
 
 
 /* =========================================================
-   CONTEÚDO DO PLAYER
+   NOME
 ========================================================= */
 
-.jogador-card-conteudo {
-    width: 100%;
+#online-table-panel .table-seat-name,
+#online-table-panel .table-seat-character {
+    display: block !important;
 
-    padding-left: 7px;
-    padding-right: 25px;
-}
+    max-width: 100% !important;
 
-.jogador-nome {
-    display: block;
+    overflow: hidden !important;
 
-    margin-bottom: 4px;
+    text-overflow: ellipsis !important;
 
-    font-size: 14px;
+    white-space: nowrap !important;
 
-    color: #f5f0ff;
+    color: #d8c9e5 !important;
 
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.jogador-classe {
-    display: block;
-
-    margin-bottom: 10px;
-
-    font-size: 9px;
-
-    color: #9587a3;
-
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: 8px !important;
 }
 
 
 /* =========================================================
-   STATUS MINI
+   TELA
 ========================================================= */
 
-.jogador-status {
-    display: flex;
+#online-table-panel .mesa-screen {
+    flex: 1 1 auto !important;
 
-    gap: 6px;
-}
+    width: 100% !important;
 
-.status-mini {
-    flex: 1;
+    min-height: 0 !important;
 
-    padding: 5px 4px;
+    border: 1px solid rgba(139, 92, 246, 0.28) !important;
 
-    text-align: center;
-
-    border-radius: 7px;
-
-    background: rgba(255, 255, 255, 0.035);
-
-    border: 1px solid rgba(255, 255, 255, 0.055);
-
-    font-size: 8px;
-
-    color: #b9aec5;
-}
-
-
-/* =========================================================
-   MESA CENTRAL
-========================================================= */
-
-#tela-mesa {
-    min-width: 0;
-    min-height: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    position: relative;
-
-    border-radius: 28px;
+    border-radius: 19px !important;
 
     background:
-        linear-gradient(
-            145deg,
-            #171020,
-            #09070d
-        );
+        radial-gradient(
+            circle at center,
+            rgba(124, 58, 237, 0.09),
+            transparent 65%
+        ),
+        #08060d !important;
 
-    border: 1px solid rgba(168, 85, 247, 0.48);
+    overflow: hidden !important;
+}
+
+
+/* =========================================================
+   TELA INICIAL
+========================================================= */
+
+#online-table-panel .mesa-screen-home {
+    width: 100% !important;
+    height: 100% !important;
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    text-align: center !important;
+
+    padding: 20px !important;
+}
+
+#online-table-panel .mesa-screen-symbol {
+    width: 62px !important;
+    height: 62px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin-bottom: 15px !important;
+
+    border-radius: 50% !important;
+
+    border: 1px solid rgba(139, 92, 246, 0.55) !important;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.18),
+            transparent
+        ) !important;
+
+    font-size: 30px !important;
 
     box-shadow:
-        0 20px 50px rgba(0, 0, 0, 0.5),
-        0 0 40px rgba(124, 58, 237, 0.08),
-        inset 0 0 50px rgba(124, 58, 237, 0.035);
+        0 0 25px rgba(124, 58, 237, 0.15) !important;
+}
 
-    overflow: hidden;
+#online-table-panel .mesa-screen-home h3 {
+    margin: 0 0 7px !important;
+
+    font-size: 20px !important;
+
+    color: #eee5f7 !important;
+}
+
+#online-table-panel .mesa-screen-home p {
+    margin: 0 0 4px !important;
+
+    color: #a997b6 !important;
+
+    font-size: 10px !important;
+}
+
+#online-table-panel .mesa-screen-home span {
+    color: #665b70 !important;
+
+    font-size: 8px !important;
 }
 
 
 /* =========================================================
-   CABEÇALHO DA MESA
+   MÓDULOS
 ========================================================= */
 
-#tela-mesa-header {
-    flex: 0 0 auto;
+#online-table-panel .table-modules {
+    flex: 0 0 auto !important;
 
-    min-height: 58px;
+    display: grid !important;
 
-    display: flex;
+    grid-template-columns:
+        repeat(4, 1fr) !important;
 
-    align-items: center;
-    justify-content: space-between;
-
-    padding: 10px 16px;
-
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-
-    background:
-        rgba(0, 0, 0, 0.18);
+    gap: 5px !important;
 }
 
-.tela-label {
-    display: block;
+#online-table-panel .table-module {
+    min-width: 0 !important;
 
-    margin-bottom: 3px;
+    padding: 7px 3px !important;
 
-    font-size: 8px;
+    display: flex !important;
 
-    letter-spacing: 2px;
+    flex-direction: column !important;
 
-    color: #776b83;
+    align-items: center !important;
+
+    justify-content: center !important;
+
+    gap: 2px !important;
+
+    border: 1px solid rgba(139, 92, 246, 0.18) !important;
+
+    border-radius: 9px !important;
+
+    background: rgba(255, 255, 255, 0.025) !important;
+
+    color: #81748c !important;
+
+    cursor: pointer !important;
 }
 
-#tela-mesa-titulo {
-    margin: 0;
+#online-table-panel .table-module span {
+    font-size: 14px !important;
+}
 
-    font-size: 18px;
+#online-table-panel .table-module small {
+    font-size: 6px !important;
 
-    color: #eee5f7;
+    letter-spacing: 0.5px !important;
+}
+
+#online-table-panel .table-module:hover {
+    border-color: rgba(168, 85, 247, 0.5) !important;
+
+    background: rgba(124, 58, 237, 0.1) !important;
+
+    color: #d8b4fe !important;
 }
 
 
 /* =========================================================
-   CONEXÃO
+   CHAT
 ========================================================= */
 
-#mesa-conexao {
-    display: flex;
-
-    align-items: center;
-
-    gap: 6px;
-
-    font-size: 8px;
-
-    color: #8f839d;
-}
-
-#conexao-indicador {
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-
-    background: #f59e0b;
-}
-
-
-/* =========================================================
-   CONTEÚDO CENTRAL
-========================================================= */
-
-#tela-mesa-conteudo {
-    flex: 1;
-
-    min-height: 0;
-
-    overflow-y: auto;
-
-    padding: 18px;
-
-    scrollbar-width: thin;
-    scrollbar-color: #5b3478 transparent;
-}
-
-.modulo-mesa {
-    width: 100%;
-    min-height: 100%;
-}
-
-.modulo-mesa[hidden] {
+#online-table-panel .table-chat {
     display: none !important;
 }
 
 
 /* =========================================================
-   INTERFACE
+   CONFIGURAÇÕES
 ========================================================= */
 
-#modulo-interface {
-    display: flex;
+#online-table-panel .mesa-overlay {
+    position: fixed !important;
 
-    align-items: center;
-    justify-content: center;
+    inset: 0 !important;
 
-    text-align: center;
+    z-index: 500 !important;
+
+    background: rgba(0, 0, 0, 0.75) !important;
+
+    backdrop-filter: blur(5px) !important;
 }
 
-.interface-boas-vindas {
-    max-width: 500px;
-    margin: auto;
-}
+#online-table-panel .mesa-settings-box {
+    width: min(400px, calc(100% - 30px)) !important;
 
-.interface-boas-vindas h3 {
-    margin: 0 0 10px;
+    max-height: 85dvh !important;
 
-    font-size: 25px;
+    overflow-y: auto !important;
 
-    color: #d8b4fe;
-}
+    margin: auto !important;
 
-.interface-boas-vindas p {
-    margin: 0;
+    padding: 18px !important;
 
-    color: #82758d;
+    border-radius: 20px !important;
 
-    font-size: 12px;
+    background: #100b17 !important;
 
-    line-height: 1.7;
+    border: 1px solid #68408a !important;
 }
 
 
 /* =========================================================
-   NAVEGAÇÃO
+   TABLET / DESKTOP
 ========================================================= */
 
-#mesa-modulos {
-    flex: 0 0 auto;
+@media (min-width: 700px) {
 
-    display: flex;
-
-    gap: 6px;
-
-    padding: 9px;
-
-    overflow-x: auto;
-
-    background:
-        rgba(0, 0, 0, 0.25);
-
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
-
-    scrollbar-width: none;
-}
-
-#mesa-modulos::-webkit-scrollbar {
-    display: none;
-}
-
-#mesa-modulos button {
-    flex: 0 0 auto;
-
-    min-width: 72px;
-
-    padding: 8px 9px;
-
-    border: 1px solid rgba(139, 92, 246, 0.2);
-
-    border-radius: 10px;
-
-    background: rgba(255, 255, 255, 0.025);
-
-    color: #93869f;
-
-    font-size: 8px;
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
-}
-
-#mesa-modulos button:hover,
-#mesa-modulos button.ativo {
-    background: rgba(124, 58, 237, 0.16);
-
-    border-color: rgba(168, 85, 247, 0.5);
-
-    color: #d8b4fe;
-}
-
-
-/* =========================================================
-   PAINEL DO MESTRE
-========================================================= */
-
-.painel-administrativo {
-    position: fixed;
-
-    right: 15px;
-    bottom: 15px;
-
-    z-index: 100;
-
-    width: min(360px, calc(100% - 30px));
-
-    max-height: calc(100dvh - 100px);
-
-    overflow-y: auto;
-
-    padding: 18px;
-
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #191022,
-            #09070e
-        );
-
-    border: 1px solid #6f3aa8;
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.65),
-        0 0 35px rgba(124, 58, 237, 0.2);
-}
-
-.painel-administrativo[hidden] {
-    display: none !important;
-}
-
-.painel-header {
-    margin-bottom: 15px;
-}
-
-.painel-header h2 {
-    margin: 0;
-
-    font-size: 17px;
-
-    color: #d8b4fe;
-}
-
-.painel-header p {
-    margin: 5px 0 0;
-
-    font-size: 9px;
-
-    color: #81758c;
-}
-
-
-/* =========================================================
-   BOTÃO MESTRE
-========================================================= */
-
-.botao-mestre {
-    position: fixed;
-
-    right: 15px;
-    bottom: 15px;
-
-    z-index: 90;
-
-    padding: 11px 15px;
-
-    border: 1px solid #68408a;
-
-    border-radius: 13px;
-
-    background: #171020;
-
-    color: #d8b4fe;
-
-    font-size: 11px;
-    font-weight: bold;
-
-    cursor: pointer;
-
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.4);
-}
-
-.botao-mestre:hover {
-    border-color: #a855f7;
-
-    background: #21142f;
-}
-
-
-/* =========================================================
-   NOTIFICAÇÕES
-========================================================= */
-
-#mesa-notificacoes {
-    position: fixed;
-
-    left: 50%;
-    bottom: 20px;
-
-    z-index: 200;
-
-    transform: translateX(-50%);
-
-    width: min(400px, calc(100% - 30px));
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   MODAL
-========================================================= */
-
-.mesa-modal {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 300;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    background:
-        rgba(0, 0, 0, 0.72);
-
-    backdrop-filter: blur(5px);
-}
-
-.mesa-modal[hidden] {
-    display: none !important;
-}
-
-.mesa-modal-conteudo {
-    position: relative;
-
-    width: min(500px, 100%);
-
-    max-height: 85dvh;
-
-    overflow-y: auto;
-
-    padding: 22px;
-
-    border-radius: 20px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #1a1124,
-            #09070d
-        );
-
-    border: 1px solid #6f3aa8;
-
-    box-shadow:
-        0 30px 80px rgba(0, 0, 0, 0.7);
-}
-
-.mesa-modal-fechar {
-    position: absolute;
-
-    top: 10px;
-    right: 10px;
-
-    width: 30px;
-    height: 30px;
-
-    border: 1px solid #68408a;
-
-    border-radius: 50%;
-
-    background: #171020;
-
-    color: #d8b4fe;
-
-    font-size: 18px;
-
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   CTE
-========================================================= */
-
-#modulo-cte {
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-}
-
-.cte-container {
-    width: min(500px, 100%);
-
-    margin: auto;
-}
-
-.cte-container h3 {
-    margin: 0 0 15px;
-
-    color: #c084fc;
-
-    font-size: 22px;
-}
-
-.cte-timer {
-    font-size: clamp(45px, 10vw, 80px);
-
-    font-weight: bold;
-
-    letter-spacing: 4px;
-
-    color: #f5f0ff;
-
-    text-shadow:
-        0 0 25px rgba(168, 85, 247, 0.5);
-}
-
-
-/* =========================================================
-   BOSS
-========================================================= */
-
-#rpg-mesa.modo-boss {
-    animation:
-        mesaBossPulse 1s infinite alternate;
-}
-
-@keyframes mesaBossPulse {
-    from {
-        box-shadow:
-            inset 0 0 0 rgba(255, 0, 0, 0);
+    #online-table-panel {
+        padding: 14px !important;
     }
 
-    to {
-        box-shadow:
-            inset 0 0 100px rgba(120, 0, 0, 0.25);
+    #online-table-panel .mesa-header {
+        height: 68px !important;
     }
-}
 
-#modulo-boss {
-    display: flex;
+    #online-table-panel .mesa-main {
+        height: calc(100dvh - 68px) !important;
 
-    align-items: center;
-    justify-content: center;
+        max-width: 1400px !important;
 
-    text-align: center;
-}
+        margin: 0 auto !important;
+    }
 
-.boss-alerta {
-    font-size: clamp(25px, 6vw, 50px);
-
-    font-weight: bold;
-
-    color: #ffb4b4;
-
-    text-shadow:
-        0 0 25px rgba(255, 0, 0, 0.5);
-}
-
-
-/* =========================================================
-   TABLET
-========================================================= */
-
-@media (max-width: 850px) {
-
-    #mesa-layout {
+    #online-table-panel .rpg-table {
         grid-template-columns:
-            minmax(125px, 155px)
+            minmax(125px, 170px)
             minmax(0, 1fr)
-            minmax(125px, 155px);
+            minmax(125px, 170px) !important;
 
-        gap: 9px;
+        gap: 14px !important;
 
-        padding: 9px;
+        padding: 15px !important;
+
+        border-radius: 30px !important;
     }
 
-    .jogador-card {
-        min-height: 100px;
+    #online-table-panel .table-side {
+        gap: 10px !important;
     }
 
-    .jogador-nome {
-        font-size: 12px;
+    #online-table-panel .table-seat {
+        border-radius: 18px !important;
     }
 
-    .jogador-classe {
-        font-size: 8px;
+    #online-table-panel .table-seat-icon {
+        width: 42px !important;
+        height: 42px !important;
+
+        font-size: 21px !important;
     }
 
+    #online-table-panel .table-seat-name,
+    #online-table-panel .table-seat-character {
+        font-size: 10px !important;
+    }
+
+    #online-table-panel .mesa-screen-home h3 {
+        font-size: 27px !important;
+    }
+
+    #online-table-panel .mesa-screen-symbol {
+        width: 75px !important;
+        height: 75px !important;
+
+        font-size: 35px !important;
+    }
 }
 
 
 /* =========================================================
-   CELULAR
-========================================================= */
-
-@media (max-width: 600px) {
-
-    #mesa-header {
-        min-height: 58px;
-
-        padding: 8px 10px;
-    }
-
-    .mesa-header-info {
-        gap: 12px;
-    }
-
-    .mesa-mestre {
-        display: none;
-    }
-
-    .mesa-campanha h1 {
-        max-width: 170px;
-
-        font-size: 13px;
-    }
-
-    #mesa-estado {
-        padding: 6px 8px;
-
-        font-size: 7px;
-    }
-
-
-    /* =============================================
-       MESA + COLUNA DE CADEIRAS
-    ============================================= */
-
-    #mesa-layout {
-
-        grid-template-columns:
-            minmax(0, 1fr)
-            118px;
-
-        gap: 8px;
-
-        padding: 8px;
-    }
-
-
-    /* =============================================
-       JOGADORES À DIREITA
-    ============================================= */
-
-    #assentos-jogadores {
-
-        grid-column: 2;
-
-        grid-row: 1;
-
-        gap: 8px;
-
-        padding: 2px;
-
-        order: 2;
-    }
-
-
-    /* =============================================
-       MESA
-    ============================================= */
-
-    #tela-mesa {
-
-        grid-column: 1;
-
-        grid-row: 1;
-
-        order: 1;
-
-        border-radius: 20px;
-    }
-
-
-    /* =============================================
-       CARDS VERTICAIS
-    ============================================= */
-
-    .jogador-card {
-
-        min-height: 96px;
-
-        padding: 8px;
-
-        border-radius: 15px;
-    }
-
-    .jogador-card-conteudo {
-
-        padding-left: 5px;
-        padding-right: 20px;
-    }
-
-    .jogador-numero {
-
-        width: 21px;
-        height: 21px;
-
-        top: 6px;
-        right: 6px;
-
-        font-size: 7px;
-    }
-
-    .jogador-nome {
-
-        font-size: 10px;
-    }
-
-    .jogador-classe {
-
-        margin-bottom: 7px;
-
-        font-size: 7px;
-    }
-
-    .status-mini {
-
-        padding: 4px 2px;
-
-        font-size: 6px;
-    }
-
-
-    /* =============================================
-       CONTEÚDO DA MESA
-    ============================================= */
-
-    #tela-mesa-header {
-
-        min-height: 50px;
-
-        padding: 8px 10px;
-    }
-
-    #tela-mesa-titulo {
-
-        font-size: 14px;
-    }
-
-    #tela-mesa-conteudo {
-
-        padding: 10px;
-    }
-
-    .interface-boas-vindas h3 {
-
-        font-size: 19px;
-    }
-
-    .interface-boas-vindas p {
-
-        font-size: 9px;
-    }
-
-
-    /* =============================================
-       NAVEGAÇÃO
-    ============================================= */
-
-    #mesa-modulos {
-
-        padding: 6px;
-
-        gap: 4px;
-    }
-
-    #mesa-modulos button {
-
-        min-width: 58px;
-
-        padding: 7px 5px;
-
-        font-size: 7px;
-    }
-
-}
-
-
-/* =========================================================
-   CELULARES MUITO PEQUENOS
+   CELULAR MUITO PEQUENO
 ========================================================= */
 
 @media (max-width: 380px) {
 
-    #mesa-layout {
+    #online-table-panel {
+        padding: 6px !important;
+    }
 
+    #online-table-panel .rpg-table {
         grid-template-columns:
+            72px
             minmax(0, 1fr)
-            105px;
+            72px !important;
+
+        gap: 6px !important;
+
+        padding: 7px !important;
     }
 
-    .jogador-card {
+    #online-table-panel .table-seat {
+        border-radius: 13px !important;
 
-        min-height: 88px;
+        padding: 4px !important;
     }
 
-    .jogador-nome {
+    #online-table-panel .table-seat-icon {
+        width: 27px !important;
+        height: 27px !important;
 
-        font-size: 9px;
+        font-size: 14px !important;
     }
 
-    .status-mini {
-
-        font-size: 5px;
+    #online-table-panel .table-seat-name,
+    #online-table-panel .table-seat-character {
+        font-size: 7px !important;
     }
 
-}
+    #online-table-panel .table-module {
+        padding: 6px 2px !important;
+    }
 
-
-/* =========================================================
-   SCROLLBARS
-========================================================= */
-
-#assentos-jogadores::-webkit-scrollbar,
-#tela-mesa-conteudo::-webkit-scrollbar,
-.painel-administrativo::-webkit-scrollbar,
-.mesa-modal-conteudo::-webkit-scrollbar {
-    width: 5px;
-}
-
-#assentos-jogadores::-webkit-scrollbar-track,
-#tela-mesa-conteudo::-webkit-scrollbar-track,
-.painel-administrativo::-webkit-scrollbar-track,
-.mesa-modal-conteudo::-webkit-scrollbar-track {
-    background: transparent;
-}
-
-#assentos-jogadores::-webkit-scrollbar-thumb,
-#tela-mesa-conteudo::-webkit-scrollbar-thumb,
-.painel-administrativo::-webkit-scrollbar-thumb,
-.mesa-modal-conteudo::-webkit-scrollbar-thumb {
-    background: #4b2863;
-
-    border-radius: 10px;
+    #online-table-panel .table-module span {
+        font-size: 12px !important;
+    }
 }
