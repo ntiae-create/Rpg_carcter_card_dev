@@ -1914,3 +1914,127 @@ button {
             repeat(4, 1fr);
     }
 }
+/* =========================================================
+   CAMPANHA
+========================================================= */
+
+.campaign-panel {
+    width: min(100%, 700px);
+    margin: 20px auto;
+    padding: 20px;
+
+    border: 1px solid rgba(255, 215, 120, 0.25);
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20, 15, 35, 0.96),
+            rgba(8, 8, 18, 0.96)
+        );
+
+    box-shadow:
+        0 10px 35px rgba(0, 0, 0, 0.35);
+}
+
+.campaign-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.campaign-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 2px;
+    opacity: 0.7;
+}
+
+.campaign-panel h2 {
+    margin: 5px 0 0;
+}
+
+.campaign-area {
+    margin-top: 15px;
+}
+
+.campaign-code-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+
+    padding: 15px;
+
+    border-radius: 12px;
+
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.campaign-code-box span {
+    font-size: 11px;
+    letter-spacing: 2px;
+    opacity: 0.7;
+}
+
+.campaign-code-box strong {
+    font-size: 25px;
+    letter-spacing: 4px;
+}
+
+.campaign-button {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px 16px;
+
+    border: none;
+    border-radius: 10px;
+
+    cursor: pointer;
+
+    font-weight: bold;
+}
+
+.campaign-join-area {
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+}
+
+.campaign-join-form {
+    display: flex;
+    gap: 8px;
+}
+
+.campaign-join-form input {
+    flex: 1;
+    min-width: 0;
+
+    padding: 12px;
+
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+
+    background: rgba(0,0,0,0.25);
+
+    font-size: 16px;
+}
+
+.campaign-message {
+    min-height: 20px;
+    margin-top: 8px;
+    font-size: 13px;
+}
+
+@media (max-width: 600px) {
+
+    .campaign-panel {
+        margin: 15px 10px;
+        padding: 16px;
+    }
+
+    .campaign-join-form {
+        flex-direction: column;
+    }
+
+}
