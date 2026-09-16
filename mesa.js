@@ -5,7 +5,8 @@ function escaparHTML(valor) {
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
-}// ==========================================
+}
+// ==========================================
 // MESA ONLINE — RPG
 // PASSO 6 — MESA FUNCIONAL
 // ==========================================
