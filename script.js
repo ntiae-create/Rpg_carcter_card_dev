@@ -176,12 +176,8 @@ function criarEstadoInicial() {
     return {
 
         /*
-           NOVO ESTADO
-
-           false = personagem ainda pode ser confirmado
-           true  = personagem já foi confirmado
-
-           Nesta etapa ele NÃO bloqueia os campos ainda.
+           false = personagem ainda não confirmado
+           true  = personagem confirmado
         */
 
         confirmed: false,
@@ -456,17 +452,6 @@ function limitarNumero(
    CONFIRMAÇÃO DO PERSONAGEM
 ========================================================= */
 
-/*
-   Nesta primeira etapa:
-
-   - criamos o estado confirmed;
-   - criamos o botão visualmente;
-   - salvamos a confirmação;
-   - mostramos o estado confirmado.
-
-   O bloqueio dos campos será feito na ETAPA 2.
-*/
-
 function configurarConfirmacaoPersonagem() {
 
     const existente =
@@ -482,14 +467,6 @@ function configurarConfirmacaoPersonagem() {
     }
 
 
-    /*
-       Procuramos o editor do personagem.
-
-       Como o index.html atual já possui
-       a área de edição, colocamos o painel
-       logo depois dela.
-    */
-
     const editor =
         document.querySelector(
             ".character-editor"
@@ -497,11 +474,6 @@ function configurarConfirmacaoPersonagem() {
 
 
     if (!editor) {
-
-        /*
-           Se o editor ainda não estiver
-           disponível, tentamos novamente.
-        */
 
         setTimeout(
             configurarConfirmacaoPersonagem,
@@ -566,10 +538,6 @@ function atualizarInterfaceConfirmacao() {
     }
 
 
-    /*
-       PERSONAGEM CONFIRMADO
-    */
-
     if (
         character.confirmed === true
     ) {
@@ -595,7 +563,7 @@ function atualizarInterfaceConfirmacao() {
                     line-height:1.5;
                 "
             >
-                A criação deste personagem foi confirmada.
+                Nome, raça, classe e afinidade estão bloqueados.
             </div>
 
         `;
@@ -604,10 +572,6 @@ function atualizarInterfaceConfirmacao() {
 
     }
 
-
-    /*
-       PERSONAGEM AINDA NÃO CONFIRMADO
-    */
 
     panel.innerHTML = `
 
@@ -676,14 +640,46 @@ function atualizarInterfaceConfirmacao() {
 
 
 /* =========================================================
+   APLICAR BLOQUEIO DAS DEFINIÇÕES
+========================================================= */
+
+function aplicarBloqueioDefinicoes() {
+
+    /*
+       Esta função é chamada pelo sistema principal
+       sempre que a interface é atualizada.
+
+       Dessa forma, a confirmação não depende
+       somente do momento do clique.
+    */
+
+    if (
+        typeof CharacterModule ===
+        "undefined"
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        typeof CharacterModule.atualizarBloqueioDefinicoes ===
+        "function"
+    ) {
+
+        CharacterModule.atualizarBloqueioDefinicoes();
+
+    }
+
+}
+
+
+/* =========================================================
    CONFIRMAR PERSONAGEM
 ========================================================= */
 
 function confirmarPersonagem() {
-
-    /*
-       Evita confirmar duas vezes.
-    */
 
     if (
         character.confirmed === true
@@ -696,7 +692,7 @@ function confirmarPersonagem() {
 
     const confirmar =
         window.confirm(
-            "Deseja confirmar este personagem?\n\nNesta etapa a confirmação será salva permanentemente neste dispositivo."
+            "Deseja confirmar este personagem?\n\nDepois da confirmação, Nome, Raça, Classe e Afinidade não poderão mais ser alterados."
         );
 
 
@@ -708,24 +704,44 @@ function confirmarPersonagem() {
 
 
     /*
-       Salva o estado.
+       Marca o personagem como confirmado.
     */
 
     character.confirmed =
         true;
 
 
+    /*
+       Salva imediatamente.
+    */
+
     salvarPersonagem();
 
 
     /*
-       Atualiza a interface.
+       BLOQUEIA IMEDIATAMENTE
+       os campos de definição.
+    */
+
+    aplicarBloqueioDefinicoes();
+
+
+    /*
+       Atualiza toda a interface.
     */
 
     atualizarInterface();
 
 
     atualizarInterfaceConfirmacao();
+
+
+    /*
+       Garante novamente o bloqueio depois
+       da atualização da interface.
+    */
+
+    aplicarBloqueioDefinicoes();
 
 
     /*
@@ -738,7 +754,7 @@ function confirmarPersonagem() {
     ) {
 
         mostrarResultadoSupabase(
-            "✓ PERSONAGEM CONFIRMADO",
+            "✓ PERSONAGEM CONFIRMADO — DEFINIÇÕES BLOQUEADAS",
             "sucesso"
         );
 
@@ -1226,6 +1242,9 @@ function configurarReset() {
 
 
             atualizarInterfaceConfirmacao();
+
+
+            aplicarBloqueioDefinicoes();
 
 
             StatusModule.iniciar();
@@ -1905,6 +1924,13 @@ function atualizarInterface() {
 
 
     /* =====================================================
+       BLOQUEIO DAS DEFINIÇÕES
+    ===================================================== */
+
+    aplicarBloqueioDefinicoes();
+
+
+    /* =====================================================
        CONFIRMAÇÃO
     ===================================================== */
 
@@ -1957,11 +1983,11 @@ function definirTexto(
 function iniciar() {
 
     /*
-       Ordem importante:
+       Ordem:
 
        1. Navegação
        2. Modo Mestre
-       3. Editor do personagem
+       3. Editor
        4. Confirmação
        5. Status
        6. XP
