@@ -1,2490 +1,1367 @@
-/* =========================================================
-   MESA RPG 2.0
-   PARTE 1/3
+/* ==========================================================
+   MESA ONLINE — RPG
+   mesa.js
+   VERSÃO 3/3 — DEFINITIVA
+========================================================== */
 
-   Responsável por:
-   - Estado da Mesa
-   - Inicialização
-   - Campanha
-   - Mestre
-   - Até 8 jogadores
-   - Cards dos jogadores
-   - Personagem confirmado
-   - Status somente leitura
-   - Estrutura preparada para Realtime
-========================================================= */
+(() => {
+    "use strict";
 
-"use strict";
+    /* ======================================================
+       CONFIGURAÇÃO
+    ====================================================== */
+
+    const STORAGE_CAMPANHA = "rpg_campanha_mesa";
+    const TOTAL_ASSENTOS = 8;
+
+    const MODULOS = {
+        interface: {
+            titulo: "Interface",
+            icone: "🎮"
+        },
+
+        personagem: {
+            titulo: "Personagem",
+            icone: "🧙"
+        },
+
+        status: {
+            titulo: "Status",
+            icone: "❤️"
+        },
+
+        afinidade: {
+            titulo: "Afinidade",
+            icone: "✨"
+        },
+
+        inventario: {
+            titulo: "Inventário",
+            icone: "🎒"
+        },
+
+        mapa: {
+            titulo: "Mapa",
+            icone: "🗺️"
+        },
+
+        combate: {
+            titulo: "Combate",
+            icone: "⚔️"
+        },
+
+        cte: {
+            titulo: "CTE",
+            icone: "⏱️"
+        },
+
+        dungeon: {
+            titulo: "Dungeon",
+            icone: "🏰"
+        },
+
+        boss: {
+            titulo: "Boss",
+            icone: "👹"
+        }
+    };
 
 
-/* =========================================================
-   ESTADO PRINCIPAL
-========================================================= */
+    /* ======================================================
+       ESTADO CENTRAL
+    ====================================================== */
 
-window.rpgMesa = {
+    const estado = {
 
-    campanha: null,
+        campanha: null,
 
-    mestre: null,
+        mestre: {
+            id: null,
+            nome: "Mestre"
+        },
 
-    jogadores: [],
+        jogadorAtual: null,
 
-    maxJogadores: 8,
+        jogadores: Array.from(
+            { length: TOTAL_ASSENTOS },
+            (_, indice) => ({
+                slot: indice + 1,
 
-    estado: "interface",
+                id: null,
 
-    moduloAtual: "interface",
+                nome: null,
 
-    inicializada: false,
+                personagem: null,
 
-    realtimeConectado: false,
+                raca: null,
 
-    modo: "normal"
+                classe: null,
 
-};
+                afinidade: null,
+
+                confirmado: false,
+
+                status: {
+                    hp: null,
+                    mana: null
+                },
+
+                inventario: [],
+
+                conectado: false
+            })
+        ),
+
+        moduloAtual: "interface",
+
+        modo: "normal",
+
+        painelMestreAberto: false,
+
+        combate: {
+            ativo: false,
+            turno: 0,
+            personagemTurno: null,
+            log: []
+        },
+
+        cte: {
+            ativo: false,
+            segundos: 0,
+            segundosRestantes: 0,
+            intervalo: null,
+            titulo: "Evento em andamento",
+            descricao: "A mesa está em um evento de tempo limitado."
+        },
+
+        dungeon: {
+            ativa: false,
+            nome: "Dungeon",
+            descricao: "A exploração ainda não começou."
+        },
+
+        boss: {
+            ativo: false,
+            nome: "BOSS",
+            descricao: "Um grande inimigo apareceu.",
+            retornoAutomatico: null
+        },
+
+        configuracoes: {
+            som: true,
+            animacoes: true,
+            notificacoes: true
+        }
+    };
 
 
-/* =========================================================
-   INICIALIZAÇÃO
-========================================================= */
+    /* ======================================================
+       REFERÊNCIAS
+    ====================================================== */
 
-document.addEventListener("DOMContentLoaded", function () {
+    const $ = (seletor) =>
+        document.querySelector(seletor);
 
-    iniciarMesa();
+    const $$ = (seletor) =>
+        Array.from(document.querySelectorAll(seletor));
 
-});
 
+    /* ======================================================
+       UTILIDADES
+    ====================================================== */
 
-async function iniciarMesa() {
+    function textoSeguro(valor, fallback = "—") {
 
-    try {
+        if (
+            valor === null ||
+            valor === undefined ||
+            valor === ""
+        ) {
+            return fallback;
+        }
 
-        mostrarNotificacaoMesa(
-            "🎲 Inicializando Mesa..."
-        );
-
-        await aguardarAutenticacao();
-
-        carregarCampanha();
-
-        carregarMestre();
-
-        carregarJogadores();
-
-        criarCardsJogadores();
-
-        atualizarEstadoVisual();
-
-        configurarNavegacaoModulos();
-
-        configurarPainelMestre();
-
-        configurarModal();
-
-        window.rpgMesa.inicializada = true;
-
-        mostrarNotificacaoMesa(
-            "🟢 Mesa inicializada."
-        );
-
-    } catch (erro) {
-
-        console.error(
-            "Erro ao iniciar Mesa:",
-            erro
-        );
-
-        mostrarNotificacaoMesa(
-            "⚠️ Não foi possível inicializar a Mesa."
-        );
-
+        return String(valor);
     }
 
-}
+
+    function escaparHTML(valor) {
+
+        return String(valor)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
 
 
-/* =========================================================
-   AGUARDAR AUTENTICAÇÃO
-========================================================= */
+    function mostrarNotificacao(mensagem) {
 
-function aguardarAutenticacao() {
+        if (!estado.configuracoes.notificacoes) {
+            return;
+        }
 
-    return new Promise(function (resolve) {
+        const area = $("#mesa-notificacoes");
 
-        let tentativas = 0;
+        if (!area) {
+            return;
+        }
 
-        const limite = 50;
+        const notificacao =
+            document.createElement("div");
 
-        const intervalo = setInterval(function () {
+        notificacao.className =
+            "mesa-notificacao";
 
-            tentativas++;
+        notificacao.textContent =
+            mensagem;
+
+        area.appendChild(notificacao);
+
+        setTimeout(() => {
+
+            notificacao.remove();
+
+        }, 3000);
+    }
+
+
+    function atualizarEstadoMesa(texto, classe = "") {
+
+        const indicador =
+            $("#mesa-estado-indicador");
+
+        const textoEstado =
+            $("#mesa-estado-texto");
+
+        if (textoEstado) {
+            textoEstado.textContent = texto;
+        }
+
+        const estadoElemento =
+            $("#mesa-estado");
+
+        if (estadoElemento) {
+
+            estadoElemento.className =
+                "";
+
+            if (classe) {
+                estadoElemento.classList.add(classe);
+            }
+        }
+
+        if (indicador) {
+
+            indicador.style.background = "";
+
+        }
+    }
+
+
+    /* ======================================================
+       CAMPANHA
+    ====================================================== */
+
+    function carregarCampanha() {
+
+        let campanha = null;
+
+        /*
+         * Primeiro tenta a campanha salva pela entrada da mesa.
+         */
+
+        try {
+
+            const salva =
+                localStorage.getItem(
+                    STORAGE_CAMPANHA
+                );
+
+            if (salva) {
+                campanha = JSON.parse(salva);
+            }
+
+        } catch (erro) {
+
+            console.warn(
+                "Não foi possível ler a campanha salva."
+            );
+        }
+
+
+        /*
+         * Depois tenta a API antiga.
+         */
+
+        if (!campanha) {
+
+            try {
+
+                if (
+                    typeof window.obterCampanhaAtiva ===
+                    "function"
+                ) {
+
+                    campanha =
+                        window.obterCampanhaAtiva();
+                }
+
+            } catch (erro) {
+                console.warn(
+                    "obterCampanhaAtiva indisponível."
+                );
+            }
+        }
+
+
+        /*
+         * Compatibilidade com rpgAuth.
+         */
+
+        if (
+            !campanha &&
+            window.rpgAuth &&
+            window.rpgAuth.campaign
+        ) {
+
+            campanha =
+                window.rpgAuth.campaign;
+        }
+
+
+        estado.campanha =
+            campanha || {
+                id: null,
+                nome: "Mesa RPG",
+                mestre: null
+            };
+
+
+        atualizarCabecalhoCampanha();
+    }
+
+
+    function atualizarCabecalhoCampanha() {
+
+        const elemento =
+            $("#mesa-campanha-nome");
+
+        if (!elemento) {
+            return;
+        }
+
+        elemento.textContent =
+            textoSeguro(
+                estado.campanha.nome ||
+                estado.campanha.titulo,
+                "Mesa RPG"
+            );
+    }
+
+
+    /* ======================================================
+       MESTRE
+    ====================================================== */
+
+    function carregarMestre() {
+
+        let mestre = null;
+
+        if (
+            estado.campanha &&
+            estado.campanha.mestre
+        ) {
+
+            mestre =
+                estado.campanha.mestre;
+        }
+
+
+        if (
+            estado.campanha &&
+            estado.campanha.master
+        ) {
+
+            mestre =
+                estado.campanha.master;
+        }
+
+
+        if (
+            window.rpgAuth &&
+            window.rpgAuth.profile
+        ) {
+
+            const perfil =
+                window.rpgAuth.profile;
 
             if (
-                window.rpgAuth &&
-                (
-                    window.rpgAuth.user ||
-                    window.rpgAuth.campaign
-                )
+                perfil.is_master ||
+                perfil.isMaster
             ) {
 
-                clearInterval(intervalo);
-
-                resolve();
-
-                return;
-
+                mestre = perfil;
             }
-
-
-            if (tentativas >= limite) {
-
-                clearInterval(intervalo);
-
-                /*
-                 * A Mesa também pode ser aberta
-                 * visualmente sem autenticação.
-                 */
-
-                resolve();
-
-            }
-
-        }, 200);
-
-    });
-
-}
-
-
-/* =========================================================
-   CAMPANHA
-========================================================= */
-
-function carregarCampanha() {
-
-    let campanha = null;
-
-
-    /*
-     * Primeiro tenta utilizar a arquitetura
-     * já existente no projeto.
-     */
-
-    if (
-        typeof window.obterCampanhaAtiva ===
-        "function"
-    ) {
-
-        campanha =
-            window.obterCampanhaAtiva();
-
-    }
-
-
-    /*
-     * Compatibilidade com rpgAuth.
-     */
-
-    if (
-        !campanha &&
-        window.rpgAuth
-    ) {
-
-        campanha =
-            window.rpgAuth.campaign;
-
-    }
-
-
-    /*
-     * Caso exista uma campanha válida.
-     */
-
-    if (campanha) {
-
-        window.rpgMesa.campanha = campanha;
-
-    }
-
-
-    atualizarNomeCampanha();
-
-}
-
-
-/* =========================================================
-   NOME DA CAMPANHA
-========================================================= */
-
-function atualizarNomeCampanha() {
-
-    const elemento =
-        document.getElementById(
-            "mesa-campanha-nome"
-        );
-
-
-    if (!elemento) {
-        return;
-    }
-
-
-    const campanha =
-        window.rpgMesa.campanha;
-
-
-    if (!campanha) {
-
-        elemento.textContent =
-            "Mesa RPG";
-
-        return;
-
-    }
-
-
-    elemento.textContent =
-        campanha.name ||
-        campanha.nome ||
-        campanha.title ||
-        "Mesa RPG";
-
-}
-
-
-/* =========================================================
-   MESTRE
-========================================================= */
-
-function carregarMestre() {
-
-    let mestre = null;
-
-
-    const campanha =
-        window.rpgMesa.campanha;
-
-
-    /*
-     * Obtém o ID do mestre da campanha.
-     */
-
-    if (campanha) {
-
-        mestre = {
-
-            id:
-                campanha.master_id ||
-                campanha.mestre_id ||
-                null,
-
-            nome:
-                campanha.master_name ||
-                campanha.mestre_nome ||
-                null
-
-        };
-
-    }
-
-
-    /*
-     * Caso o nome não esteja na campanha,
-     * tenta obter os dados do usuário atual.
-     */
-
-    if (
-        window.rpgAuth &&
-        window.rpgAuth.profile
-    ) {
-
-        const perfil =
-            window.rpgAuth.profile;
-
-
-        if (!mestre) {
-
-            mestre = {};
-
         }
 
 
-        mestre.nome =
-            mestre.nome ||
-            perfil.username ||
-            perfil.name ||
-            null;
+        if (
+            window.rpgAuth &&
+            window.rpgAuth.user &&
+            !mestre
+        ) {
 
-    }
-
-
-    /*
-     * Último fallback:
-     * usuário autenticado.
-     */
-
-    if (
-        window.rpgAuth &&
-        window.rpgAuth.user
-    ) {
-
-        const usuario =
-            window.rpgAuth.user;
-
-
-        if (!mestre) {
-
-            mestre = {};
-
+            mestre =
+                window.rpgAuth.user;
         }
 
 
-        mestre.id =
-            mestre.id ||
+        if (mestre) {
+
+            estado.mestre.id =
+                mestre.id ||
+                mestre.user_id ||
+                null;
+
+            estado.mestre.nome =
+                mestre.nome ||
+                mestre.name ||
+                mestre.username ||
+                "Mestre";
+        }
+
+
+        const elemento =
+            $("#mesa-mestre-nome");
+
+        if (elemento) {
+
+            elemento.textContent =
+                estado.mestre.nome;
+        }
+    }
+
+
+    /* ======================================================
+       IDENTIFICAR JOGADOR ATUAL
+    ====================================================== */
+
+    function identificarJogadorAtual() {
+
+        let usuario = null;
+
+        if (
+            window.rpgAuth &&
+            window.rpgAuth.user
+        ) {
+
+            usuario =
+                window.rpgAuth.user;
+        }
+
+
+        if (!usuario) {
+            return;
+        }
+
+
+        const id =
             usuario.id ||
+            usuario.user_id ||
             null;
 
 
-        mestre.nome =
-            mestre.nome ||
-            usuario.user_metadata?.username ||
-            usuario.user_metadata?.name ||
-            usuario.email ||
-            "Mestre";
+        if (!id) {
+            return;
+        }
 
+
+        estado.jogadorAtual =
+            estado.jogadores.find(
+                jogador =>
+                    jogador.id === id
+            ) || null;
     }
 
 
-    window.rpgMesa.mestre =
-        mestre;
+    /* ======================================================
+       JOGADORES
+    ====================================================== */
+
+    function carregarJogadores() {
+
+        let membros = null;
 
 
-    atualizarNomeMestre();
+        /*
+         * Estrutura antiga.
+         */
 
-}
+        if (
+            window.rpgAuth &&
+            Array.isArray(
+                window.rpgAuth.campaignMembers
+            )
+        ) {
+
+            membros =
+                window.rpgAuth.campaignMembers;
+        }
 
 
-/* =========================================================
-   NOME DO MESTRE
-========================================================= */
+        /*
+         * Estrutura de personagens.
+         */
 
-function atualizarNomeMestre() {
+        if (
+            !membros &&
+            window.rpgAuth &&
+            Array.isArray(
+                window.rpgAuth.campaignCharacters
+            )
+        ) {
 
-    const elemento =
-        document.getElementById(
-            "mesa-mestre-nome"
-        );
+            membros =
+                window.rpgAuth.campaignCharacters;
+        }
 
 
-    if (!elemento) {
-        return;
+        if (
+            !Array.isArray(membros)
+        ) {
+
+            renderizarTodosAssentos();
+
+            return;
+        }
+
+
+        membros
+            .slice(0, TOTAL_ASSENTOS)
+            .forEach(
+                (membro, indice) => {
+
+                    const jogador =
+                        estado.jogadores[indice];
+
+                    if (!jogador) {
+                        return;
+                    }
+
+
+                    jogador.id =
+                        membro.id ||
+                        membro.user_id ||
+                        null;
+
+                    jogador.nome =
+                        membro.nome ||
+                        membro.name ||
+                        membro.username ||
+                        `Jogador ${indice + 1}`;
+
+
+                    jogador.personagem =
+                        membro.personagem ||
+                        membro.character ||
+                        membro.character_name ||
+                        null;
+
+
+                    jogador.raca =
+                        membro.raca ||
+                        membro.race ||
+                        null;
+
+
+                    jogador.classe =
+                        membro.classe ||
+                        membro.class ||
+                        null;
+
+
+                    jogador.afinidade =
+                        membro.afinidade ||
+                        membro.affinity ||
+                        null;
+
+
+                    jogador.confirmado =
+                        Boolean(
+                            membro.confirmado ??
+                            membro.confirmed ??
+                            membro.character_confirmed ??
+                            true
+                        );
+
+
+                    jogador.conectado =
+                        Boolean(
+                            membro.conectado ??
+                            membro.connected ??
+                            true
+                        );
+
+
+                    jogador.status.hp =
+                        membro.hp ??
+                        membro.status?.hp ??
+                        null;
+
+
+                    jogador.status.mana =
+                        membro.mana ??
+                        membro.status?.mana ??
+                        null;
+
+
+                    if (
+                        Array.isArray(
+                            membro.inventario
+                        )
+                    ) {
+
+                        jogador.inventario =
+                            membro.inventario;
+                    }
+                }
+            );
+
+
+        identificarJogadorAtual();
+
+        renderizarTodosAssentos();
     }
 
 
-    const mestre =
-        window.rpgMesa.mestre;
+    /* ======================================================
+       RENDERIZAR ASSENTOS
+    ====================================================== */
 
+    function renderizarTodosAssentos() {
 
-    if (!mestre) {
+        for (
+            let slot = 1;
+            slot <= TOTAL_ASSENTOS;
+            slot++
+        ) {
 
-        elemento.textContent =
-            "—";
-
-        return;
-
+            renderizarAssento(slot);
+        }
     }
 
 
-    elemento.textContent =
-        mestre.nome ||
-        "Mestre";
+    function renderizarAssento(slot) {
 
-}
+        const jogador =
+            estado.jogadores[slot - 1];
 
+        if (!jogador) {
+            return;
+        }
 
-/* =========================================================
-   JOGADORES
-========================================================= */
 
-function carregarJogadores() {
+        const card =
+            document.querySelector(
+                `.jogador-card[data-slot="${slot}"]`
+            );
 
-    let jogadores = [];
 
+        if (!card) {
+            return;
+        }
 
-    /*
-     * Primeiro tenta utilizar os membros
-     * já carregados pelo sistema de autenticação.
-     */
 
-    if (
-        window.rpgAuth &&
-        Array.isArray(
-            window.rpgAuth.campaignMembers
-        )
-    ) {
+        const numero =
+            card.querySelector(
+                ".jogador-numero"
+            );
 
-        jogadores =
-            window.rpgAuth.campaignMembers
-                .map(
-                    transformarMembroEmJogador
-                );
+        const nome =
+            card.querySelector(
+                ".jogador-nome"
+            );
 
-    }
+        const classe =
+            card.querySelector(
+                ".jogador-classe"
+            );
 
+        const status =
+            card.querySelector(
+                ".jogador-status"
+            );
 
-    /*
-     * Caso não existam membros, tenta utilizar
-     * os personagens já carregados.
-     */
 
-    if (
-        jogadores.length === 0 &&
-        window.rpgAuth &&
-        Array.isArray(
-            window.rpgAuth.campaignCharacters
-        )
-    ) {
+        if (numero) {
 
-        jogadores =
-            window.rpgAuth.campaignCharacters
-                .map(
-                    transformarPersonagemEmJogador
-                );
+            numero.textContent =
+                String(slot)
+                    .padStart(2, "0");
+        }
 
-    }
 
+        /*
+         * Assento vazio.
+         */
 
-    /*
-     * Limita a quantidade à capacidade da Mesa.
-     */
+        if (!jogador.nome) {
 
-    jogadores =
-        jogadores.slice(
-            0,
-            window.rpgMesa.maxJogadores
-        );
+            card.classList.remove(
+                "confirmado"
+            );
 
+            card.classList.add(
+                "vazio"
+            );
 
-    window.rpgMesa.jogadores =
-        jogadores;
-
-
-}
-
-
-/* =========================================================
-   TRANSFORMAR MEMBRO
-========================================================= */
-
-function transformarMembroEmJogador(
-    membro,
-    indice
-) {
-
-    if (!membro) {
-
-        return criarJogadorVazio(indice);
-
-    }
-
-
-    return {
-
-        id:
-            membro.user_id ||
-            membro.id ||
-            `jogador-${indice + 1}`,
-
-        userId:
-            membro.user_id ||
-            null,
-
-        nome:
-            membro.username ||
-            membro.nome ||
-            `Jogador ${indice + 1}`,
-
-        personagem:
-            null,
-
-        confirmado:
-            false,
-
-        status:
-            criarStatusInicial(),
-
-        online:
-            false
-
-    };
-
-}
-
-
-/* =========================================================
-   TRANSFORMAR PERSONAGEM
-========================================================= */
-
-function transformarPersonagemEmJogador(
-    personagem,
-    indice
-) {
-
-    if (!personagem) {
-
-        return criarJogadorVazio(indice);
-
-    }
-
-
-    return {
-
-        id:
-            personagem.user_id ||
-            personagem.id ||
-            `jogador-${indice + 1}`,
-
-        userId:
-            personagem.user_id ||
-            null,
-
-        nome:
-            personagem.name ||
-            personagem.nome ||
-            `Jogador ${indice + 1}`,
-
-        personagem:
-            personagem,
-
-        confirmado:
-            Boolean(
-                personagem.confirmado ||
-                personagem.confirmed ||
-                personagem.character_confirmed
-            ),
-
-        status:
-            criarStatusDoPersonagem(
-                personagem
-            ),
-
-        online:
-            false
-
-    };
-
-}
-
-
-/* =========================================================
-   JOGADOR VAZIO
-========================================================= */
-
-function criarJogadorVazio(indice) {
-
-    return {
-
-        id:
-            `vaga-${indice + 1}`,
-
-        userId:
-            null,
-
-        nome:
-            null,
-
-        personagem:
-            null,
-
-        confirmado:
-            false,
-
-        status:
-            criarStatusInicial(),
-
-        online:
-            false
-
-    };
-
-}
-
-
-/* =========================================================
-   STATUS INICIAL
-========================================================= */
-
-function criarStatusInicial() {
-
-    return {
-
-        hp: 0,
-
-        hpMax: 0,
-
-        mp: 0,
-
-        mpMax: 0,
-
-        est: 0,
-
-        estMax: 0,
-
-        fome: 0,
-
-        fomeMax: 100,
-
-        sede: 0,
-
-        sedeMax: 100
-
-    };
-
-}
-
-
-/* =========================================================
-   STATUS DO PERSONAGEM
-========================================================= */
-
-function criarStatusDoPersonagem(
-    personagem
-) {
-
-    const status =
-        criarStatusInicial();
-
-
-    if (!personagem) {
-
-        return status;
-
-    }
-
-
-    status.hp =
-        obterNumero(
-            personagem.hp ??
-            personagem.vida ??
-            personagem.current_hp
-        );
-
-
-    status.hpMax =
-        obterNumero(
-            personagem.hp_max ??
-            personagem.vida_max ??
-            personagem.max_hp
-        );
-
-
-    status.mp =
-        obterNumero(
-            personagem.mp ??
-            personagem.current_mp
-        );
-
-
-    status.mpMax =
-        obterNumero(
-            personagem.mp_max ??
-            personagem.max_mp
-        );
-
-
-    status.est =
-        obterNumero(
-            personagem.est ??
-            personagem.stamina ??
-            personagem.current_est
-        );
-
-
-    status.estMax =
-        obterNumero(
-            personagem.est_max ??
-            personagem.stamina_max ??
-            personagem.max_est
-        );
-
-
-    status.fome =
-        obterNumero(
-            personagem.fome ??
-            personagem.hunger
-        );
-
-
-    status.sede =
-        obterNumero(
-            personagem.sede ??
-            personagem.thirst
-        );
-
-
-    return status;
-
-}
-
-
-/* =========================================================
-   CONVERTER NÚMERO
-========================================================= */
-
-function obterNumero(valor) {
-
-    const numero =
-        Number(valor);
-
-
-    if (
-        Number.isFinite(numero)
-    ) {
-
-        return numero;
-
-    }
-
-
-    return 0;
-
-}
-
-
-/* =========================================================
-   CRIAR CARDS
-========================================================= */
-
-function criarCardsJogadores() {
-
-    const containers =
-        document.querySelectorAll(
-            ".jogadores-container, .jogadores-lateral"
-        );
-
-
-    containers.forEach(
-        function (container) {
-
-            container.innerHTML = "";
-
-
-            for (
-                let i = 0;
-                i < window.rpgMesa.maxJogadores;
-                i++
-            ) {
-
-                const jogador =
-                    window.rpgMesa.jogadores[i];
-
-
-                container.appendChild(
-                    criarCardJogador(
-                        jogador,
-                        i
-                    )
-                );
-
+            if (nome) {
+                nome.textContent =
+                    `VAGA ${slot}`;
             }
 
+            if (classe) {
+                classe.textContent =
+                    "Aguardando jogador";
+            }
+
+            if (status) {
+
+                status.innerHTML = `
+                    <span class="status-mini">❤️ —</span>
+                    <span class="status-mini">💧 —</span>
+                `;
+            }
+
+            return;
         }
-    );
-
-}
 
 
-/* =========================================================
-   CRIAR CARD INDIVIDUAL
-========================================================= */
+        /*
+         * Jogador ocupado.
+         */
 
-function criarCardJogador(
-    jogador,
-    indice
-) {
-
-    const card =
-        document.createElement(
-            "article"
-        );
-
-
-    card.className =
-        "jogador-card";
-
-
-    card.dataset.slot =
-        String(indice + 1);
-
-
-    /*
-     * Vaga vazia
-     */
-
-    if (
-        !jogador ||
-        !jogador.nome
-    ) {
-
-        card.classList.add(
+        card.classList.remove(
             "vazio"
         );
 
 
-        card.innerHTML =
-            `
-                <span>
-                    VAGA ${indice + 1}
+        if (jogador.confirmado) {
+
+            card.classList.add(
+                "confirmado"
+            );
+
+        } else {
+
+            card.classList.remove(
+                "confirmado"
+            );
+        }
+
+
+        if (nome) {
+
+            nome.textContent =
+                jogador.nome;
+        }
+
+
+        if (classe) {
+
+            const classeTexto =
+                jogador.classe ||
+                "Classe não definida";
+
+            classe.textContent =
+                jogador.personagem
+                    ? `${jogador.personagem} • ${classeTexto}`
+                    : classeTexto;
+        }
+
+
+        if (status) {
+
+            const hp =
+                jogador.status.hp ??
+                "—";
+
+            const mana =
+                jogador.status.mana ??
+                "—";
+
+
+            status.innerHTML = `
+                <span class="status-mini">
+                    ❤️ ${escaparHTML(hp)}
+                </span>
+
+                <span class="status-mini">
+                    💧 ${escaparHTML(mana)}
                 </span>
             `;
-
-
-        return card;
-
+        }
     }
 
 
-    /*
-     * Card ocupado
-     */
+    /* ======================================================
+       MÓDULOS
+    ====================================================== */
 
-    if (jogador.confirmado) {
+    function configurarModulos() {
 
-        card.classList.add(
-            "confirmado"
+        $$(".modulo-btn")
+            .forEach(botao => {
+
+                botao.addEventListener(
+                    "click",
+                    () => {
+
+                        const modulo =
+                            botao.dataset.modulo;
+
+                        if (!modulo) {
+                            return;
+                        }
+
+                        abrirModulo(modulo);
+                    }
+                );
+            });
+
+
+        abrirModulo(
+            estado.moduloAtual
         );
-
     }
 
 
-    const personagem =
-        jogador.personagem;
+    function abrirModulo(modulo) {
+
+        if (!MODULOS[modulo]) {
+            return;
+        }
 
 
-    const nome =
-        personagem?.name ||
-        personagem?.nome ||
-        jogador.nome;
+        estado.moduloAtual =
+            modulo;
 
 
-    const classe =
-        personagem?.class ||
-        personagem?.classe ||
-        "Classe não definida";
+        $$(".modulo-btn")
+            .forEach(botao => {
+
+                botao.classList.toggle(
+                    "ativo",
+                    botao.dataset.modulo ===
+                    modulo
+                );
+            });
 
 
-    const status =
-        jogador.status ||
-        criarStatusInicial();
+        $$(".modulo-mesa")
+            .forEach(elemento => {
+
+                elemento.hidden =
+                    elemento.id !==
+                    `modulo-${modulo}`;
+            });
 
 
-    card.innerHTML =
-        `
-            <span class="jogador-nome">
-                ${escaparHTML(nome)}
-            </span>
+        const configuracao =
+            MODULOS[modulo];
 
-            <span class="jogador-classe">
-                ${escaparHTML(classe)}
-            </span>
 
-            <div class="jogador-status">
+        const titulo =
+            $("#tela-mesa-titulo");
 
-                <span class="status-mini">
-                    ❤️ ${status.hp}/${status.hpMax}
-                </span>
 
-                <span class="status-mini">
-                    💧 ${status.mp}/${status.mpMax}
+        if (titulo) {
+
+            titulo.textContent =
+                `${configuracao.icone} ${configuracao.titulo}`;
+        }
+
+
+        renderizarModulo(modulo);
+    }
+
+
+    function renderizarModulo(modulo) {
+
+        switch (modulo) {
+
+            case "interface":
+                renderizarInterface();
+                break;
+
+            case "personagem":
+                renderizarPersonagem();
+                break;
+
+            case "status":
+                renderizarStatus();
+                break;
+
+            case "afinidade":
+                renderizarAfinidade();
+                break;
+
+            case "inventario":
+                renderizarInventario();
+                break;
+
+            case "mapa":
+                renderizarMapa();
+                break;
+
+            case "combate":
+                renderizarCombate();
+                break;
+
+            case "cte":
+                renderizarCTE();
+                break;
+
+            case "dungeon":
+                renderizarDungeon();
+                break;
+
+            case "boss":
+                renderizarBoss();
+                break;
+        }
+    }
+
+
+    /* ======================================================
+       INTERFACE
+    ====================================================== */
+
+    function renderizarInterface() {
+
+        const modulo =
+            $("#modulo-interface");
+
+        if (!modulo) {
+            return;
+        }
+
+
+        const jogadores =
+            estado.jogadores.filter(
+                jogador =>
+                    jogador.nome
+            );
+
+
+        const confirmados =
+            jogadores.filter(
+                jogador =>
+                    jogador.confirmado
+            ).length;
+
+
+        const conectados =
+            jogadores.filter(
+                jogador =>
+                    jogador.conectado
+            ).length;
+
+
+        modulo.innerHTML = `
+
+            <div class="interface-grid">
+
+                <div class="interface-box">
+                    <span>JOGADORES</span>
+                    <strong>
+                        ${jogadores.length}/${TOTAL_ASSENTOS}
+                    </strong>
+                </div>
+
+                <div class="interface-box">
+                    <span>CONFIRMADOS</span>
+                    <strong>
+                        ${confirmados}
+                    </strong>
+                </div>
+
+                <div class="interface-box">
+                    <span>CONECTADOS</span>
+                    <strong>
+                        ${conectados}
+                    </strong>
+                </div>
+
+                <div class="interface-box">
+                    <span>ESTADO</span>
+                    <strong>
+                        ${textoSeguro(
+                            estado.modo,
+                            "normal"
+                        )}
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="modulo-placeholder">
+
+                <div class="modulo-icone">
+                    🎮
+                </div>
+
+                <strong>
+                    Mesa online
+                </strong>
+
+                <span>
+                    A mesa está preparada para
+                    jogadores, inventário, mapa,
+                    combate e eventos.
                 </span>
 
             </div>
         `;
-
-
-    return card;
-
-}
-
-
-/* =========================================================
-   NAVEGAÇÃO DOS MÓDULOS
-========================================================= */
-
-function configurarNavegacaoModulos() {
-
-    const botoes =
-        document.querySelectorAll(
-            ".modulo-btn"
-        );
-
-
-    botoes.forEach(
-        function (botao) {
-
-            botao.addEventListener(
-                "click",
-                function () {
-
-                    const modulo =
-                        botao.dataset.modulo;
-
-
-                    if (!modulo) {
-
-                        return;
-
-                    }
-
-
-                    abrirModulo(
-                        modulo
-                    );
-
-                }
-            );
-
-        }
-    );
-
-}
-
-
-/* =========================================================
-   ABRIR MÓDULO
-========================================================= */
-
-function abrirModulo(
-    modulo
-) {
-
-    const modulos =
-        document.querySelectorAll(
-            ".modulo-mesa"
-        );
-
-
-    modulos.forEach(
-        function (elemento) {
-
-            elemento.hidden =
-                true;
-
-        }
-    );
-
-
-    const alvo =
-        document.getElementById(
-            `modulo-${modulo}`
-        );
-
-
-    if (alvo) {
-
-        alvo.hidden =
-            false;
-
     }
 
 
-    const botoes =
-        document.querySelectorAll(
-            ".modulo-btn"
-        );
+    /* ======================================================
+       PERSONAGEM
+    ====================================================== */
 
+    function renderizarPersonagem() {
 
-    botoes.forEach(
-        function (botao) {
+        const modulo =
+            $("#modulo-personagem");
 
-            botao.classList.toggle(
-                "ativo",
-                botao.dataset.modulo ===
-                modulo
-            );
-
-        }
-    );
-
-
-    window.rpgMesa.moduloAtual =
-        modulo;
-
-
-    atualizarTituloModulo(
-        modulo
-    );
-
-
-}
-
-
-/* =========================================================
-   TÍTULO DO MÓDULO
-========================================================= */
-
-function atualizarTituloModulo(
-    modulo
-) {
-
-    const titulo =
-        document.getElementById(
-            "tela-mesa-titulo"
-        );
-
-
-    if (!titulo) {
-        return;
-    }
-
-
-    const nomes = {
-
-        interface:
-            "Interface",
-
-        personagem:
-            "Personagem",
-
-        status:
-            "Status",
-
-        afinidade:
-            "Afinidade",
-
-        inventario:
-            "Inventário",
-
-        mapa:
-            "Mapa",
-
-        combate:
-            "Combate",
-
-        cte:
-            "CTE",
-
-        dungeon:
-            "Dungeon",
-
-        boss:
-            "BOSS"
-
-    };
-
-
-    titulo.textContent =
-        nomes[modulo] ||
-        "Mesa RPG";
-
-}
-
-
-/* =========================================================
-   ESTADO DA MESA
-========================================================= */
-
-function definirEstadoMesa(
-    estado
-) {
-
-    const estadosValidos = [
-
-        "interface",
-
-        "combat",
-
-        "cte",
-
-        "map",
-
-        "boss"
-
-    ];
-
-
-    if (
-        !estadosValidos.includes(
-            estado
-        )
-    ) {
-
-        return;
-
-    }
-
-
-    window.rpgMesa.estado =
-        estado;
-
-
-    atualizarEstadoVisual();
-
-}
-
-
-/* =========================================================
-   ATUALIZAR ESTADO VISUAL
-========================================================= */
-
-function atualizarEstadoVisual() {
-
-    const mesa =
-        document.getElementById(
-            "rpg-mesa"
-        );
-
-
-    const estado =
-        document.getElementById(
-            "mesa-estado"
-        );
-
-
-    const indicador =
-        document.getElementById(
-            "mesa-estado-texto"
-        );
-
-
-    if (!mesa || !estado) {
-
-        return;
-
-    }
-
-
-    mesa.classList.remove(
-
-        "modo-combate",
-
-        "modo-cte",
-
-        "modo-mapa",
-
-        "modo-boss"
-
-    );
-
-
-    estado.classList.remove(
-
-        "estado-interface",
-
-        "estado-combate",
-
-        "estado-cte",
-
-        "estado-mapa"
-
-    );
-
-
-    const atual =
-        window.rpgMesa.estado;
-
-
-    const configuracoes = {
-
-        interface: {
-
-            classeEstado:
-                "estado-interface",
-
-            texto:
-                "INTERFACE"
-
-        },
-
-        combat: {
-
-            classeEstado:
-                "estado-combate",
-
-            classeMesa:
-                "modo-combate",
-
-            texto:
-                "COMBATE"
-
-        },
-
-        cte: {
-
-            classeEstado:
-                "estado-cte",
-
-            classeMesa:
-                "modo-cte",
-
-            texto:
-                "CTE"
-
-        },
-
-        map: {
-
-            classeEstado:
-                "estado-mapa",
-
-            classeMesa:
-                "modo-mapa",
-
-            texto:
-                "MAPA"
-
-        },
-
-        boss: {
-
-            classeEstado:
-                "estado-combate",
-
-            classeMesa:
-                "modo-boss",
-
-            texto:
-                "BOSS"
-
+        if (!modulo) {
+            return;
         }
 
-    };
+
+        const jogador =
+            estado.jogadorAtual;
 
 
-    const config =
-        configuracoes[atual];
+        if (!jogador) {
 
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
+                    <div class="modulo-icone">🧙</div>
+                    <strong>Nenhum personagem vinculado</strong>
+                    <span>
+                        O personagem aparecerá aqui
+                        quando estiver confirmado.
+                    </span>
+                </div>
+            `;
 
-    if (!config) {
-
-        return;
-
-    }
-
-
-    estado.classList.add(
-        config.classeEstado
-    );
-
-
-    if (config.classeMesa) {
-
-        mesa.classList.add(
-            config.classeMesa
-        );
-
-    }
-
-
-    if (indicador) {
-
-        indicador.textContent =
-            config.texto;
-
-    }
-
-}
-
-
-/* =========================================================
-   PAINEL DO MESTRE
-========================================================= */
-
-function configurarPainelMestre() {
-
-    const abrir =
-        document.getElementById(
-            "abrir-painel-mestre"
-        );
-
-
-    const fechar =
-        document.getElementById(
-            "fechar-painel-mestre"
-        );
-
-
-    const painel =
-        document.getElementById(
-            "painel-mestre"
-        );
-
-
-    if (
-        abrir &&
-        painel
-    ) {
-
-        abrir.addEventListener(
-            "click",
-            function () {
-
-                painel.hidden =
-                    false;
-
-            }
-        );
-
-    }
-
-
-    if (
-        fechar &&
-        painel
-    ) {
-
-        fechar.addEventListener(
-            "click",
-            function () {
-
-                painel.hidden =
-                    true;
-
-            }
-        );
-
-    }
-
-
-    configurarBotoesEstado();
-
-}
-
-
-/* =========================================================
-   BOTÕES DE ESTADO DO MESTRE
-========================================================= */
-
-function configurarBotoesEstado() {
-
-    const botoes =
-        document.querySelectorAll(
-            "[data-estado]"
-        );
-
-
-    botoes.forEach(
-        function (botao) {
-
-            botao.addEventListener(
-                "click",
-                function () {
-
-                    const estado =
-                        botao.dataset.estado;
-
-
-                    definirEstadoMesa(
-                        estado
-                    );
-
-                }
-            );
-
+            return;
         }
-    );
-
-}
 
 
-/* =========================================================
-   MODAL
-========================================================= */
+        modulo.innerHTML = `
 
-function configurarModal() {
+            <div class="personagem-detalhes">
 
-    const modal =
-        document.getElementById(
-            "mesa-modal"
-        );
+                <div class="personagem-banner">
 
+                    <h3>
+                        ${escaparHTML(
+                            jogador.personagem ||
+                            jogador.nome
+                        )}
+                    </h3>
 
-    const fechar =
-        document.getElementById(
-            "fechar-mesa-modal"
-        );
+                    <p>
+                        ${escaparHTML(
+                            jogador.raca ||
+                            "Raça não definida"
+                        )}
 
+                        • 
 
-    if (!modal) {
+                        ${escaparHTML(
+                            jogador.classe ||
+                            "Classe não definida"
+                        )}
+                    </p>
 
-        return;
+                </div>
 
+                <div class="interface-grid">
+
+                    <div class="interface-box">
+                        <span>NOME DO JOGADOR</span>
+                        <strong>
+                            ${escaparHTML(
+                                jogador.nome
+                            )}
+                        </strong>
+                    </div>
+
+                    <div class="interface-box">
+                        <span>AFINIDADE</span>
+                        <strong>
+                            ${escaparHTML(
+                                jogador.afinidade
+                            )}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+        `;
     }
 
 
-    if (fechar) {
+    /* ======================================================
+       STATUS
+    ====================================================== */
 
-        fechar.addEventListener(
-            "click",
-            fecharModal
-        );
+    function renderizarStatus() {
 
-    }
+        const modulo =
+            $("#modulo-status");
 
-
-    modal.addEventListener(
-        "click",
-        function (evento) {
-
-            if (
-                evento.target ===
-                modal
-            ) {
-
-                fecharModal();
-
-            }
-
+        if (!modulo) {
+            return;
         }
-    );
 
-}
 
+        const jogador =
+            estado.jogadorAtual;
 
-/* =========================================================
-   ABRIR MODAL
-========================================================= */
 
-function abrirModal(
-    conteudo
-) {
+        if (!jogador) {
 
-    const modal =
-        document.getElementById(
-            "mesa-modal"
-        );
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
+                    <div class="modulo-icone">❤️</div>
+                    <strong>Status indisponível</strong>
+                    <span>
+                        Nenhum personagem está vinculado
+                        a este jogador.
+                    </span>
+                </div>
+            `;
 
-
-    const body =
-        document.getElementById(
-            "mesa-modal-body"
-        );
-
-
-    if (!modal || !body) {
-
-        return;
-
-    }
-
-
-    body.innerHTML =
-        conteudo;
-
-
-    modal.hidden =
-        false;
-
-}
-
-
-/* =========================================================
-   FECHAR MODAL
-========================================================= */
-
-function fecharModal() {
-
-    const modal =
-        document.getElementById(
-            "mesa-modal"
-        );
-
-
-    if (!modal) {
-
-        return;
-
-    }
-
-
-    modal.hidden =
-        true;
-
-}
-
-
-/* =========================================================
-   NOTIFICAÇÃO
-========================================================= */
-
-function mostrarNotificacaoMesa(
-    mensagem
-) {
-
-    const container =
-        document.getElementById(
-            "mesa-notificacoes"
-        );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const notificacao =
-        document.createElement(
-            "div"
-        );
-
-
-    notificacao.className =
-        "mesa-notificacao";
-
-
-    notificacao.textContent =
-        mensagem;
-
-
-    container.appendChild(
-        notificacao
-    );
-
-
-    setTimeout(
-        function () {
-
-            notificacao.remove();
-
-        },
-        2500
-    );
-
-}
-
-
-/* =========================================================
-   ESCAPAR HTML
-========================================================= */
-
-function escaparHTML(
-    valor
-) {
-
-    return String(
-        valor ?? ""
-    )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
-
-}
-
-
-/* =========================================================
-   ATUALIZAR JOGADORES
-========================================================= */
-
-function atualizarJogadores(
-    jogadores
-) {
-
-    if (!Array.isArray(jogadores)) {
-
-        return;
-
-    }
-
-
-    window.rpgMesa.jogadores =
-        jogadores.slice(
-            0,
-            window.rpgMesa.maxJogadores
-        );
-
-
-    criarCardsJogadores();
-
-}
-
-
-/* =========================================================
-   ATUALIZAR MESA
-========================================================= */
-
-function atualizarMesa() {
-
-    carregarCampanha();
-
-    carregarMestre();
-
-    carregarJogadores();
-
-    criarCardsJogadores();
-
-    atualizarEstadoVisual();
-
-}
-
-
-/* =========================================================
-   PREPARAÇÃO PARA REALTIME
-========================================================= */
-
-function prepararRealtime() {
-
-    /*
-     * Esta função não conecta ao Supabase ainda.
-     *
-     * Ela existe para manter a arquitetura
-     * preparada para a próxima etapa.
-     */
-
-    window.rpgMesa.realtimeConectado =
-        false;
-
-}
-
-
-/* =========================================================
-   API PÚBLICA
-========================================================= */
-
-window.rpgMesaAPI = {
-
-    iniciar:
-        iniciarMesa,
-
-    abrirModulo:
-        abrirModulo,
-
-    definirEstado:
-        definirEstadoMesa,
-
-    obterJogadores:
-        function () {
-
-            return window.rpgMesa.jogadores;
-
-        },
-
-    obterCampanha:
-        function () {
-
-            return window.rpgMesa.campanha;
-
-        },
-
-    obterMestre:
-        function () {
-
-            return window.rpgMesa.mestre;
-
-        },
-
-    atualizar:
-        atualizarMesa,
-
-    atualizarJogadores:
-        atualizarJogadores,
-
-    abrirModal:
-        abrirModal,
-
-    fecharModal:
-        fecharModal,
-
-    prepararRealtime:
-        prepararRealtime
-
-};
-
-
-/* =========================================================
-   FIM — PARTE 1/3
-========================================================= */
-/* =========================================================
-   MESA RPG 2.0
-   PARTE 2/3
-
-   SISTEMAS:
-   - Navegação dos módulos
-   - Interface
-   - Personagem
-   - Status
-   - Afinidade
-   - Inventário
-   - Combate
-   - CTE
-   - Dungeon
-   - Mapa
-========================================================= */
-
-
-/* =========================================================
-   CONFIGURAÇÃO DOS MÓDULOS
-========================================================= */
-
-const CONFIGURACAO_MODULOS_MESA = {
-
-    interface: {
-        titulo: "Interface"
-    },
-
-    personagem: {
-        titulo: "Personagem"
-    },
-
-    status: {
-        titulo: "Status"
-    },
-
-    afinidade: {
-        titulo: "Afinidade"
-    },
-
-    inventario: {
-        titulo: "Inventário"
-    },
-
-    mapa: {
-        titulo: "Mapa"
-    },
-
-    combate: {
-        titulo: "Combate"
-    },
-
-    cte: {
-        titulo: "CTE"
-    },
-
-    dungeon: {
-        titulo: "Dungeon"
-    },
-
-    boss: {
-        titulo: "BOSS"
-    }
-
-};
-
-
-/* =========================================================
-   ABRIR MÓDULO — VERSÃO COMPLETA
-========================================================= */
-
-function abrirModuloCompleto(modulo) {
-
-    if (
-        !CONFIGURACAO_MODULOS_MESA[modulo]
-    ) {
-
-        return;
-
-    }
-
-
-    const modulos =
-        document.querySelectorAll(
-            ".modulo-mesa"
-        );
-
-
-    modulos.forEach(
-        function (elemento) {
-
-            elemento.hidden = true;
-
-            elemento.classList.remove(
-                "modulo-ativo"
-            );
-
+            return;
         }
-    );
 
 
-    const alvo =
-        document.getElementById(
-            `modulo-${modulo}`
-        );
+        const hp =
+            Number(jogador.status.hp) || 0;
 
+        const mana =
+            Number(jogador.status.mana) || 0;
 
-    if (!alvo) {
 
-        return;
-
-    }
-
-
-    alvo.hidden = false;
-
-    alvo.classList.add(
-        "modulo-ativo"
-    );
-
-
-    const botoes =
-        document.querySelectorAll(
-            ".modulo-btn"
-        );
-
-
-    botoes.forEach(
-        function (botao) {
-
-            botao.classList.toggle(
-                "ativo",
-                botao.dataset.modulo === modulo
-            );
-
-        }
-    );
-
-
-    window.rpgMesa.moduloAtual =
-        modulo;
-
-
-    atualizarTituloModuloCompleto(
-        modulo
-    );
-
-
-    /*
-     * Alguns módulos precisam atualizar
-     * seu conteúdo quando são abertos.
-     */
-
-    if (modulo === "personagem") {
-
-        renderizarPersonagemMesa();
-
-    }
-
-
-    if (modulo === "status") {
-
-        renderizarStatusMesa();
-
-    }
-
-
-    if (modulo === "afinidade") {
-
-        renderizarAfinidadeMesa();
-
-    }
-
-
-    if (modulo === "inventario") {
-
-        renderizarInventarioMesa();
-
-    }
-
-
-    if (modulo === "combate") {
-
-        renderizarCombateMesa();
-
-    }
-
-
-    if (modulo === "cte") {
-
-        renderizarCTEMesa();
-
-    }
-
-
-    if (modulo === "dungeon") {
-
-        renderizarDungeonMesa();
-
-    }
-
-
-    if (modulo === "mapa") {
-
-        renderizarMapaMesa();
-
-    }
-
-}
-
-
-/* =========================================================
-   TÍTULO
-========================================================= */
-
-function atualizarTituloModuloCompleto(
-    modulo
-) {
-
-    const elemento =
-        document.getElementById(
-            "tela-mesa-titulo"
-        );
-
-
-    if (!elemento) {
-
-        return;
-
-    }
-
-
-    elemento.textContent =
-        CONFIGURACAO_MODULOS_MESA[
-            modulo
-        ]?.titulo ||
-        "Mesa RPG";
-
-}
-
-
-/* =========================================================
-   SUBSTITUIR A NAVEGAÇÃO DA PARTE 1
-========================================================= */
-
-function configurarNavegacaoCompleta() {
-
-    const botoes =
-        document.querySelectorAll(
-            ".modulo-btn"
-        );
-
-
-    botoes.forEach(
-        function (botao) {
-
-            /*
-             * Clona o botão para remover
-             * listeners anteriores.
-             */
-
-            const novoBotao =
-                botao.cloneNode(true);
-
-
-            botao.parentNode.replaceChild(
-                novoBotao,
-                botao
+        const hpPercent =
+            Math.max(
+                0,
+                Math.min(100, hp)
             );
 
 
-            novoBotao.addEventListener(
-                "click",
-                function () {
-
-                    abrirModuloCompleto(
-                        novoBotao.dataset.modulo
-                    );
-
-                }
+        const manaPercent =
+            Math.max(
+                0,
+                Math.min(100, mana)
             );
 
-        }
-    );
 
-}
+        modulo.innerHTML = `
+
+            <div class="status-barras">
+
+                <div class="status-linha">
+
+                    <div class="status-linha-header">
+                        <span>❤️ Vida</span>
+                        <strong>${hp}</strong>
+                    </div>
+
+                    <div class="status-bar">
+
+                        <div
+                            class="status-bar-fill"
+                            style="width:${hpPercent}%"
+                        ></div>
+
+                    </div>
+
+                </div>
 
 
-/* =========================================================
-   INTERFACE
-========================================================= */
+                <div class="status-linha">
 
-function renderizarInterfaceMesa() {
+                    <div class="status-linha-header">
+                        <span>💧 Mana</span>
+                        <strong>${mana}</strong>
+                    </div>
 
-    const modulo =
-        document.getElementById(
-            "modulo-interface"
-        );
+                    <div class="status-bar">
 
+                        <div
+                            class="status-bar-fill"
+                            style="width:${manaPercent}%"
+                        ></div>
 
-    if (!modulo) {
+                    </div>
 
-        return;
+                </div>
 
-    }
+            </div>
 
-
-    modulo.innerHTML =
-        `
             <div class="modulo-placeholder">
 
-                <span class="modulo-icone">
-                    🎲
+                <strong>
+                    Status somente leitura
+                </strong>
+
+                <span>
+                    Os valores são exibidos na mesa,
+                    mas não podem ser alterados pelo
+                    jogador.
                 </span>
 
+            </div>
+        `;
+    }
+
+
+    /* ======================================================
+       AFINIDADE
+    ====================================================== */
+
+    function renderizarAfinidade() {
+
+        const modulo =
+            $("#modulo-afinidade");
+
+        if (!modulo) {
+            return;
+        }
+
+
+        const jogador =
+            estado.jogadorAtual;
+
+
+        const afinidade =
+            jogador?.afinidade ||
+            "Não definida";
+
+
+        modulo.innerHTML = `
+
+            <div class="afinidade-card">
+
+                <div class="afinidade-icone">
+                    ✨
+                </div>
+
                 <h3>
-                    Mesa de RPG
+                    ${escaparHTML(
+                        afinidade
+                    )}
                 </h3>
 
                 <p>
-                    A Mesa está pronta.
+                    Afinidade atual do personagem
                 </p>
 
             </div>
         `;
-
-}
-
-
-/* =========================================================
-   PERSONAGEM
-========================================================= */
-
-function renderizarPersonagemMesa() {
-
-    const container =
-        document.getElementById(
-            "personagem-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
     }
 
 
-    const personagem =
-        obterMeuPersonagem();
+    /* ======================================================
+       INVENTÁRIO
+    ====================================================== */
 
+    function renderizarInventario() {
 
-    if (!personagem) {
+        const modulo =
+            $("#modulo-inventario");
 
-        container.innerHTML =
-            `
-                <div class="mesa-dados-vazio">
+        if (!modulo) {
+            return;
+        }
 
-                    <strong>
-                        Nenhum personagem carregado
-                    </strong>
 
-                    <span>
-                        O personagem aparecerá aqui
-                        quando estiver disponível.
-                    </span>
+        const jogador =
+            estado.jogadorAtual;
 
-                </div>
-            `;
 
-        return;
+        const itens =
+            jogador?.inventario || [];
 
-    }
 
+        if (!itens.length) {
 
-    const nome =
-        personagem.name ||
-        personagem.nome ||
-        "Personagem";
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
 
-
-    const raca =
-        personagem.race ||
-        personagem.raca ||
-        "—";
-
-
-    const classe =
-        personagem.class ||
-        personagem.classe ||
-        "—";
-
-
-    const afinidade =
-        personagem.affinity ||
-        personagem.afinidade ||
-        "—";
-
-
-    container.innerHTML =
-        `
-            <div class="mesa-personagem-card">
-
-                <div class="mesa-dado">
-                    <span>PERSONAGEM</span>
-                    <strong>
-                        ${escaparHTML(nome)}
-                    </strong>
-                </div>
-
-                <div class="mesa-dados-grid">
-
-                    <div class="mesa-dado">
-                        <span>RAÇA</span>
-                        <strong>
-                            ${escaparHTML(raca)}
-                        </strong>
-                    </div>
-
-                    <div class="mesa-dado">
-                        <span>CLASSE</span>
-                        <strong>
-                            ${escaparHTML(classe)}
-                        </strong>
-                    </div>
-
-                    <div class="mesa-dado">
-                        <span>AFINIDADE</span>
-                        <strong>
-                            ${escaparHTML(afinidade)}
-                        </strong>
-                    </div>
-
-                </div>
-
-            </div>
-        `;
-
-}
-
-
-/* =========================================================
-   OBTER MEU PERSONAGEM
-========================================================= */
-
-function obterMeuPersonagem() {
-
-    if (
-        !window.rpgAuth
-    ) {
-
-        return null;
-
-    }
-
-
-    const usuario =
-        window.rpgAuth.user;
-
-
-    const personagens =
-        window.rpgAuth.campaignCharacters;
-
-
-    if (
-        !Array.isArray(personagens) ||
-        personagens.length === 0
-    ) {
-
-        return null;
-
-    }
-
-
-    if (!usuario) {
-
-        return personagens[0];
-
-    }
-
-
-    return (
-        personagens.find(
-            function (personagem) {
-
-                return (
-                    personagem.user_id ===
-                    usuario.id
-                );
-
-            }
-        ) ||
-        personagens[0]
-    );
-
-}
-
-
-/* =========================================================
-   STATUS
-========================================================= */
-
-function renderizarStatusMesa() {
-
-    const container =
-        document.getElementById(
-            "status-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const personagem =
-        obterMeuPersonagem();
-
-
-    if (!personagem) {
-
-        container.innerHTML =
-            `
-                <div class="mesa-dados-vazio">
-
-                    <strong>
-                        Status indisponível
-                    </strong>
-
-                    <span>
-                        Nenhum personagem carregado.
-                    </span>
-
-                </div>
-            `;
-
-        return;
-
-    }
-
-
-    const status =
-        criarStatusDoPersonagem(
-            personagem
-        );
-
-
-    container.innerHTML =
-        `
-            <div class="mesa-status-grid">
-
-                ${criarBarraStatus(
-                    "❤️",
-                    "HP",
-                    status.hp,
-                    status.hpMax
-                )}
-
-                ${criarBarraStatus(
-                    "💧",
-                    "MP",
-                    status.mp,
-                    status.mpMax
-                )}
-
-                ${criarBarraStatus(
-                    "⚡",
-                    "EST",
-                    status.est,
-                    status.estMax
-                )}
-
-            </div>
-        `;
-
-}
-
-
-/* =========================================================
-   BARRA DE STATUS
-========================================================= */
-
-function criarBarraStatus(
-    icone,
-    nome,
-    atual,
-    maximo
-) {
-
-    const porcentagem =
-        maximo > 0
-            ? Math.max(
-                0,
-                Math.min(
-                    100,
-                    (atual / maximo) * 100
-                )
-            )
-            : 0;
-
-
-    return `
-        <div class="mesa-status-item">
-
-            <div class="mesa-status-header">
-
-                <span>
-                    ${icone} ${nome}
-                </span>
-
-                <strong>
-                    ${atual}/${maximo}
-                </strong>
-
-            </div>
-
-            <div class="mesa-status-bar">
-
-                <div
-                    class="mesa-status-progresso"
-                    style="width:${porcentagem}%"
-                ></div>
-
-            </div>
-
-        </div>
-    `;
-
-}
-
-
-/* =========================================================
-   AFINIDADE
-========================================================= */
-
-function renderizarAfinidadeMesa() {
-
-    const container =
-        document.getElementById(
-            "afinidade-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const personagem =
-        obterMeuPersonagem();
-
-
-    const afinidade =
-        personagem?.affinity ||
-        personagem?.afinidade ||
-        "Nenhuma definida";
-
-
-    container.innerHTML =
-        `
-            <div class="mesa-afinidade-card">
-
-                <span class="mesa-afinidade-icone">
-                    ✨
-                </span>
-
-                <span class="mesa-label">
-                    AFINIDADE
-                </span>
-
-                <strong>
-                    ${escaparHTML(
-                        afinidade
-                    )}
-                </strong>
-
-            </div>
-        `;
-
-}
-
-
-/* =========================================================
-   INVENTÁRIO
-========================================================= */
-
-function renderizarInventarioMesa() {
-
-    const container =
-        document.getElementById(
-            "inventario-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    const personagem =
-        obterMeuPersonagem();
-
-
-    const inventario =
-        personagem?.inventory ||
-        personagem?.inventario ||
-        [];
-
-
-    if (
-        !Array.isArray(inventario) ||
-        inventario.length === 0
-    ) {
-
-        container.innerHTML =
-            `
-                <div class="mesa-dados-vazio">
-
-                    <span class="modulo-icone">
+                    <div class="modulo-icone">
                         🎒
-                    </span>
+                    </div>
 
                     <strong>
                         Inventário vazio
                     </strong>
 
                     <span>
-                        Nenhum item disponível.
+                        Itens entregues pelo Mestre
+                        aparecerão aqui.
                     </span>
 
                 </div>
             `;
 
-        return;
+            return;
+        }
 
-    }
 
+        modulo.innerHTML = `
 
-    container.innerHTML =
-        `
-            <div class="mesa-inventario-lista">
+            <div class="inventario-grid">
 
-                ${inventario.map(
-                    function (item) {
+                ${itens.map(
+                    (item, indice) => {
 
                         const nome =
-                            item.name ||
-                            item.nome ||
-                            "Item";
+                            typeof item === "string"
+                                ? item
+                                : item.nome ||
+                                  item.name ||
+                                  `Item ${indice + 1}`;
+
 
                         const quantidade =
-                            item.quantity ||
-                            item.quantidade ||
-                            1;
+                            typeof item === "object"
+                                ? item.quantidade ||
+                                  item.quantity ||
+                                  1
+                                : 1;
 
 
                         return `
-                            <div
-                                class="mesa-item-inventario"
-                            >
 
-                                <span>
-                                    🎒
+                            <div class="item-inventario">
+
+                                <span class="item-icone">
+                                    🎁
                                 </span>
 
                                 <strong>
-                                    ${escaparHTML(nome)}
+                                    ${escaparHTML(
+                                        nome
+                                    )}
                                 </strong>
 
                                 <small>
@@ -2493,950 +1370,774 @@ function renderizarInventarioMesa() {
 
                             </div>
                         `;
-
                     }
                 ).join("")}
 
             </div>
         `;
-
-}
-
-
-/* =========================================================
-   COMBATE
-========================================================= */
-
-const estadoCombateMesa = {
-
-    ativo: false,
-
-    turno: 1,
-
-    alvo: null,
-
-    log: []
-
-};
-
-
-function renderizarCombateMesa() {
-
-    const container =
-        document.getElementById(
-            "combate-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
     }
 
 
-    container.innerHTML =
-        `
-            <div class="mesa-combate">
+    /* ======================================================
+       MAPA
+    ====================================================== */
 
-                <div class="mesa-combate-status">
+    function renderizarMapa() {
 
-                    <span>
-                        ⚔️ COMBATE
-                    </span>
+        const modulo =
+            $("#modulo-mapa");
+
+        if (!modulo) {
+            return;
+        }
+
+
+        modulo.innerHTML = `
+
+            <div class="mapa-area">
+
+                <div class="mapa-placeholder">
+
+                    🗺️
+
+                    <br><br>
 
                     <strong>
-                        ${
-                            estadoCombateMesa.ativo
-                                ? "EM ANDAMENTO"
-                                : "AGUARDANDO"
-                        }
+                        Mapa do Mestre
                     </strong>
 
-                </div>
-
-
-                <div class="mesa-combate-acoes">
-
-                    <button
-                        type="button"
-                        data-combate="iniciar"
-                    >
-                        ⚔️ Iniciar
-                    </button>
-
-                    <button
-                        type="button"
-                        data-combate="atacar"
-                    >
-                        🗡️ Ataque
-                    </button>
-
-                    <button
-                        type="button"
-                        data-combate="proximo-turno"
-                    >
-                        ⏭️ Próximo turno
-                    </button>
-
-                    <button
-                        type="button"
-                        data-combate="encerrar"
-                    >
-                        🛑 Encerrar
-                    </button>
-
-                </div>
-
-
-                <div
-                    id="mesa-combate-log"
-                    class="mesa-combate-log"
-                ></div>
-
-            </div>
-        `;
-
-
-    configurarBotoesCombate();
-
-    atualizarLogCombate();
-
-}
-
-
-/* =========================================================
-   BOTÕES DE COMBATE
-========================================================= */
-
-function configurarBotoesCombate() {
-
-    document
-        .querySelectorAll(
-            "[data-combate]"
-        )
-        .forEach(
-            function (botao) {
-
-                botao.addEventListener(
-                    "click",
-                    function () {
-
-                        executarAcaoCombate(
-                            botao.dataset.combate
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   AÇÃO DE COMBATE
-========================================================= */
-
-function executarAcaoCombate(
-    acao
-) {
-
-    if (
-        acao === "iniciar"
-    ) {
-
-        estadoCombateMesa.ativo =
-            true;
-
-        estadoCombateMesa.turno =
-            1;
-
-        adicionarLogCombate(
-            "⚔️ Combate iniciado."
-        );
-
-        definirEstadoMesa(
-            "combat"
-        );
-
-    }
-
-
-    if (
-        acao === "atacar"
-    ) {
-
-        if (
-            !estadoCombateMesa.ativo
-        ) {
-
-            adicionarLogCombate(
-                "⚠️ Nenhum combate ativo."
-            );
-
-            return;
-
-        }
-
-
-        adicionarLogCombate(
-            "🗡️ Ataque realizado."
-        );
-
-    }
-
-
-    if (
-        acao === "proximo-turno"
-    ) {
-
-        if (
-            !estadoCombateMesa.ativo
-        ) {
-
-            return;
-
-        }
-
-
-        estadoCombateMesa.turno++;
-
-        adicionarLogCombate(
-            `⏭️ Turno ${estadoCombateMesa.turno}.`
-        );
-
-    }
-
-
-    if (
-        acao === "encerrar"
-    ) {
-
-        estadoCombateMesa.ativo =
-            false;
-
-        adicionarLogCombate(
-            "🛑 Combate encerrado."
-        );
-
-        definirEstadoMesa(
-            "interface"
-        );
-
-    }
-
-
-    renderizarCombateMesa();
-
-}
-
-
-/* =========================================================
-   LOG DE COMBATE
-========================================================= */
-
-function adicionarLogCombate(
-    mensagem
-) {
-
-    estadoCombateMesa.log.push(
-        mensagem
-    );
-
-
-    if (
-        estadoCombateMesa.log.length > 30
-    ) {
-
-        estadoCombateMesa.log.shift();
-
-    }
-
-}
-
-
-function atualizarLogCombate() {
-
-    const log =
-        document.getElementById(
-            "mesa-combate-log"
-        );
-
-
-    if (!log) {
-
-        return;
-
-    }
-
-
-    log.innerHTML =
-        estadoCombateMesa.log
-            .map(
-                function (mensagem) {
-
-                    return `
-                        <div>
-                            ${escaparHTML(mensagem)}
-                        </div>
-                    `;
-
-                }
-            )
-            .join("");
-
-}
-
-
-/* =========================================================
-   CTE
-========================================================= */
-
-const estadoCTEMesa = {
-
-    ativo: false,
-
-    tempo: 10,
-
-    intervalo: null,
-
-    pergunta: "",
-
-    opcoes: [],
-
-    resposta: null
-
-};
-
-
-/* =========================================================
-   RENDERIZAR CTE
-========================================================= */
-
-function renderizarCTEMesa() {
-
-    const container =
-        document.getElementById(
-            "cte-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
-    }
-
-
-    if (
-        !estadoCTEMesa.ativo
-    ) {
-
-        container.innerHTML =
-            `
-                <div class="cte-placeholder">
-
-                    <span class="modulo-icone">
-                        ⚡
-                    </span>
-
-                    <h3>
-                        CTE
-                    </h3>
-
-                    <p>
-                        Nenhum evento em andamento.
-                    </p>
-
-                </div>
-            `;
-
-        return;
-
-    }
-
-
-    container.innerHTML =
-        `
-            <div class="mesa-cte">
-
-                <div class="mesa-cte-topo">
+                    <br><br>
 
                     <span>
-                        ⚡ EVENTO CTE
+                        O mapa poderá ser controlado
+                        pelo Mestre e visualizado
+                        pelos jogadores.
                     </span>
-
-                    <strong id="cte-contador">
-                        ${estadoCTEMesa.tempo}
-                    </strong>
-
-                </div>
-
-
-                <div class="mesa-cte-pergunta">
-
-                    <h3>
-                        ${
-                            escaparHTML(
-                                estadoCTEMesa.pergunta ||
-                                "Escolha uma opção."
-                            )
-                        }
-                    </h3>
-
-                </div>
-
-
-                <div
-                    class="mesa-cte-opcoes"
-                >
-
-                    ${
-                        estadoCTEMesa.opcoes
-                            .map(
-                                function (
-                                    opcao,
-                                    indice
-                                ) {
-
-                                    return `
-                                        <button
-                                            type="button"
-                                            data-cte-opcao="${indice}"
-                                        >
-                                            ${escaparHTML(opcao)}
-                                        </button>
-                                    `;
-
-                                }
-                            )
-                            .join("")
-                    }
 
                 </div>
 
             </div>
         `;
-
-
-    document
-        .querySelectorAll(
-            "[data-cte-opcao]"
-        )
-        .forEach(
-            function (botao) {
-
-                botao.addEventListener(
-                    "click",
-                    function () {
-
-                        responderCTE(
-                            Number(
-                                botao.dataset.cteOpcao
-                            )
-                        );
-
-                    }
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   INICIAR CTE
-========================================================= */
-
-function iniciarCTE(
-    pergunta,
-    opcoes,
-    tempo
-) {
-
-    encerrarCTE();
-
-
-    estadoCTEMesa.ativo =
-        true;
-
-    estadoCTEMesa.pergunta =
-        pergunta ||
-        "Escolha uma opção.";
-
-    estadoCTEMesa.opcoes =
-        Array.isArray(opcoes)
-            ? opcoes
-            : [
-                "Opção 1",
-                "Opção 2"
-            ];
-
-    estadoCTEMesa.tempo =
-        Number(tempo) > 0
-            ? Number(tempo)
-            : 10;
-
-    estadoCTEMesa.resposta =
-        null;
-
-
-    definirEstadoMesa(
-        "cte"
-    );
-
-
-    abrirModuloCompleto(
-        "cte"
-    );
-
-
-    renderizarCTEMesa();
-
-
-    estadoCTEMesa.intervalo =
-        setInterval(
-            function () {
-
-                estadoCTEMesa.tempo--;
-
-
-                atualizarContadorCTE();
-
-
-                if (
-                    estadoCTEMesa.tempo <= 0
-                ) {
-
-                    encerrarCTE(
-                        "⏱️ Tempo esgotado."
-                    );
-
-                }
-
-            },
-            1000
-        );
-
-}
-
-
-/* =========================================================
-   CONTADOR CTE
-========================================================= */
-
-function atualizarContadorCTE() {
-
-    const contador =
-        document.getElementById(
-            "cte-contador"
-        );
-
-
-    if (
-        contador
-    ) {
-
-        contador.textContent =
-            String(
-                estadoCTEMesa.tempo
-            );
-
-    }
-
-}
-
-
-/* =========================================================
-   RESPONDER CTE
-========================================================= */
-
-function responderCTE(
-    indice
-) {
-
-    if (
-        !estadoCTEMesa.ativo
-    ) {
-
-        return;
-
     }
 
 
-    const opcao =
-        estadoCTEMesa.opcoes[indice];
+    /* ======================================================
+       COMBATE
+    ====================================================== */
+
+    function iniciarCombate() {
+
+        estado.combate.ativo =
+            true;
+
+        estado.combate.turno =
+            1;
+
+        estado.modo =
+            "combate";
 
 
-    estadoCTEMesa.resposta =
-        opcao ||
-        null;
+        estado.combate.log = [
+            "⚔️ O combate começou."
+        ];
 
 
-    mostrarNotificacaoMesa(
-        `⚡ Escolha: ${opcao}`
-    );
-
-
-    encerrarCTE(
-        "⚡ CTE encerrado."
-    );
-
-}
-
-
-/* =========================================================
-   ENCERRAR CTE
-========================================================= */
-
-function encerrarCTE(
-    mensagem
-) {
-
-    if (
-        estadoCTEMesa.intervalo
-    ) {
-
-        clearInterval(
-            estadoCTEMesa.intervalo
+        atualizarEstadoMesa(
+            "COMBATE",
+            "estado-combate"
         );
 
-        estadoCTEMesa.intervalo =
-            null;
 
+        $("#rpg-mesa")?.classList.remove(
+            "modo-boss"
+        );
+
+
+        abrirModulo("combate");
+
+
+        mostrarNotificacao(
+            "⚔️ Combate iniciado!"
+        );
     }
 
 
-    const estavaAtivo =
-        estadoCTEMesa.ativo;
+    function encerrarCombate() {
+
+        estado.combate.ativo =
+            false;
+
+        estado.combate.turno =
+            0;
+
+        estado.modo =
+            "normal";
 
 
-    estadoCTEMesa.ativo =
-        false;
+        atualizarEstadoMesa(
+            "MESA ONLINE"
+        );
 
 
-    if (
-        estavaAtivo &&
-        mensagem
-    ) {
+        renderizarCombate();
 
-        mostrarNotificacaoMesa(
+
+        mostrarNotificacao(
+            "Combate encerrado."
+        );
+    }
+
+
+    function adicionarLogCombate(mensagem) {
+
+        estado.combate.log.push(
             mensagem
         );
 
+        renderizarCombate();
     }
 
 
-    renderizarCTEMesa();
+    function renderizarCombate() {
 
-}
+        const modulo =
+            $("#modulo-combate");
 
-
-/* =========================================================
-   DUNGEON
-========================================================= */
-
-const estadoDungeonMesa = {
-
-    ativo: false,
-
-    nome: "",
-
-    descricao: "",
-
-    andar: 1
-
-};
+        if (!modulo) {
+            return;
+        }
 
 
-function renderizarDungeonMesa() {
+        if (!estado.combate.ativo) {
 
-    const container =
-        document.getElementById(
-            "dungeon-conteudo"
-        );
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
 
+                    <div class="modulo-icone">
+                        ⚔️
+                    </div>
 
-    if (!container) {
+                    <strong>
+                        Nenhum combate ativo
+                    </strong>
 
-        return;
-
-    }
-
-
-    if (
-        !estadoDungeonMesa.ativo
-    ) {
-
-        container.innerHTML =
-            `
-                <div class="dungeon-placeholder">
-
-                    <span class="modulo-icone">
-                        🏰
+                    <span>
+                        O Mestre poderá iniciar
+                        um combate pela mesa.
                     </span>
-
-                    <h3>
-                        Dungeon
-                    </h3>
-
-                    <p>
-                        Nenhuma dungeon ativa.
-                    </p>
 
                 </div>
             `;
 
-        return;
+            return;
+        }
 
-    }
 
+        modulo.innerHTML = `
 
-    container.innerHTML =
-        `
-            <div class="mesa-dungeon-card">
-
-                <span class="modulo-icone">
-                    🏰
-                </span>
-
-                <span class="mesa-label">
-                    DUNGEON
-                </span>
-
-                <h3>
-                    ${escaparHTML(
-                        estadoDungeonMesa.nome
-                    )}
-                </h3>
-
-                <p>
-                    ${escaparHTML(
-                        estadoDungeonMesa.descricao
-                    )}
-                </p>
+            <div class="combate-header">
 
                 <strong>
-                    Andar ${estadoDungeonMesa.andar}
+                    ⚔️ COMBATE ATIVO
                 </strong>
 
+                <span>
+                    Turno ${estado.combate.turno}
+                </span>
+
             </div>
+
+
+            <div class="combate-log">
+
+                ${
+                    estado.combate.log.length
+                    ? estado.combate.log
+                        .map(
+                            item => `
+                                <div class="combate-log-item">
+                                    ${escaparHTML(item)}
+                                </div>
+                            `
+                        )
+                        .join("")
+                    : `
+                        <div class="combate-log-item">
+                            Nenhuma ação registrada.
+                        </div>
+                    `
+                }
+
+            </div>
+
         `;
-
-}
-
-
-/* =========================================================
-   CRIAR DUNGEON
-========================================================= */
-
-function criarDungeon(
-    nome,
-    descricao
-) {
-
-    estadoDungeonMesa.ativo =
-        true;
-
-    estadoDungeonMesa.nome =
-        nome ||
-        "Dungeon";
-
-    estadoDungeonMesa.descricao =
-        descricao ||
-        "Uma nova aventura começou.";
-
-    estadoDungeonMesa.andar =
-        1;
-
-
-    abrirModuloCompleto(
-        "dungeon"
-    );
-
-
-    renderizarDungeonMesa();
-
-
-    mostrarNotificacaoMesa(
-        "🏰 Dungeon criada."
-    );
-
-}
-
-
-/* =========================================================
-   MAPA
-========================================================= */
-
-function renderizarMapaMesa() {
-
-    const container =
-        document.getElementById(
-            "mapa-conteudo"
-        );
-
-
-    if (!container) {
-
-        return;
-
     }
 
 
-    container.innerHTML =
-        `
-            <div class="mesa-mapa-card">
+    /* ======================================================
+       CTE
+    ====================================================== */
 
-                <span class="modulo-icone">
-                    🗺️
-                </span>
+    function iniciarCTE(
+        segundos = 30,
+        titulo = "Evento em andamento",
+        descricao =
+            "A mesa está em um evento de tempo limitado."
+    ) {
 
-                <h3>
-                    Mapa da Mesa
-                </h3>
-
-                <p>
-                    Área preparada para o mapa
-                    do Mestre.
-                </p>
-
-                <button
-                    type="button"
-                    id="abrir-mapa-mestre"
-                >
-                    🗺️ Abrir mapa
-                </button>
-
-            </div>
-        `;
+        pararCTE();
 
 
-    const botao =
-        document.getElementById(
-            "abrir-mapa-mestre"
+        estado.cte.ativo =
+            true;
+
+        estado.cte.segundos =
+            segundos;
+
+        estado.cte.segundosRestantes =
+            segundos;
+
+        estado.cte.titulo =
+            titulo;
+
+        estado.cte.descricao =
+            descricao;
+
+        estado.modo =
+            "cte";
+
+
+        atualizarEstadoMesa(
+            "CTE",
+            "estado-cte"
         );
 
 
-    if (botao) {
+        abrirModulo("cte");
+
+
+        estado.cte.intervalo =
+            setInterval(() => {
+
+                estado.cte.segundosRestantes--;
+
+                renderizarCTE();
+
+
+                if (
+                    estado.cte.segundosRestantes <= 0
+                ) {
+
+                    finalizarCTE();
+                }
+
+            }, 1000);
+
+
+        mostrarNotificacao(
+            `⏱️ ${titulo}`
+        );
+    }
+
+
+    function pararCTE() {
+
+        if (
+            estado.cte.intervalo
+        ) {
+
+            clearInterval(
+                estado.cte.intervalo
+            );
+
+            estado.cte.intervalo =
+                null;
+        }
+    }
+
+
+    function finalizarCTE() {
+
+        pararCTE();
+
+
+        estado.cte.ativo =
+            false;
+
+        estado.cte.segundosRestantes =
+            0;
+
+        estado.modo =
+            "normal";
+
+
+        atualizarEstadoMesa(
+            "MESA ONLINE"
+        );
+
+
+        renderizarCTE();
+
+
+        mostrarNotificacao(
+            "⏱️ CTE encerrada."
+        );
+    }
+
+
+    function renderizarCTE() {
+
+        const modulo =
+            $("#modulo-cte");
+
+        if (!modulo) {
+            return;
+        }
+
+
+        if (!estado.cte.ativo) {
+
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
+
+                    <div class="modulo-icone">
+                        ⏱️
+                    </div>
+
+                    <strong>
+                        Nenhum CTE ativo
+                    </strong>
+
+                    <span>
+                        Eventos temporizados aparecerão aqui.
+                    </span>
+
+                </div>
+            `;
+
+            return;
+        }
+
+
+        const minutos =
+            Math.floor(
+                estado.cte.segundosRestantes /
+                60
+            );
+
+
+        const segundos =
+            estado.cte.segundosRestantes %
+            60;
+
+
+        const tempo =
+            `${String(minutos).padStart(2, "0")}:${String(segundos).padStart(2, "0")}`;
+
+
+        modulo.innerHTML = `
+
+            <div class="cte-circulo">
+
+                <strong>
+                    ${tempo}
+                </strong>
+
+                <span>
+                    TEMPO
+                </span>
+
+            </div>
+
+
+            <div class="cte-status">
+
+                ${escaparHTML(
+                    estado.cte.titulo
+                )}
+
+            </div>
+
+
+            <div class="cte-opcoes">
+
+                <div class="cte-opcao">
+                    ${escaparHTML(
+                        estado.cte.descricao
+                    )}
+                </div>
+
+            </div>
+        `;
+    }
+
+
+    /* ======================================================
+       DUNGEON
+    ====================================================== */
+
+    function iniciarDungeon(
+        nome = "Dungeon",
+        descricao =
+            "A exploração começou."
+    ) {
+
+        estado.dungeon.ativa =
+            true;
+
+        estado.dungeon.nome =
+            nome;
+
+        estado.dungeon.descricao =
+            descricao;
+
+
+        estado.modo =
+            "dungeon";
+
+
+        atualizarEstadoMesa(
+            "DUNGEON"
+        );
+
+
+        abrirModulo(
+            "dungeon"
+        );
+
+
+        mostrarNotificacao(
+            `🏰 ${nome}`
+        );
+    }
+
+
+    function renderizarDungeon() {
+
+        const modulo =
+            $("#modulo-dungeon");
+
+        if (!modulo) {
+            return;
+        }
+
+
+        if (!estado.dungeon.ativa) {
+
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
+
+                    <div class="modulo-icone">
+                        🏰
+                    </div>
+
+                    <strong>
+                        Dungeon inativa
+                    </strong>
+
+                    <span>
+                        A exploração poderá ser iniciada
+                        pelo Mestre.
+                    </span>
+
+                </div>
+            `;
+
+            return;
+        }
+
+
+        modulo.innerHTML = `
+
+            <div class="modulo-placeholder">
+
+                <div class="modulo-icone">
+                    🏰
+                </div>
+
+                <strong>
+                    ${escaparHTML(
+                        estado.dungeon.nome
+                    )}
+                </strong>
+
+                <span>
+                    ${escaparHTML(
+                        estado.dungeon.descricao
+                    )}
+                </span>
+
+            </div>
+        `;
+    }
+
+
+    /* ======================================================
+       BOSS
+    ====================================================== */
+
+    function iniciarBoss(
+        nome = "BOSS",
+        descricao =
+            "Um grande inimigo apareceu."
+    ) {
+
+        encerrarBoss();
+
+
+        estado.boss.ativo =
+            true;
+
+        estado.boss.nome =
+            nome;
+
+        estado.boss.descricao =
+            descricao;
+
+        estado.modo =
+            "boss";
+
+
+        const mesa =
+            $("#rpg-mesa");
+
+        if (mesa) {
+
+            mesa.classList.add(
+                "modo-boss"
+            );
+        }
+
+
+        atualizarEstadoMesa(
+            "BOSS",
+            "estado-combate"
+        );
+
+
+        abrirModulo(
+            "boss"
+        );
+
+
+        mostrarNotificacao(
+            `👹 ${nome} apareceu!`
+        );
+
+
+        /*
+         * Retorno automático.
+         */
+
+        estado.boss.retornoAutomatico =
+            setTimeout(() => {
+
+                encerrarBoss();
+
+            }, 15000);
+    }
+
+
+    function encerrarBoss() {
+
+        if (
+            estado.boss.retornoAutomatico
+        ) {
+
+            clearTimeout(
+                estado.boss.retornoAutomatico
+            );
+
+            estado.boss.retornoAutomatico =
+                null;
+        }
+
+
+        estado.boss.ativo =
+            false;
+
+        estado.modo =
+            "normal";
+
+
+        const mesa =
+            $("#rpg-mesa");
+
+        if (mesa) {
+
+            mesa.classList.remove(
+                "modo-boss"
+            );
+        }
+
+
+        atualizarEstadoMesa(
+            "MESA ONLINE"
+        );
+
+
+        renderizarBoss();
+    }
+
+
+    function renderizarBoss() {
+
+        const modulo =
+            $("#modulo-boss");
+
+        if (!modulo) {
+            return;
+        }
+
+
+        if (!estado.boss.ativo) {
+
+            modulo.innerHTML = `
+                <div class="modulo-placeholder">
+
+                    <div class="modulo-icone">
+                        👹
+                    </div>
+
+                    <strong>
+                        Nenhum Boss ativo
+                    </strong>
+
+                    <span>
+                        O Mestre poderá ativar um Boss
+                        durante a aventura.
+                    </span>
+
+                </div>
+            `;
+
+            return;
+        }
+
+
+        modulo.innerHTML = `
+
+            <div id="boss-alerta">
+                ⚠️ BOSS APARECEU ⚠️
+            </div>
+
+            <h2 class="boss-nome">
+                ${escaparHTML(
+                    estado.boss.nome
+                )}
+            </h2>
+
+            <p class="boss-descricao">
+                ${escaparHTML(
+                    estado.boss.descricao
+                )}
+            </p>
+
+        `;
+    }
+
+
+    /* ======================================================
+       PAINEL DO MESTRE
+    ====================================================== */
+
+    function verificarSeEhMestre() {
+
+        if (
+            window.rpgAuth &&
+            window.rpgAuth.isMaster
+        ) {
+
+            return true;
+        }
+
+
+        const usuario =
+            window.rpgAuth?.user;
+
+
+        if (!usuario) {
+            return false;
+        }
+
+
+        const id =
+            usuario.id ||
+            usuario.user_id;
+
+
+        if (
+            estado.mestre.id &&
+            id === estado.mestre.id
+        ) {
+
+            return true;
+        }
+
+
+        return false;
+    }
+
+
+    function configurarPainelMestre() {
+
+        const botao =
+            $("#abrir-painel-mestre");
+
+
+        const painel =
+            $("#painel-mestre");
+
+
+        if (!botao || !painel) {
+            return;
+        }
+
+
+        if (!verificarSeEhMestre()) {
+
+            botao.hidden =
+                true;
+
+            painel.hidden =
+                true;
+
+            return;
+        }
+
+
+        botao.hidden =
+            false;
+
+
+        painel.hidden =
+            true;
+
 
         botao.addEventListener(
             "click",
-            function () {
+            () => {
 
-                definirEstadoMesa(
-                    "map"
-                );
+                estado.painelMestreAberto =
+                    !estado.painelMestreAberto;
 
-                mostrarNotificacaoMesa(
-                    "🗺️ Modo mapa ativado."
-                );
 
+                painel.hidden =
+                    !estado.painelMestreAberto;
             }
         );
 
+
+        configurarBotoesMestre();
     }
 
-}
 
+    function configurarBotoesMestre() {
 
-/* =========================================================
-   INICIALIZAÇÃO DA PARTE 2
-========================================================= */
+        /*
+         * Os botões são encontrados pelo
+         * data-acao para evitar dependência
+         * de texto.
+         */
 
-function iniciarParte2Mesa() {
-
-    configurarNavegacaoCompleta();
-
-    renderizarInterfaceMesa();
-
-    prepararRealtime();
-
-}
-
-
-/* =========================================================
-   EXECUTAR
-========================================================= */
-
-if (
-    document.readyState ===
-    "loading"
-) {
-
-    document.addEventListener(
-        "DOMContentLoaded",
-        iniciarParte2Mesa
-    );
-
-} else {
-
-    iniciarParte2Mesa();
-
-}
-
-
-/* =========================================================
-   API — PARTE 2
-========================================================= */
-
-window.rpgMesaAPI.abrirModulo =
-    abrirModuloCompleto;
-
-
-window.rpgMesaAPI.iniciarCombate =
-    function () {
-
-        executarAcaoCombate(
-            "iniciar"
-        );
-
-        abrirModuloCompleto(
-            "combate"
-        );
-
-    };
-
-
-window.rpgMesaAPI.iniciarCTE =
-    iniciarCTE;
-
-
-window.rpgMesaAPI.encerrarCTE =
-    encerrarCTE;
-
-
-window.rpgMesaAPI.criarDungeon =
-    criarDungeon;
-
-
-window.rpgMesaAPI.renderizar =
-    function () {
-
-        renderizarInterfaceMesa();
-
-        renderizarPersonagemMesa();
-
-        renderizarStatusMesa();
-
-        renderizarAfinidadeMesa();
-
-        renderizarInventarioMesa();
-
-        renderizarCombateMesa();
-
-        renderizarCTEMesa();
-
-        renderizarDungeonMesa();
-
-        renderizarMapaMesa();
-
-    };
-
-
-/* =========================================================
-   FIM — PARTE 2/3
-========================================================= */
+        $("[data-acao='normal']
