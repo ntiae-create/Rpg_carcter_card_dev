@@ -1,17 +1,45 @@
 /* =========================================================
-   MESA RPG 2.0
-   CSS EXCLUSIVO DA MESA
-   MOBILE FIRST
-========================================================= */
-
-
-/* =========================================================
-   RESET
+   MESA ONLINE — RPG
+   CSS DEFINITIVO — 8 JOGADORES
 ========================================================= */
 
 * {
     box-sizing: border-box;
 }
+
+:root {
+    --bg: #03050a;
+    --panel: #071026;
+    --panel-2: #0a1430;
+    --panel-3: #0d1a3b;
+
+    --border: #24345c;
+    --border-light: #344878;
+
+    --purple: #7c3aed;
+    --purple-light: #a78bfa;
+    --purple-soft: rgba(124, 58, 237, 0.14);
+
+    --blue: #2563eb;
+    --blue-light: #60a5fa;
+
+    --green: #22c55e;
+    --green-soft: rgba(34, 197, 94, 0.12);
+
+    --yellow: #eab308;
+    --yellow-soft: rgba(234, 179, 8, 0.12);
+
+    --red: #ef4444;
+    --red-soft: rgba(239, 68, 68, 0.12);
+
+    --text: #f5f7ff;
+    --text-soft: #aeb8d0;
+    --text-muted: #69758f;
+}
+
+/* =========================================================
+   BODY
+========================================================= */
 
 html,
 body {
@@ -21,511 +49,85 @@ body {
     width: 100%;
     min-height: 100%;
 
-    background: #03040a;
-    color: #f5f0ff;
+    background:
+        radial-gradient(
+            circle at top,
+            #101b45 0%,
+            #050814 42%,
+            #03050a 100%
+        );
+
+    color: var(--text);
 
     font-family:
         Arial,
         Helvetica,
         sans-serif;
-
-    -webkit-tap-highlight-color: transparent;
 }
 
 body {
+    min-height: 100vh;
     overflow-x: hidden;
 }
 
-button,
-input,
-textarea,
-select {
-    font: inherit;
-}
-
-
 /* =========================================================
-   VARIÁVEIS
-========================================================= */
-
-:root {
-
-    --bg-main: #03040a;
-    --bg-panel: #080b16;
-    --bg-card: #0d1020;
-    --bg-soft: #121629;
-
-    --border: #252a40;
-    --border-light: #343a58;
-
-    --primary: #7c3aed;
-    --primary-light: #a78bfa;
-    --primary-soft: rgba(124, 58, 237, 0.15);
-
-    --text: #f5f0ff;
-    --text-soft: #aaa7bd;
-    --text-muted: #68677a;
-
-    --green: #22c55e;
-    --red: #ef4444;
-    --yellow: #eab308;
-    --blue: #3b82f6;
-
-    --radius-small: 10px;
-    --radius: 16px;
-    --radius-large: 22px;
-
-    --shadow:
-        0 12px 35px rgba(0, 0, 0, 0.45);
-
-    --glow:
-        0 0 25px rgba(124, 58, 237, 0.25);
-}
-
-
-/* =========================================================
-   MESA PRINCIPAL
+   MESA
 ========================================================= */
 
 #rpg-mesa {
-
     position: relative;
 
     width: 100%;
     min-height: 100vh;
 
-    padding-bottom: 25px;
+    padding: 10px;
 
-    background:
-        radial-gradient(
-            circle at top center,
-            #17102b 0%,
-            #080812 32%,
-            #03040a 75%
-        );
+    overflow-x: hidden;
+
+    transition:
+        background 0.35s ease,
+        box-shadow 0.35s ease;
 }
 
-
 /* =========================================================
-   CABEÇALHO
+   HEADER
 ========================================================= */
 
 #mesa-header {
-
-    position: relative;
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 12px;
-
-    padding: 16px;
-
-    border-bottom:
-        1px solid var(--border);
-
-    background:
-        rgba(5, 6, 15, 0.92);
-
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.35);
-
-    backdrop-filter: blur(12px);
-
-    z-index: 10;
-}
-
-
-.mesa-header-info {
+    width: 100%;
 
     display: flex;
-
-    justify-content: space-between;
-
-    align-items: flex-start;
-
-    gap: 15px;
-}
-
-
-.mesa-campanha,
-.mesa-mestre {
-
-    min-width: 0;
-}
-
-
-.mesa-mestre {
-
-    text-align: right;
-}
-
-
-.mesa-label {
-
-    display: block;
-
-    margin-bottom: 4px;
-
-    color: var(--text-muted);
-
-    font-size: 9px;
-
-    font-weight: bold;
-
-    letter-spacing: 2px;
-}
-
-
-.mesa-campanha h1 {
-
-    margin: 0;
-
-    color: var(--text);
-
-    font-size: 19px;
-
-    line-height: 1.2;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-}
-
-
-.mesa-mestre strong {
-
-    display: block;
-
-    max-width: 130px;
-
-    color: var(--primary-light);
-
-    font-size: 13px;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-}
-
-
-/* =========================================================
-   ESTADO DA MESA
-========================================================= */
-
-#mesa-estado {
-
-    display: inline-flex;
 
     align-items: center;
-
-    align-self: flex-start;
-
-    gap: 7px;
-
-    padding: 6px 10px;
-
-    border-radius: 999px;
-
-    border:
-        1px solid var(--border);
-
-    background:
-        rgba(255, 255, 255, 0.025);
-
-    color: var(--text-soft);
-
-    font-size: 9px;
-
-    font-weight: bold;
-
-    letter-spacing: 1px;
-}
-
-
-#mesa-estado-indicador {
-
-    width: 7px;
-    height: 7px;
-
-    border-radius: 50%;
-
-    background: var(--green);
-
-    box-shadow:
-        0 0 8px rgba(34, 197, 94, 0.7);
-}
-
-
-.estado-interface #mesa-estado-indicador {
-    background: var(--green);
-}
-
-
-.estado-combate #mesa-estado-indicador {
-    background: var(--red);
-
-    box-shadow:
-        0 0 10px rgba(239, 68, 68, 0.8);
-}
-
-
-.estado-cte #mesa-estado-indicador {
-    background: var(--yellow);
-
-    box-shadow:
-        0 0 10px rgba(234, 179, 8, 0.8);
-}
-
-
-.estado-mapa #mesa-estado-indicador {
-    background: var(--blue);
-
-    box-shadow:
-        0 0 10px rgba(59, 130, 246, 0.8);
-}
-
-
-/* =========================================================
-   LAYOUT DA MESA
-========================================================= */
-
-#mesa-layout {
-
-    display: flex;
-
-    flex-direction: column;
-
-    width: 100%;
-
-    padding: 12px;
+    justify-content: space-between;
 
     gap: 12px;
-}
 
+    margin-bottom: 10px;
 
-/* =========================================================
-   JOGADORES
-========================================================= */
-
-.jogadores-container {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 8px;
-
-    width: 100%;
-}
-
-
-.jogadores-lateral {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-
-    gap: 8px;
-
-    width: 100%;
-}
-
-
-/* =========================================================
-   CARD DO JOGADOR
-   Preparado para elementos criados pelo JS
-========================================================= */
-
-.jogador-card {
-
-    position: relative;
-
-    min-height: 105px;
-
-    padding: 10px;
-
-    overflow: hidden;
+    padding: 12px 14px;
 
     border:
         1px solid var(--border);
 
-    border-radius:
-        var(--radius);
+    border-radius: 14px;
 
     background:
         linear-gradient(
             145deg,
-            #111528,
-            #090b15
+            rgba(13, 26, 59, 0.95),
+            rgba(5, 10, 25, 0.95)
         );
 
     box-shadow:
-        0 7px 20px rgba(0, 0, 0, 0.3);
-
-    transition:
-        transform 0.2s ease,
-        border-color 0.2s ease,
-        box-shadow 0.2s ease;
+        0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
-
-.jogador-card:active {
-
-    transform:
-        scale(0.98);
+.mesa-header-info {
+    min-width: 0;
 }
 
-
-.jogador-card.confirmado {
-
-    border-color:
-        rgba(34, 197, 94, 0.45);
-}
-
-
-.jogador-card.vazio {
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    min-height: 75px;
-
-    color: var(--text-muted);
-
-    font-size: 10px;
-
-    letter-spacing: 1px;
-}
-
-
-.jogador-card .jogador-nome {
-
-    display: block;
-
-    margin-bottom: 4px;
-
-    color: var(--text);
-
-    font-size: 13px;
-
-    font-weight: bold;
-
-    white-space: nowrap;
-
-    overflow: hidden;
-
-    text-overflow: ellipsis;
-}
-
-
-.jogador-card .jogador-classe {
-
-    display: block;
-
-    color: var(--primary-light);
-
-    font-size: 9px;
-}
-
-
-.jogador-card .jogador-status {
-
-    display: flex;
-
-    gap: 5px;
-
-    margin-top: 9px;
-}
-
-
-.jogador-card .status-mini {
-
-    padding: 3px 5px;
-
-    border-radius: 5px;
-
-    background:
-        rgba(255, 255, 255, 0.04);
-
-    color: var(--text-soft);
-
-    font-size: 8px;
-}
-
-
-/* =========================================================
-   TELA CENTRAL
-========================================================= */
-
-#tela-mesa {
-
-    position: relative;
-
-    display: flex;
-
-    flex-direction: column;
-
-    width: 100%;
-
-    min-height: 520px;
-
-    overflow: hidden;
-
-    border:
-        1px solid var(--border-light);
-
-    border-radius:
-        var(--radius-large);
-
-    background:
-        linear-gradient(
-            160deg,
-            #0b0e1d,
-            #05060d
-        );
-
-    box-shadow:
-        var(--shadow),
-        var(--glow);
-}
-
-
-/* =========================================================
-   CABEÇALHO DA TELA
-========================================================= */
-
-#tela-mesa-header {
-
-    display: flex;
-
-    justify-content: space-between;
-
-    align-items: center;
-
-    gap: 12px;
-
-    padding: 13px 15px;
-
-    border-bottom:
-        1px solid var(--border);
-
-    background:
-        rgba(0, 0, 0, 0.2);
-}
-
-
-.tela-label {
-
+.mesa-label {
     display: block;
 
     margin-bottom: 3px;
@@ -534,27 +136,45 @@ select {
 
     font-size: 8px;
 
-    font-weight: bold;
-
     letter-spacing: 2px;
+
+    text-transform: uppercase;
 }
 
-
-#tela-mesa-titulo {
-
+.mesa-campanha h1 {
     margin: 0;
+
+    max-width: 55vw;
+
+    overflow: hidden;
 
     color: var(--text);
 
     font-size: 17px;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
 }
 
+.mesa-mestre {
+    margin-top: 4px;
+
+    color: var(--text-soft);
+
+    font-size: 10px;
+}
+
+.mesa-mestre strong {
+    color: var(--purple-light);
+}
 
 /* =========================================================
-   CONEXÃO
+   ESTADO DA MESA
 ========================================================= */
 
-#mesa-conexao {
+#mesa-estado {
+    flex-shrink: 0;
 
     display: flex;
 
@@ -562,629 +182,74 @@ select {
 
     gap: 6px;
 
-    padding: 5px 8px;
+    padding: 7px 9px;
 
-    border-radius: 999px;
+    border-radius: 10px;
 
-    background:
-        rgba(255, 255, 255, 0.035);
+    border: 1px solid var(--border);
 
-    color: var(--text-muted);
-
-    font-size: 8px;
-
-    white-space: nowrap;
+    background: rgba(0, 0, 0, 0.25);
 }
 
-
-#conexao-indicador {
-
-    width: 6px;
-    height: 6px;
+#mesa-estado-indicador {
+    width: 8px;
+    height: 8px;
 
     border-radius: 50%;
-
-    background: var(--yellow);
-}
-
-
-.conexao-conectada #conexao-indicador {
 
     background: var(--green);
 
     box-shadow:
-        0 0 8px rgba(34, 197, 94, 0.8);
+        0 0 10px rgba(34, 197, 94, 0.7);
 }
 
+#mesa-estado-texto {
+    color: var(--text-soft);
 
-.conexao-desconectada #conexao-indicador {
-
-    background: var(--red);
-}
-
-
-/* =========================================================
-   CONTEÚDO CENTRAL
-========================================================= */
-
-#tela-mesa-conteudo {
-
-    position: relative;
-
-    flex: 1;
-
-    min-height: 400px;
-
-    overflow: auto;
-
-    scrollbar-width: thin;
-
-    scrollbar-color:
-        #373052
-        transparent;
-}
-
-
-.modulo-mesa {
-
-    position: relative;
-
-    width: 100%;
-
-    min-height: 400px;
-
-    padding: 16px;
-}
-
-
-.modulo-mesa[hidden] {
-
-    display: none !important;
-}
-
-
-.modulo-placeholder {
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-
-    align-items: center;
-
-    min-height: 350px;
-
-    padding: 25px;
-
-    text-align: center;
-}
-
-
-.modulo-icone {
-
-    display: block;
-
-    margin-bottom: 12px;
-
-    font-size: 38px;
-
-    filter:
-        drop-shadow(
-            0 0 12px rgba(124, 58, 237, 0.35)
-        );
-}
-
-
-.modulo-placeholder h3 {
-
-    margin: 0 0 6px;
-
-    color: var(--text);
-
-    font-size: 19px;
-}
-
-
-.modulo-placeholder p {
-
-    margin: 0;
-
-    color: var(--text-muted);
-
-    font-size: 11px;
-}
-
-
-/* =========================================================
-   CONTEÚDOS DOS MÓDULOS
-========================================================= */
-
-#personagem-conteudo,
-#status-conteudo,
-#afinidade-conteudo,
-#inventario-conteudo,
-#mapa-conteudo,
-#combate-conteudo {
-
-    width: 100%;
-
-    margin-top: 15px;
-}
-
-
-/* =========================================================
-   NAVEGAÇÃO
-========================================================= */
-
-#mesa-modulos {
-
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, minmax(0, 1fr));
-
-    gap: 7px;
-
-    padding: 10px;
-
-    border-top:
-        1px solid var(--border);
-
-    background:
-        rgba(4, 5, 12, 0.95);
-}
-
-
-.modulo-btn {
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-    align-items: center;
-
-    gap: 3px;
-
-    min-height: 48px;
-
-    padding: 6px 4px;
-
-    border:
-        1px solid transparent;
-
-    border-radius:
-        var(--radius-small);
-
-    background:
-        rgba(255, 255, 255, 0.025);
-
-    color: var(--text-muted);
-
-    cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        color 0.2s ease,
-        border-color 0.2s ease,
-        transform 0.2s ease;
-}
-
-
-.modulo-btn span {
-
-    font-size: 8px;
-
-    line-height: 1.1;
-
-    text-align: center;
-}
-
-
-.modulo-btn:active {
-
-    transform:
-        scale(0.95);
-}
-
-
-.modulo-btn:hover,
-.modulo-btn.ativo {
-
-    border-color:
-        rgba(124, 58, 237, 0.55);
-
-    background:
-        var(--primary-soft);
-
-    color:
-        var(--primary-light);
-
-    box-shadow:
-        0 0 12px rgba(124, 58, 237, 0.12);
-}
-
-
-/* =========================================================
-   CTE
-========================================================= */
-
-#modulo-cte {
-
-    min-height: 100%;
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(234, 179, 8, 0.08),
-            transparent 55%
-        );
-}
-
-
-#cte-conteudo {
-
-    width: 100%;
-    min-height: 400px;
-}
-
-
-.cte-placeholder {
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-    align-items: center;
-
-    min-height: 400px;
-
-    text-align: center;
-}
-
-
-.cte-placeholder .modulo-icone {
-
-    animation:
-        ctePulse 1.5s infinite ease-in-out;
-}
-
-
-@keyframes ctePulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.8;
-    }
-
-    50% {
-        transform: scale(1.12);
-        opacity: 1;
-    }
-}
-
-
-/* =========================================================
-   DUNGEON
-========================================================= */
-
-#modulo-dungeon {
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(124, 58, 237, 0.08),
-            transparent 60%
-        );
-}
-
-
-#dungeon-conteudo {
-
-    width: 100%;
-    min-height: 400px;
-}
-
-
-.dungeon-placeholder {
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-    align-items: center;
-
-    min-height: 400px;
-
-    text-align: center;
-}
-
-
-/* =========================================================
-   BOSS
-========================================================= */
-
-#modulo-boss {
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    min-height: 400px;
-
-    padding: 20px;
-
-    background:
-        radial-gradient(
-            circle at center,
-            rgba(239, 68, 68, 0.22),
-            transparent 65%
-        );
-}
-
-
-#boss-alerta {
-
-    display: flex;
-
-    flex-direction: column;
-
-    justify-content: center;
-    align-items: center;
-
-    width: 100%;
-
-    max-width: 420px;
-
-    padding: 30px 20px;
-
-    border:
-        1px solid rgba(239, 68, 68, 0.6);
-
-    border-radius:
-        var(--radius-large);
-
-    background:
-        rgba(30, 4, 8, 0.8);
-
-    box-shadow:
-        0 0 40px rgba(239, 68, 68, 0.25);
-
-    text-align: center;
-
-    animation:
-        bossPulse 1s infinite alternate;
-}
-
-
-.boss-icone {
-
-    font-size: 42px;
-
-    margin-bottom: 8px;
-}
-
-
-.boss-label {
-
-    color: #f87171;
-
-    font-size: 11px;
+    font-size: 9px;
 
     font-weight: bold;
 
-    letter-spacing: 4px;
+    letter-spacing: 0.8px;
 }
 
+/* estados */
 
-#boss-nome {
-
-    margin: 8px 0;
-
-    color: #fff;
-
-    font-size: 25px;
+#mesa-estado.estado-espera
+#mesa-estado-indicador {
+    background: var(--yellow);
 }
 
-
-#boss-descricao {
-
-    margin: 0;
-
-    color: #c9a8ae;
-
-    font-size: 11px;
-
-    line-height: 1.5;
+#mesa-estado.estado-combate
+#mesa-estado-indicador {
+    background: var(--red);
 }
 
-
-@keyframes bossPulse {
-
-    from {
-
-        box-shadow:
-            0 0 20px rgba(239, 68, 68, 0.15);
-
-        border-color:
-            rgba(239, 68, 68, 0.35);
-    }
-
-    to {
-
-        box-shadow:
-            0 0 50px rgba(239, 68, 68, 0.5);
-
-        border-color:
-            rgba(239, 68, 68, 0.85);
-    }
+#mesa-estado.estado-cte
+#mesa-estado-indicador {
+    background: var(--purple-light);
 }
-
 
 /* =========================================================
-   MODO BOSS NA MESA INTEIRA
+   LAYOUT PRINCIPAL
 ========================================================= */
 
-#rpg-mesa.modo-boss {
-
-    animation:
-        mesaBossPulse 0.8s infinite alternate;
-}
-
-
-@keyframes mesaBossPulse {
-
-    from {
-
-        box-shadow:
-            inset 0 0 0 rgba(239, 68, 68, 0);
-    }
-
-    to {
-
-        box-shadow:
-            inset 0 0 80px rgba(239, 68, 68, 0.22);
-    }
-}
-
-
-/* =========================================================
-   PAINEL DO MESTRE
-========================================================= */
-
-#painel-mestre {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 100;
-
-    padding: 15px;
-
-    overflow-y: auto;
-
-    background:
-        rgba(2, 3, 8, 0.92);
-
-    backdrop-filter:
-        blur(10px);
-}
-
-
-#painel-mestre[hidden] {
-
-    display: none !important;
-}
-
-
-.painel-header {
+#mesa-layout {
+    width: 100%;
 
     display: flex;
 
-    justify-content: space-between;
-
-    align-items: center;
+    flex-direction: column;
 
     gap: 10px;
-
-    margin-bottom: 15px;
-
-    padding: 15px;
-
-    border:
-        1px solid var(--border-light);
-
-    border-radius:
-        var(--radius);
-
-    background:
-        var(--bg-panel);
-
-    box-shadow:
-        var(--shadow);
 }
-
-
-.painel-header h2 {
-
-    margin: 0;
-
-    color: var(--text);
-
-    font-size: 19px;
-}
-
-
-#fechar-painel-mestre {
-
-    width: 38px;
-    height: 38px;
-
-    border:
-        1px solid var(--border);
-
-    border-radius: 50%;
-
-    background:
-        rgba(255, 255, 255, 0.04);
-
-    color: var(--text-soft);
-
-    font-size: 25px;
-
-    line-height: 1;
-
-    cursor: pointer;
-}
-
-
-#fechar-painel-mestre:active {
-
-    transform:
-        scale(0.92);
-}
-
 
 /* =========================================================
-   GRUPOS DE FERRAMENTAS
+   ASSENTOS
 ========================================================= */
 
-.ferramenta-grupo {
-
-    margin-bottom: 12px;
-
-    padding: 14px;
-
-    border:
-        1px solid var(--border);
-
-    border-radius:
-        var(--radius);
-
-    background:
-        var(--bg-panel);
-}
-
-
-.ferramenta-grupo h3 {
-
-    margin: 0 0 10px;
-
-    color: var(--primary-light);
-
-    font-size: 11px;
-
-    letter-spacing: 1px;
-}
-
-
-.ferramenta-acoes {
+#assentos-jogadores {
+    width: 100%;
 
     display: grid;
 
@@ -1194,564 +259,1142 @@ select {
     gap: 8px;
 }
 
+/* =========================================================
+   CARD DO JOGADOR
+========================================================= */
 
-.ferramenta-grupo button {
+.jogador-card {
+    position: relative;
 
-    min-height: 42px;
+    min-width: 0;
 
-    padding: 8px;
+    min-height: 92px;
+
+    padding: 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
 
     border:
         1px solid var(--border);
 
-    border-radius:
-        var(--radius-small);
+    border-radius: 14px;
 
     background:
-        var(--bg-soft);
+        linear-gradient(
+            145deg,
+            rgba(13, 26, 59, 0.95),
+            rgba(6, 11, 27, 0.95)
+        );
 
-    color: var(--text-soft);
+    box-shadow:
+        inset 0 0 20px rgba(124, 58, 237, 0.025);
 
-    font-size: 10px;
-
-    cursor: pointer;
+    overflow: hidden;
 
     transition:
-        background 0.2s ease,
+        transform 0.2s ease,
         border-color 0.2s ease,
-        transform 0.2s ease;
+        box-shadow 0.2s ease,
+        background 0.2s ease;
 }
 
+.jogador-card::before {
+    content: "";
 
-.ferramenta-grupo button:hover {
+    position: absolute;
 
-    border-color:
-        rgba(124, 58, 237, 0.65);
+    inset: 0;
+
+    pointer-events: none;
 
     background:
-        var(--primary-soft);
-
-    color:
-        var(--primary-light);
+        linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.035),
+            transparent 45%
+        );
 }
 
+.jogador-card.confirmado {
+    border-color:
+        rgba(34, 197, 94, 0.45);
 
-.ferramenta-grupo button:active {
-
-    transform:
-        scale(0.96);
+    box-shadow:
+        0 0 18px rgba(34, 197, 94, 0.08);
 }
 
+.jogador-card.vazio {
+    opacity: 0.72;
+}
 
 /* =========================================================
-   BOTÃO MESTRE
+   NÚMERO DO ASSENTO
 ========================================================= */
 
-#abrir-painel-mestre {
+.jogador-numero {
+    position: relative;
 
-    position: fixed;
+    flex-shrink: 0;
 
-    right: 14px;
-    bottom: 14px;
+    width: 30px;
+    height: 30px;
 
-    z-index: 80;
+    display: flex;
 
-    min-height: 42px;
+    align-items: center;
+    justify-content: center;
 
-    padding: 9px 14px;
+    border-radius: 9px;
 
     border:
-        1px solid rgba(124, 58, 237, 0.65);
-
-    border-radius:
-        999px;
+        1px solid var(--border-light);
 
     background:
-        rgba(23, 13, 45, 0.95);
+        rgba(124, 58, 237, 0.08);
 
-    color:
-        var(--primary-light);
+    color: var(--purple-light);
 
     font-size: 10px;
 
     font-weight: bold;
 
-    cursor: pointer;
-
-    box-shadow:
-        0 5px 20px rgba(0, 0, 0, 0.4),
-        0 0 15px rgba(124, 58, 237, 0.15);
-
-    backdrop-filter:
-        blur(10px);
+    letter-spacing: 1px;
 }
-
-
-#abrir-painel-mestre:active {
-
-    transform:
-        scale(0.94);
-}
-
-
-#abrir-painel-mestre[hidden] {
-
-    display: none !important;
-}
-
 
 /* =========================================================
-   NOTIFICAÇÕES
+   CONTEÚDO DO CARD
 ========================================================= */
 
-#mesa-notificacoes {
-
-    position: fixed;
-
-    left: 50%;
-
-    bottom: 18px;
-
-    z-index: 200;
-
-    width:
-        min(
-            calc(100% - 30px),
-            420px
-        );
-
-    transform:
-        translateX(-50%);
-
-    display: flex;
-
-    flex-direction: column;
-
-    gap: 8px;
-
-    pointer-events: none;
-}
-
-
-.mesa-notificacao {
-
-    padding: 11px 14px;
-
-    border:
-        1px solid var(--border-light);
-
-    border-radius:
-        var(--radius-small);
-
-    background:
-        rgba(12, 14, 26, 0.96);
-
-    color: var(--text-soft);
-
-    font-size: 10px;
-
-    text-align: center;
-
-    box-shadow:
-        var(--shadow);
-
-    animation:
-        notificacaoEntrada 0.25s ease;
-}
-
-
-@keyframes notificacaoEntrada {
-
-    from {
-
-        opacity: 0;
-
-        transform:
-            translateY(10px);
-    }
-
-    to {
-
-        opacity: 1;
-
-        transform:
-            translateY(0);
-    }
-}
-
-
-/* =========================================================
-   MODAL
-========================================================= */
-
-.mesa-modal {
-
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 300;
-
-    display: flex;
-
-    justify-content: center;
-    align-items: center;
-
-    padding: 15px;
-
-    background:
-        rgba(0, 0, 0, 0.78);
-
-    backdrop-filter:
-        blur(8px);
-}
-
-
-.mesa-modal[hidden] {
-
-    display: none !important;
-}
-
-
-.mesa-modal-conteudo {
-
+.jogador-card-conteudo {
     position: relative;
+
+    min-width: 0;
+
+    flex: 1;
+}
+
+.jogador-nome {
+    display: block;
 
     width: 100%;
 
-    max-width: 480px;
+    overflow: hidden;
 
-    max-height: 85vh;
+    color: var(--text);
 
-    overflow-y: auto;
+    font-size: 11px;
 
-    padding: 20px;
+    font-weight: bold;
 
-    border:
-        1px solid var(--border-light);
+    white-space: nowrap;
 
-    border-radius:
-        var(--radius-large);
-
-    background:
-        linear-gradient(
-            150deg,
-            #111427,
-            #080a13
-        );
-
-    box-shadow:
-        0 20px 60px rgba(0, 0, 0, 0.65),
-        0 0 30px rgba(124, 58, 237, 0.15);
-
-    animation:
-        modalEntrada 0.2s ease;
+    text-overflow: ellipsis;
 }
 
+.jogador-classe {
+    display: block;
 
-@keyframes modalEntrada {
+    width: 100%;
 
-    from {
+    margin-top: 3px;
 
-        opacity: 0;
+    overflow: hidden;
 
-        transform:
-            translateY(12px)
-            scale(0.97);
-    }
+    color: var(--text-muted);
 
-    to {
+    font-size: 8px;
 
-        opacity: 1;
+    white-space: nowrap;
 
-        transform:
-            translateY(0)
-            scale(1);
-    }
+    text-overflow: ellipsis;
 }
 
+.jogador-status {
+    display: flex;
 
-.mesa-modal-fechar {
+    gap: 5px;
 
-    position: absolute;
+    margin-top: 7px;
+}
 
-    top: 10px;
-    right: 10px;
+.status-mini {
+    display: inline-flex;
 
-    width: 34px;
-    height: 34px;
+    align-items: center;
 
-    border:
-        1px solid var(--border);
+    padding: 3px 5px;
 
-    border-radius: 50%;
+    border-radius: 6px;
 
     background:
         rgba(255, 255, 255, 0.04);
 
     color: var(--text-soft);
 
-    font-size: 22px;
+    font-size: 7px;
+}
 
-    line-height: 1;
+/* =========================================================
+   TELA CENTRAL
+========================================================= */
+
+#tela-mesa {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 420px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    border:
+        1px solid var(--border-light);
+
+    border-radius: 18px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(37, 99, 235, 0.06),
+            transparent 58%
+        ),
+        linear-gradient(
+            145deg,
+            rgba(10, 20, 48, 0.98),
+            rgba(4, 8, 19, 0.98)
+        );
+
+    box-shadow:
+        0 15px 45px rgba(0, 0, 0, 0.3),
+        inset 0 0 50px rgba(124, 58, 237, 0.025);
+
+    overflow: hidden;
+}
+
+/* =========================================================
+   HEADER DA TELA
+========================================================= */
+
+#tela-mesa-header {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 12px 14px;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.06);
+
+    background:
+        rgba(0, 0, 0, 0.15);
+}
+
+.tela-label {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: var(--text-muted);
+
+    font-size: 7px;
+
+    letter-spacing: 2px;
+
+    text-transform: uppercase;
+}
+
+#tela-mesa-titulo {
+    margin: 0;
+
+    color: var(--text);
+
+    font-size: 14px;
+}
+
+#mesa-conexao {
+    flex-shrink: 0;
+
+    padding: 5px 7px;
+
+    border-radius: 7px;
+
+    background:
+        rgba(255, 255, 255, 0.04);
+
+    color: var(--text-muted);
+
+    font-size: 7px;
+}
+
+#mesa-conexao.conexao-conectada {
+    color: var(--green);
+}
+
+#mesa-conexao.conexao-desconectada {
+    color: var(--yellow);
+}
+
+/* =========================================================
+   CONTEÚDO DOS MÓDULOS
+========================================================= */
+
+#tela-mesa-conteudo {
+    position: relative;
+
+    flex: 1;
+
+    min-height: 340px;
+
+    padding: 14px;
+
+    overflow-y: auto;
+}
+
+.modulo-mesa {
+    width: 100%;
+
+    min-height: 280px;
+}
+
+.modulo-mesa[hidden] {
+    display: none !important;
+}
+
+.modulo-placeholder {
+    min-height: 280px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    text-align: center;
+
+    color: var(--text-muted);
+}
+
+.modulo-icone {
+    font-size: 36px;
+
+    opacity: 0.7;
+}
+
+.modulo-placeholder strong {
+    color: var(--text-soft);
+
+    font-size: 12px;
+}
+
+.modulo-placeholder span {
+    max-width: 260px;
+
+    font-size: 9px;
+
+    line-height: 1.5;
+}
+
+/* =========================================================
+   NAVEGAÇÃO DOS MÓDULOS
+========================================================= */
+
+#mesa-modulos {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 6px;
+
+    margin-top: 0;
+
+    padding: 8px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 14px;
+
+    background:
+        rgba(7, 16, 38, 0.95);
+}
+
+.modulo-btn {
+    min-height: 44px;
+
+    border:
+        1px solid transparent;
+
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+
+    font-weight: bold;
 
     cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease;
 }
 
+.modulo-btn:hover {
+    background:
+        rgba(124, 58, 237, 0.08);
 
-#mesa-modal-body {
-
-    padding-top: 10px;
+    color: var(--text-soft);
 }
 
-
-/* =========================================================
-   ESTADOS VISUAIS DA TELA
-========================================================= */
-
-#rpg-mesa.modo-combate #tela-mesa {
-
+.modulo-btn.ativo {
     border-color:
-        rgba(239, 68, 68, 0.4);
+        rgba(124, 58, 237, 0.55);
+
+    background:
+        var(--purple-soft);
+
+    color: var(--purple-light);
 
     box-shadow:
-        var(--shadow),
-        0 0 30px rgba(239, 68, 68, 0.12);
+        0 0 14px rgba(124, 58, 237, 0.08);
 }
 
+/* =========================================================
+   INTERFACE
+========================================================= */
 
-#rpg-mesa.modo-cte #tela-mesa {
+#modulo-interface {
+    display: flex;
 
-    border-color:
-        rgba(234, 179, 8, 0.45);
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.interface-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+}
+
+.interface-box {
+    padding: 12px;
+
+    border-radius: 12px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+}
+
+.interface-box span {
+    display: block;
+
+    margin-bottom: 5px;
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+}
+
+.interface-box strong {
+    color: var(--text);
+
+    font-size: 13px;
+}
+
+/* =========================================================
+   PERSONAGEM
+========================================================= */
+
+.personagem-detalhes {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.personagem-banner {
+    padding: 15px;
+
+    border-radius: 13px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(124, 58, 237, 0.12),
+            rgba(37, 99, 235, 0.04)
+        );
+}
+
+.personagem-banner h3 {
+    margin: 0;
+
+    font-size: 18px;
+}
+
+.personagem-banner p {
+    margin: 5px 0 0;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+}
+
+/* =========================================================
+   STATUS
+========================================================= */
+
+.status-barras {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+.status-linha {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.status-linha-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    color: var(--text-soft);
+
+    font-size: 9px;
+}
+
+.status-bar {
+    width: 100%;
+    height: 8px;
+
+    border-radius: 20px;
+
+    background:
+        rgba(255, 255, 255, 0.06);
+
+    overflow: hidden;
+}
+
+.status-bar-fill {
+    width: 50%;
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            90deg,
+            var(--purple),
+            var(--purple-light)
+        );
+
+    transition:
+        width 0.3s ease;
+}
+
+/* =========================================================
+   AFINIDADE
+========================================================= */
+
+.afinidade-card {
+    padding: 15px;
+
+    text-align: center;
+
+    border-radius: 14px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.1),
+            transparent 65%
+        );
+}
+
+.afinidade-icone {
+    font-size: 42px;
+
+    margin-bottom: 8px;
+}
+
+.afinidade-card h3 {
+    margin: 0;
+
+    font-size: 16px;
+}
+
+.afinidade-card p {
+    margin: 5px 0 0;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+}
+
+/* =========================================================
+   INVENTÁRIO
+========================================================= */
+
+.inventario-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 8px;
+}
+
+.item-inventario {
+    min-height: 80px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 5px;
+
+    padding: 8px;
+
+    border-radius: 11px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    text-align: center;
+}
+
+.item-inventario .item-icone {
+    font-size: 23px;
+}
+
+.item-inventario strong {
+    font-size: 8px;
+}
+
+.item-inventario small {
+    color: var(--text-muted);
+
+    font-size: 7px;
+}
+
+/* =========================================================
+   MAPA
+========================================================= */
+
+.mapa-area {
+    position: relative;
+
+    width: 100%;
+
+    min-height: 290px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(37, 99, 235, 0.1),
+            transparent 60%
+        );
+
+    overflow: hidden;
+}
+
+.mapa-area::before {
+    content: "";
+
+    position: absolute;
+
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+
+    border:
+        1px dashed rgba(124, 58, 237, 0.3);
 
     box-shadow:
-        var(--shadow),
-        0 0 30px rgba(234, 179, 8, 0.12);
+        0 0 40px rgba(124, 58, 237, 0.08);
 }
 
+.mapa-placeholder {
+    position: relative;
 
-#rpg-mesa.modo-mapa #tela-mesa {
+    z-index: 1;
 
-    border-color:
-        rgba(59, 130, 246, 0.4);
+    text-align: center;
+
+    color: var(--text-muted);
+
+    font-size: 10px;
+}
+
+/* =========================================================
+   COMBATE
+========================================================= */
+
+#modulo-combate {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+.combate-header {
+    padding: 14px;
+
+    border-radius: 13px;
+
+    border:
+        1px solid rgba(239, 68, 68, 0.25);
+
+    background:
+        var(--red-soft);
+}
+
+.combate-header strong {
+    color: #fca5a5;
+
+    font-size: 14px;
+}
+
+.combate-header span {
+    display: block;
+
+    margin-top: 4px;
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+}
+
+.combate-log {
+    min-height: 130px;
+    max-height: 190px;
+
+    padding: 10px;
+
+    overflow-y: auto;
+
+    border-radius: 12px;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.07);
+
+    background:
+        rgba(0, 0, 0, 0.2);
+}
+
+.combate-log-item {
+    padding: 7px 0;
+
+    border-bottom:
+        1px solid rgba(255, 255, 255, 0.05);
+
+    color: var(--text-soft);
+
+    font-size: 8px;
+}
+
+.combate-log-item:last-child {
+    border-bottom: 0;
+}
+
+/* =========================================================
+   CTE
+========================================================= */
+
+#modulo-cte {
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    gap: 15px;
+
+    min-height: 300px;
+
+    text-align: center;
+}
+
+.cte-circulo {
+    width: 150px;
+    height: 150px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 50%;
+
+    border:
+        2px solid var(--purple);
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.25),
+            rgba(3, 5, 10, 0.95)
+        );
 
     box-shadow:
-        var(--shadow),
-        0 0 30px rgba(59, 130, 246, 0.12);
+        0 0 35px rgba(124, 58, 237, 0.3);
+
+    animation:
+        ctePulse 2s ease-in-out infinite;
 }
 
+.cte-circulo strong {
+    font-size: 34px;
+
+    color: var(--purple-light);
+}
+
+.cte-circulo span {
+    margin-top: 4px;
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+
+    letter-spacing: 2px;
+}
+
+.cte-status {
+    color: var(--text-soft);
+
+    font-size: 11px;
+}
+
+.cte-opcoes {
+    width: 100%;
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+}
+
+.cte-opcao {
+    padding: 10px;
+
+    border-radius: 10px;
+
+    border:
+        1px solid var(--border);
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text-soft);
+
+    font-size: 9px;
+}
+
+@keyframes ctePulse {
+    0%,
+    100% {
+        transform: scale(1);
+
+        box-shadow:
+            0 0 35px rgba(124, 58, 237, 0.3);
+    }
+
+    50% {
+        transform: scale(1.025);
+
+        box-shadow:
+            0 0 55px rgba(124, 58, 237, 0.5);
+    }
+}
 
 /* =========================================================
-   TABLET
+   DUNGEON
 ========================================================= */
 
-@media (min-width: 600px) {
+#modulo-dungeon {
+    display: flex;
 
-    #mesa-layout {
+    align-items: center;
+    justify-content: center;
 
-        padding: 18px;
-
-        gap: 15px;
-    }
-
-
-    #mesa-header {
-
-        padding:
-            18px 22px;
-    }
-
-
-    .jogadores-container,
-    .jogadores-lateral {
-
-        grid-template-columns:
-            repeat(4, minmax(0, 1fr));
-    }
-
-
-    #mesa-modulos {
-
-        grid-template-columns:
-            repeat(5, minmax(0, 1fr));
-    }
-
-
-    #tela-mesa {
-
-        min-height: 600px;
-    }
-
-
-    .modulo-mesa {
-
-        min-height: 480px;
-    }
-
-
-    #tela-mesa-conteudo {
-
-        min-height: 480px;
-    }
+    min-height: 280px;
 }
-
 
 /* =========================================================
-   DESKTOP
+   BOSS
 ========================================================= */
 
-@media (min-width: 900px) {
+#modulo-boss {
+    position: relative;
 
-    #rpg-mesa {
+    min-height: 300px;
 
-        max-width: 1400px;
+    display: flex;
 
-        margin: 0 auto;
-    }
+    flex-direction: column;
 
+    align-items: center;
 
-    #mesa-layout {
+    justify-content: center;
 
-        display: grid;
+    gap: 12px;
 
-        grid-template-columns:
-            170px
-            minmax(0, 1fr)
-            170px;
-
-        grid-template-rows:
-            auto
-            minmax(650px, 1fr)
-            auto;
-
-        align-items: stretch;
-
-        min-height: calc(100vh - 90px);
-
-        padding: 20px;
-    }
-
-
-    #jogadores-topo {
-
-        grid-column:
-            1 / 4;
-
-        grid-row:
-            1;
-    }
-
-
-    #jogadores-esquerda {
-
-        grid-column:
-            1;
-
-        grid-row:
-            2;
-
-        display: flex;
-
-        flex-direction: column;
-    }
-
-
-    #tela-mesa {
-
-        grid-column:
-            2;
-
-        grid-row:
-            2;
-    }
-
-
-    #jogadores-direita {
-
-        grid-column:
-            3;
-
-        grid-row:
-            2;
-
-        display: flex;
-
-        flex-direction: column;
-    }
-
-
-    #jogadores-base {
-
-        grid-column:
-            1 / 4;
-
-        grid-row:
-            3;
-    }
-
-
-    .jogadores-container,
-    .jogadores-lateral {
-
-        grid-template-columns:
-            1fr;
-    }
-
-
-    #mesa-modulos {
-
-        grid-template-columns:
-            repeat(9, minmax(0, 1fr));
-    }
-
-
-    #painel-mestre {
-
-        left: auto;
-
-        width: 390px;
-
-        border-left:
-            1px solid var(--border-light);
-    }
+    text-align: center;
 }
 
+#boss-alerta {
+    padding: 12px 18px;
+
+    border-radius: 12px;
+
+    border:
+        1px solid rgba(239, 68, 68, 0.6);
+
+    background:
+        rgba(127, 29, 29, 0.35);
+
+    color: #fecaca;
+
+    font-size: 12px;
+
+    font-weight: bold;
+
+    letter-spacing: 2px;
+
+    animation:
+        bossPulse 1.1s ease-in-out infinite;
+}
+
+.boss-nome {
+    margin: 0;
+
+    color: #fca5a5;
+
+    font-size: 25px;
+
+    text-transform: uppercase;
+}
+
+.boss-descricao {
+    max-width: 300px;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+
+    line-height: 1.5;
+}
+
+@keyframes bossPulse {
+    0%,
+    100% {
+        opacity: 0.75;
+
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+
+        transform: scale(1.035);
+    }
+}
 
 /* =========================================================
-   ACESSIBILIDADE
+   MODO BOSS
 ========================================================= */
 
-button:focus-visible {
-
-    outline:
-        2px solid var(--primary-light);
-
-    outline-offset:
-        2px;
+#rpg-mesa.modo-boss {
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(127, 29, 29, 0.22),
+            transparent 65%
+        );
 }
 
+#rpg-mesa.modo-boss #tela-mesa {
+    border-color:
+        rgba(239, 68, 68, 0.55);
 
-/* =========================================================
-   REDUÇÃO DE MOVIMENTO
-========================================================= */
+    box-shadow:
+        0 0 50px rgba(239, 68, 68, 0.15),
+        inset 0 0 60px rgba(239, 68, 68, 0.05);
 
-@media (prefers-reduced-motion: reduce) {
+    animation:
+        mesaBossPulse 1.5s ease-in-out infinite;
+}
 
-    *,
-    *::before,
-    *::after {
+@keyframes mesaBossPulse {
+    0%,
+    100% {
+        box-shadow:
+            0 0 35px rgba(239, 68, 68, 0.12),
+            inset 0 0 50px rgba(239, 68, 68, 0.04);
+    }
 
-        animation-duration:
-            0.01ms !important;
-
-        animation-iteration-count:
-            1 !important;
-
-        transition-duration:
-            0.01ms !important;
-
-        scroll-behavior:
-            auto !important;
+    50% {
+        box-shadow:
+            0 0 70px rgba(239, 68, 68, 0.28),
+            inset 0 0 70px rgba(239, 68, 68, 0.08);
     }
 }
+
+/* =========================================================
+   PAINEL DO MESTRE
+========================================================= */
+
+#painel-mestre {
+    width: 100%;
+
+    padding: 14px;
+
+    border-radius: 15px;
+
+    border:
+        1px solid rgba(124, 58, 237, 0.4);
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(15, 10, 31, 0.98),
+            rgba(7, 10, 23, 0.98)
+        );
+
+    box-shadow:
+        0 15px 40px rgba(0, 0, 0, 0.35);
+}
+
+#painel-mestre[hidden] {
+    display: none !important;
+}
+
+#painel-mestre h2 {
+    margin: 0 0 12px;
+
+    color: var(--purple-light);
+
+    font-size: 14px;
+}
+
+.mestre-grupo {
+    margin-bottom: 14px;
+}
+
+.mestre-grupo:last-child {
+    margin-bottom: 0;
+}
+
+.mestre-grupo-titulo {
+    display: block;
+
+    margin-bottom: 7px;
+
+    color: var(--text-muted);
+
+    font-size: 8px;
+
+    letter-spacing: 1px;
+
+    text-transform: uppercase;
+}
+
+.mestre-botoes {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 7px;
+}
+
+.mestre-btn {
+    min-height: 38px;
+
+    padding: 7px;
+
+    border:
+        1px solid var(--border);
+
+    border-radius: 9px;
+
+    background:
+        rgba(255, 255, 255, 0.025);
+
+    color: var(--text-soft);
+
+    font-size: 8px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s ease,
+        border-color 0.2
