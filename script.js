@@ -175,13 +175,7 @@ function criarEstadoInicial() {
 
     return {
 
-        /*
-           false = personagem ainda não confirmado
-           true  = personagem confirmado
-        */
-
         confirmed: false,
-
 
         name: "Personagem",
 
@@ -645,14 +639,6 @@ function atualizarInterfaceConfirmacao() {
 
 function aplicarBloqueioDefinicoes() {
 
-    /*
-       Esta função é chamada pelo sistema principal
-       sempre que a interface é atualizada.
-
-       Dessa forma, a confirmação não depende
-       somente do momento do clique.
-    */
-
     if (
         typeof CharacterModule ===
         "undefined"
@@ -671,6 +657,107 @@ function aplicarBloqueioDefinicoes() {
         CharacterModule.atualizarBloqueioDefinicoes();
 
     }
+
+}
+
+
+/* =========================================================
+   IR PARA A MESA
+========================================================= */
+
+function irParaMesa() {
+
+    /*
+       A Mesa é criada pelo mesa.js.
+       Como os scripts são carregados separadamente,
+       pode haver alguns instantes de espera.
+    */
+
+    let tentativas = 0;
+
+    const limite = 40;
+
+
+    const procurarMesa =
+        setInterval(
+            function () {
+
+                tentativas++;
+
+
+                const mesa =
+                    get(
+                        "online-table-panel"
+                    );
+
+
+                if (mesa) {
+
+                    clearInterval(
+                        procurarMesa
+                    );
+
+
+                    /*
+                       Garante que a Mesa fique
+                       visível para o jogador.
+                    */
+
+                    mesa.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+
+
+                    /*
+                       Pequeno destaque visual
+                       para deixar claro que o
+                       jogador foi enviado para a Mesa.
+                    */
+
+                    mesa.classList.add(
+                        "rpg-table-arrived"
+                    );
+
+
+                    setTimeout(
+                        function () {
+
+                            mesa.classList.remove(
+                                "rpg-table-arrived"
+                            );
+
+                        },
+                        1200
+                    );
+
+
+                    return;
+
+                }
+
+
+                if (
+                    tentativas >= limite
+                ) {
+
+                    clearInterval(
+                        procurarMesa
+                    );
+
+
+                    console.warn(
+                        "⚠️ Mesa ainda não foi encontrada."
+                    );
+
+
+                    return;
+
+                }
+
+            },
+            250
+        );
 
 }
 
@@ -719,15 +806,14 @@ function confirmarPersonagem() {
 
 
     /*
-       BLOQUEIA IMEDIATAMENTE
-       os campos de definição.
+       Bloqueia os campos.
     */
 
     aplicarBloqueioDefinicoes();
 
 
     /*
-       Atualiza toda a interface.
+       Atualiza a interface.
     */
 
     atualizarInterface();
@@ -737,8 +823,7 @@ function confirmarPersonagem() {
 
 
     /*
-       Garante novamente o bloqueio depois
-       da atualização da interface.
+       Garante novamente o bloqueio.
     */
 
     aplicarBloqueioDefinicoes();
@@ -754,11 +839,24 @@ function confirmarPersonagem() {
     ) {
 
         mostrarResultadoSupabase(
-            "✓ PERSONAGEM CONFIRMADO — DEFINIÇÕES BLOQUEADAS",
+            "✓ PERSONAGEM CONFIRMADO — ENVIANDO PARA A MESA...",
             "sucesso"
         );
 
     }
+
+
+    /*
+       =====================================================
+       PASSO 3
+       ENVIAR AUTOMATICAMENTE PARA A MESA
+       =====================================================
+    */
+
+    setTimeout(
+        irParaMesa,
+        350
+    );
 
 }
 
@@ -1982,22 +2080,6 @@ function definirTexto(
 
 function iniciar() {
 
-    /*
-       Ordem:
-
-       1. Navegação
-       2. Modo Mestre
-       3. Editor
-       4. Confirmação
-       5. Status
-       6. XP
-       7. Reset
-       8. Combate
-       9. Inventário
-       10. Interface
-    */
-
-
     configurarNavegacao();
 
 
@@ -2041,10 +2123,6 @@ function iniciar() {
 
     atualizarInterface();
 
-
-    /* -----------------------------------------------------
-       DIAGNÓSTICO SUPABASE
-    ----------------------------------------------------- */
 
     console.log(
         "🚀 Sistema iniciado. Aguardando autenticação..."
