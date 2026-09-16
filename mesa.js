@@ -73,6 +73,37 @@ function atualizarListaJogadores() {
         contador.textContent = `${jogadores.length}/${window.rpgMesa?.maxPlayers || 8}`;
     }
 }
+async function carregarJogadoresMesa() {
+    try {
+        const campanha = window.rpgMesa?.campaign;
+
+        if (!campanha) {
+            window.rpgMesa.players = [];
+            atualizarListaJogadores();
+            return;
+        }
+
+        // Tenta usar uma lista de jogadores que já esteja na campanha
+        const jogadores =
+            campanha.players ||
+            campanha.jogadores ||
+            campanha.members ||
+            campanha.membros ||
+            [];
+
+        window.rpgMesa.players = Array.isArray(jogadores)
+            ? jogadores
+            : [];
+
+        atualizarListaJogadores();
+
+    } catch (erro) {
+        console.error("Erro ao carregar jogadores da Mesa:", erro);
+
+        window.rpgMesa.players = [];
+        atualizarListaJogadores();
+    }
+}
 // ==========================================
 // MESA ONLINE — RPG
 // PASSO 6 — MESA FUNCIONAL
