@@ -99,7 +99,7 @@
         class="campaign-panel">
 
 
-        <!-- CABEÇALHO DA MESA -->
+        <!-- CABEÇALHO -->
 
         <div class="campaign-panel-header">
 
@@ -155,7 +155,7 @@
 
 
                     <p>
-                        Compartilhe o código da sala
+                        Compartilhe o código da mesa
                         com os jogadores.
                     </p>
 
@@ -165,17 +165,17 @@
 
 
 
-            <!-- CÓDIGO -->
+            <!-- CÓDIGO DA MESA -->
 
             <div class="campaign-code-box">
 
                 <span>
-                    CÓDIGO DA SALA
+                    CÓDIGO DA MESA
                 </span>
 
 
-                <strong id="campaign-invite-code">
-                    ----- ---
+                <strong id="campaign-code-display">
+                    ------
                 </strong>
 
             </div>
@@ -235,8 +235,8 @@
 
 
                     <p>
-                        Recebeu um código do Mestre?
-                        Digite-o abaixo para entrar.
+                        Digite o código fornecido pelo Mestre
+                        para entrar na campanha.
                     </p>
 
                 </div>
@@ -252,11 +252,11 @@
                 <input
                     id="campaign-code-input"
                     type="text"
-                    maxlength="9"
-                    placeholder="XXXX-XXXX"
+                    maxlength="20"
+                    placeholder="Digite o código da mesa"
                     autocomplete="off"
                     inputmode="text"
-                    aria-label="Código da sala">
+                    aria-label="Código da Mesa">
 
 
                 <button
@@ -302,8 +302,6 @@
             <div class="card-face card-front">
 
 
-                <!-- CABEÇALHO -->
-
                 <div class="card-header">
 
                     <div class="rarity">
@@ -334,8 +332,6 @@
 
 
 
-                <!-- IMAGEM -->
-
                 <div
                     id="character-art-container"
                     class="character-image">
@@ -358,8 +354,6 @@
 
 
 
-                <!-- INFORMAÇÕES -->
-
                 <div class="character-info">
 
 
@@ -373,8 +367,6 @@
                     </p>
 
 
-
-                    <!-- IDENTIDADE -->
 
                     <div class="identity">
 
@@ -418,8 +410,7 @@
 
                             <strong>
 
-                                <span
-                                    id="character-affinity-symbol">
+                                <span id="character-affinity-symbol">
                                     ?
                                 </span>
 
@@ -452,8 +443,6 @@
 
 
 
-                    <!-- XP -->
-
                     <div class="xp-section">
 
 
@@ -483,8 +472,6 @@
                     </div>
 
 
-
-                    <!-- XP BRASÃO -->
 
                     <div class="badge-xp-section">
 
@@ -534,8 +521,6 @@
 
 
 
-                <!-- NOME -->
-
                 <div class="editor-field">
 
                     <label for="character-name-input">
@@ -551,8 +536,6 @@
                 </div>
 
 
-
-                <!-- RAÇA -->
 
                 <div class="editor-field">
 
@@ -633,8 +616,6 @@
 
 
 
-                <!-- CLASSE -->
-
                 <div class="editor-field">
 
                     <label for="character-class-select">
@@ -658,8 +639,6 @@
                 </div>
 
 
-
-                <!-- IMAGEM -->
 
                 <div class="editor-field">
 
@@ -700,9 +679,7 @@
 
 
 
-                <!-- =================================================
-                     MODO MESTRE
-                ================================================== -->
+                <!-- MODO MESTRE -->
 
                 <button
                     id="master-button"
@@ -725,8 +702,6 @@
                     </h3>
 
 
-
-                    <!-- XP PERSONAGEM -->
 
                     <div class="control xp-control">
 
@@ -762,8 +737,6 @@
                     </div>
 
 
-
-                    <!-- XP BRASÃO -->
 
                     <div class="control xp-control">
 
@@ -833,8 +806,6 @@
                 </h2>
 
 
-
-                <!-- RECURSOS -->
 
                 <div class="stats">
 
@@ -915,8 +886,6 @@
 
 
 
-                <!-- ATRIBUTOS -->
-
                 <div class="stats">
 
 
@@ -940,15 +909,11 @@
                             </button>
 
 
-                            <span>
-                                ⚔️
-                            </span>
-
+                            <span>⚔️</span>
 
                             <strong id="stat-atk">
                                 4
                             </strong>
-
 
                             <small>
                                 ATK
@@ -970,15 +935,11 @@
                             </button>
 
 
-                            <span>
-                                ✨
-                            </span>
-
+                            <span>✨</span>
 
                             <strong id="stat-atkMgc">
                                 4
                             </strong>
-
 
                             <small>
                                 ATK MGC
@@ -1000,15 +961,11 @@
                             </button>
 
 
-                            <span>
-                                🛡️
-                            </span>
-
+                            <span>🛡️</span>
 
                             <strong id="stat-def">
                                 8
                             </strong>
-
 
                             <small>
                                 DEF
@@ -1030,15 +987,11 @@
                             </button>
 
 
-                            <span>
-                                🔰
-                            </span>
-
+                            <span>🔰</span>
 
                             <strong id="stat-res">
                                 8
                             </strong>
-
 
                             <small>
                                 RES
@@ -1060,15 +1013,11 @@
                             </button>
 
 
-                            <span>
-                                💨
-                            </span>
-
+                            <span>💨</span>
 
                             <strong id="stat-agi">
                                 8
                             </strong>
-
 
                             <small>
                                 AGI
@@ -1090,15 +1039,11 @@
                             </button>
 
 
-                            <span>
-                                🧠
-                            </span>
-
+                            <span>🧠</span>
 
                             <strong id="stat-int">
                                 15
                             </strong>
-
 
                             <small>
                                 INT
@@ -1112,8 +1057,6 @@
                 </div>
 
 
-
-                <!-- PONTOS -->
 
                 <div class="attribute-points">
 
@@ -1134,8 +1077,6 @@
                 </div>
 
 
-
-                <!-- AFINIDADE -->
 
                 <div class="element-section">
 
@@ -1160,10 +1101,7 @@
                             type="button">
 
                             <span>💧</span>
-
-                            <small>
-                                ÁGUA
-                            </small>
+                            <small>ÁGUA</small>
 
                         </button>
 
@@ -1174,10 +1112,7 @@
                             type="button">
 
                             <span>☀️</span>
-
-                            <small>
-                                LUZ
-                            </small>
+                            <small>LUZ</small>
 
                         </button>
 
@@ -1188,10 +1123,7 @@
                             type="button">
 
                             <span>🪨</span>
-
-                            <small>
-                                TERRA
-                            </small>
+                            <small>TERRA</small>
 
                         </button>
 
@@ -1202,10 +1134,7 @@
                             type="button">
 
                             <span>🌑</span>
-
-                            <small>
-                                TREVAS
-                            </small>
+                            <small>TREVAS</small>
 
                         </button>
 
@@ -1216,10 +1145,7 @@
                             type="button">
 
                             <span>🌪️</span>
-
-                            <small>
-                                VENTO
-                            </small>
+                            <small>VENTO</small>
 
                         </button>
 
@@ -1230,10 +1156,7 @@
                             type="button">
 
                             <span>🔥</span>
-
-                            <small>
-                                FOGO
-                            </small>
+                            <small>FOGO</small>
 
                         </button>
 
@@ -1244,10 +1167,7 @@
                             type="button">
 
                             <span>💪</span>
-
-                            <small>
-                                FÍSICO
-                            </small>
+                            <small>FÍSICO</small>
 
                         </button>
 
@@ -1258,10 +1178,7 @@
                             type="button">
 
                             <span>✨</span>
-
-                            <small>
-                                MÁGICO
-                            </small>
+                            <small>MÁGICO</small>
 
                         </button>
 
@@ -1283,8 +1200,6 @@
                 </div>
 
 
-
-                <!-- BRASÕES -->
 
                 <div class="badges">
 
@@ -1339,17 +1254,12 @@
 
 
 
-                <!-- RECURSOS -->
-
                 <div class="combat-resources">
 
 
                     <div>
 
-                        <span>
-                            🔮 MP
-                        </span>
-
+                        <span>🔮 MP</span>
 
                         <strong id="combat-mp">
                             15
@@ -1360,10 +1270,7 @@
 
                     <div>
 
-                        <span>
-                            ⚡ EST
-                        </span>
-
+                        <span>⚡ EST</span>
 
                         <strong id="combat-est">
                             30
@@ -1375,8 +1282,6 @@
                 </div>
 
 
-
-                <!-- ATAQUE BÁSICO -->
 
                 <div class="combat-card basic-attack-card">
 
@@ -1421,8 +1326,6 @@
 
 
 
-                <!-- CONTRA-ATAQUE -->
-
                 <div class="combat-card counterattack-card">
 
 
@@ -1458,10 +1361,6 @@
 
 
 
-                <!-- =================================================
-                     HABILIDADES
-                ================================================== -->
-
                 <div class="abilities-section">
 
 
@@ -1470,8 +1369,6 @@
                     </h3>
 
 
-
-                    <!-- HABILIDADE 1 -->
 
                     <div
                         class="ability-card"
@@ -1483,7 +1380,6 @@
                             <span>
                                 HABILIDADE 1
                             </span>
-
 
                             <span>
                                 EDITÁVEL
@@ -1500,14 +1396,11 @@
 
                         <div class="ability-cost-row">
 
-
-                            <select
-                                class="ability-cost-type">
+                            <select class="ability-cost-type">
 
                                 <option value="mp">
                                     MP
                                 </option>
-
 
                                 <option value="est">
                                     EST
@@ -1527,8 +1420,7 @@
 
                         <textarea
                             class="ability-description-input"
-                            placeholder="Descrição da habilidade...">
-                        </textarea>
+                            placeholder="Descrição da habilidade..."></textarea>
 
 
                         <button
@@ -1545,8 +1437,6 @@
 
 
 
-                    <!-- HABILIDADE 2 -->
-
                     <div
                         class="ability-card"
                         data-ability-index="1">
@@ -1557,7 +1447,6 @@
                             <span>
                                 HABILIDADE 2
                             </span>
-
 
                             <span>
                                 EDITÁVEL
@@ -1574,14 +1463,11 @@
 
                         <div class="ability-cost-row">
 
-
-                            <select
-                                class="ability-cost-type">
+                            <select class="ability-cost-type">
 
                                 <option value="mp">
                                     MP
                                 </option>
-
 
                                 <option value="est">
                                     EST
@@ -1601,8 +1487,7 @@
 
                         <textarea
                             class="ability-description-input"
-                            placeholder="Descrição da habilidade...">
-                        </textarea>
+                            placeholder="Descrição da habilidade..."></textarea>
 
 
                         <button
@@ -1619,8 +1504,6 @@
 
 
 
-                    <!-- HABILIDADE 3 -->
-
                     <div
                         class="ability-card"
                         data-ability-index="2">
@@ -1631,7 +1514,6 @@
                             <span>
                                 HABILIDADE 3
                             </span>
-
 
                             <span>
                                 EDITÁVEL
@@ -1648,14 +1530,11 @@
 
                         <div class="ability-cost-row">
 
-
-                            <select
-                                class="ability-cost-type">
+                            <select class="ability-cost-type">
 
                                 <option value="mp">
                                     MP
                                 </option>
-
 
                                 <option value="est">
                                     EST
@@ -1675,8 +1554,7 @@
 
                         <textarea
                             class="ability-description-input"
-                            placeholder="Descrição da habilidade...">
-                        </textarea>
+                            placeholder="Descrição da habilidade..."></textarea>
 
 
                         <button
@@ -1696,10 +1574,6 @@
 
 
 
-                <!-- =================================================
-                     PASSIVA
-                ================================================== -->
-
                 <div class="passive-section">
 
 
@@ -1716,7 +1590,6 @@
                             <span>
                                 PASSIVA
                             </span>
-
 
                             <span>
                                 EDITÁVEL
@@ -1735,19 +1608,13 @@
                         <textarea
                             id="passive-description"
                             class="passive-description-input"
-                            placeholder="Descreva o efeito da passiva...">
-                        </textarea>
-
+                            placeholder="Descreva o efeito da passiva..."></textarea>
 
                     </div>
 
                 </div>
 
 
-
-                <!-- =================================================
-                     PASSIVA DE CLASSE
-                ================================================== -->
 
                 <div class="class-passive-section">
 
@@ -1767,7 +1634,6 @@
                                 PASSIVA DE CLASSE
                             </span>
 
-
                             <span>
                                 AUTOMÁTICA
                             </span>
@@ -1783,10 +1649,8 @@
                             </small>
 
 
-                            <strong>
-                                <span id="class-passive-class">
-                                    —
-                                </span>
+                            <strong id="class-passive-class-name">
+                                —
                             </strong>
 
                         </div>
@@ -1827,10 +1691,6 @@
                 </div>
 
 
-
-                <!-- =================================================
-                     LOG
-                ================================================== -->
 
                 <div class="combat-log-section">
 
@@ -1877,8 +1737,6 @@
 
 
 
-                <!-- CAPACIDADE -->
-
                 <div class="inventory-capacity">
 
                     <span>
@@ -1887,16 +1745,16 @@
 
 
                     <strong>
+
                         <span id="inventory-slots">
                             0/50
                         </span>
+
                     </strong>
 
                 </div>
 
 
-
-                <!-- ADICIONAR -->
 
                 <button
                     id="inventory-add-button"
@@ -1908,8 +1766,6 @@
                 </button>
 
 
-
-                <!-- FORMULÁRIO -->
 
                 <form
                     id="inventory-form"
@@ -1928,11 +1784,8 @@
 
                     <div class="editor-field">
 
-                        <label
-                            for="inventory-item-name">
-
+                        <label for="inventory-item-name">
                             NOME DO ITEM
-
                         </label>
 
 
@@ -1949,11 +1802,8 @@
 
                     <div class="editor-field">
 
-                        <label
-                            for="inventory-item-quantity">
-
+                        <label for="inventory-item-quantity">
                             QUANTIDADE
-
                         </label>
 
 
@@ -1995,10 +1845,6 @@
                 </form>
 
 
-
-                <!-- =================================================
-                     EQUIPAMENTOS
-                ================================================== -->
 
                 <div class="equipment-section">
 
@@ -2100,10 +1946,6 @@
 
 
 
-                <!-- =================================================
-                     ITENS
-                ================================================== -->
-
                 <div class="inventory-list-section">
 
 
@@ -2150,6 +1992,7 @@
 ========================================================= -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 
 
 <!-- =========================================================
