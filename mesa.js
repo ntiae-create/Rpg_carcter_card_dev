@@ -5554,3 +5554,51 @@
 
 
 })();
+window.addEventListener("error", function (e) {
+    document.body.innerHTML = `
+        <div style="
+            padding:20px;
+            background:#120505;
+            color:#fff;
+            font-family:monospace;
+            min-height:100vh;
+            box-sizing:border-box;
+        ">
+            <h2 style="color:#ff5555;">❌ Erro na Mesa</h2>
+
+            <p><strong>Mensagem:</strong></p>
+            <pre style="
+                white-space:pre-wrap;
+                background:#000;
+                padding:15px;
+                border-radius:8px;
+            ">${e.message || "Erro desconhecido"}</pre>
+
+            <p><strong>Arquivo:</strong> ${e.filename || "desconhecido"}</p>
+            <p><strong>Linha:</strong> ${e.lineno || "desconhecida"}</p>
+        </div>
+    `;
+});
+
+window.addEventListener("unhandledrejection", function (e) {
+    document.body.innerHTML = `
+        <div style="
+            padding:20px;
+            background:#120505;
+            color:#fff;
+            font-family:monospace;
+            min-height:100vh;
+            box-sizing:border-box;
+        ">
+            <h2 style="color:#ff5555;">❌ Erro na Mesa</h2>
+
+            <p><strong>Promise rejeitada:</strong></p>
+            <pre style="
+                white-space:pre-wrap;
+                background:#000;
+                padding:15px;
+                border-radius:8px;
+            ">${e.reason?.message || e.reason || "Erro desconhecido"}</pre>
+        </div>
+    `;
+});
