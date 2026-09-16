@@ -3305,3 +3305,2252 @@
                     criarTelaAjuda();
 
                 break
+            case "help":
+
+                definirModoMesa(
+                    "campaign"
+                );
+
+                tela.innerHTML =
+                    criarTelaAjuda();
+
+                break;
+
+
+            default:
+
+                definirModoMesa(
+                    "campaign"
+                );
+
+                tela.innerHTML =
+                    criarTelaInicial();
+
+                break;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // PERSONAGEM SELECIONADO
+    // ==========================================
+
+    function obterPersonagemSelecionado() {
+
+        if (
+            window.rpgMesa.selectedCharacter
+        ) {
+
+            return window.rpgMesa.selectedCharacter;
+
+        }
+
+
+        const jogador =
+            window.rpgMesa.players.find(
+                function (player) {
+
+                    return (
+                        String(
+                            player.user_id ||
+                            player.id ||
+                            player.player_id
+                        ) ===
+                        String(
+                            window.rpgAuth?.user?.id
+                        )
+                    );
+
+                }
+            );
+
+
+        if (jogador) {
+
+            return (
+                jogador.character ||
+                jogador.personagem ||
+                jogador
+            );
+
+        }
+
+
+        return null;
+
+    }
+
+
+    // ==========================================
+    // TELA — PERSONAGEM
+    // ==========================================
+
+    function criarTelaPersonagem(
+        personagem
+    ) {
+
+        if (!personagem) {
+
+            return criarTelaVazia(
+                "🎴",
+                "PERSONAGEM",
+                "Nenhum personagem selecionado."
+            );
+
+        }
+
+
+        const nome =
+            personagem.name ||
+            personagem.nome ||
+            "Sem nome";
+
+
+        const raca =
+            personagem.race ||
+            personagem.raca ||
+            "—";
+
+
+        const classe =
+            personagem.class ||
+            personagem.classe ||
+            "—";
+
+
+        const afinidade =
+            personagem.affinity ||
+            personagem.afinidade ||
+            "—";
+
+
+        const nivel =
+            personagem.level ||
+            personagem.nivel ||
+            1;
+
+
+        return `
+
+            <div class="mesa-module-content">
+
+                <div class="mesa-module-title">
+                    🎴 PERSONAGEM
+                </div>
+
+                <h2>
+                    ${escaparHTML(nome)}
+                </h2>
+
+                <div class="mesa-data-grid">
+
+                    ${criarItemDados(
+                        "RAÇA",
+                        raca
+                    )}
+
+                    ${criarItemDados(
+                        "CLASSE",
+                        classe
+                    )}
+
+                    ${criarItemDados(
+                        "AFINIDADE",
+                        afinidade
+                    )}
+
+                    ${criarItemDados(
+                        "NÍVEL",
+                        nivel
+                    )}
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — STATUS
+    // ==========================================
+
+    function criarTelaStatus(
+        personagem
+    ) {
+
+        if (!personagem) {
+
+            return criarTelaVazia(
+                "❤️",
+                "STATUS",
+                "Nenhum personagem selecionado."
+            );
+
+        }
+
+
+        const hp =
+            Number(
+                personagem.hp ??
+                personagem.health ??
+                personagem.vida ??
+                100
+            );
+
+
+        const maxHp =
+            Number(
+                personagem.max_hp ??
+                personagem.maxHealth ??
+                personagem.maxVida ??
+                100
+            );
+
+
+        const hpSeguro =
+            Math.max(
+                0,
+                Math.min(
+                    hp,
+                    maxHp || 100
+                )
+            );
+
+
+        const porcentagem =
+            maxHp > 0
+                ? (hpSeguro / maxHp) * 100
+                : 0;
+
+
+        const energia =
+            personagem.energy ??
+            personagem.energia ??
+            100;
+
+
+        const mana =
+            personagem.mana ??
+            personagem.mp ??
+            100;
+
+
+        return `
+
+            <div class="mesa-module-content">
+
+                <div class="mesa-module-title">
+                    ❤️ STATUS
+                </div>
+
+                <h2>
+                    ${escaparHTML(
+                        personagem.name ||
+                        personagem.nome ||
+                        "Personagem"
+                    )}
+                </h2>
+
+                <div>
+
+                    <small>
+                        VIDA
+                    </small>
+
+                    <div class="mesa-hp-bar">
+
+                        <div
+                            class="mesa-hp-fill"
+                            style="width:${porcentagem}%"
+                        ></div>
+
+                    </div>
+
+                    <div
+                        style="
+                            display:flex;
+                            justify-content:space-between;
+                            font-size:10px;
+                            color:#aaa;
+                        "
+                    >
+
+                        <span>
+                            HP
+                        </span>
+
+                        <strong>
+                            ${hpSeguro} / ${maxHp}
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div
+                    class="mesa-data-grid"
+                    style="margin-top:15px;"
+                >
+
+                    ${criarItemDados(
+                        "ENERGIA",
+                        energia
+                    )}
+
+                    ${criarItemDados(
+                        "MANA",
+                        mana
+                    )}
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — AFINIDADES
+    // ==========================================
+
+    function criarTelaAfinidades(
+        personagem
+    ) {
+
+        if (!personagem) {
+
+            return criarTelaVazia(
+                "✨",
+                "AFINIDADES",
+                "Nenhum personagem selecionado."
+            );
+
+        }
+
+
+        const afinidade =
+            personagem.affinity ||
+            personagem.afinidade ||
+            "Nenhuma definida";
+
+
+        const afinidades =
+            personagem.affinities ||
+            personagem.afinidades ||
+            [];
+
+
+        let lista = "";
+
+
+        if (
+            Array.isArray(afinidades) &&
+            afinidades.length
+        ) {
+
+            lista =
+                afinidades
+                    .map(
+                        function (item) {
+
+                            return `
+
+                                <div
+                                    class="mesa-data-item"
+                                >
+
+                                    <span>
+                                        AFINIDADE
+                                    </span>
+
+                                    <strong>
+                                        ${escaparHTML(
+                                            typeof item === "string"
+                                                ? item
+                                                : item.name ||
+                                                  item.nome ||
+                                                  "—"
+                                        )}
+                                    </strong>
+
+                                </div>
+
+                            `;
+
+                        }
+                    )
+                    .join("");
+
+        }
+
+
+        return `
+
+            <div class="mesa-module-content">
+
+                <div class="mesa-module-title">
+                    ✨ AFINIDADES
+                </div>
+
+                <h2>
+                    ${escaparHTML(
+                        personagem.name ||
+                        personagem.nome ||
+                        "Personagem"
+                    )}
+                </h2>
+
+                <div class="mesa-data-grid">
+
+                    ${criarItemDados(
+                        "PRINCIPAL",
+                        afinidade
+                    )}
+
+                    ${
+                        lista ||
+                        criarItemDados(
+                            "STATUS",
+                            "Nenhuma afinidade adicional"
+                        )
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — INVENTÁRIO
+    // ==========================================
+
+    function criarTelaInventario(
+        personagem
+    ) {
+
+        if (!personagem) {
+
+            return criarTelaVazia(
+                "🎒",
+                "INVENTÁRIO",
+                "Nenhum personagem selecionado."
+            );
+
+        }
+
+
+        const inventario =
+            personagem.inventory ||
+            personagem.inventario ||
+            personagem.items ||
+            personagem.itens ||
+            [];
+
+
+        let conteudo = "";
+
+
+        if (
+            Array.isArray(inventario) &&
+            inventario.length
+        ) {
+
+            conteudo =
+                inventario
+                    .map(
+                        function (item) {
+
+                            const nome =
+                                typeof item === "string"
+                                    ? item
+                                    : item.name ||
+                                      item.nome ||
+                                      "Item";
+
+
+                            const quantidade =
+                                typeof item === "object"
+                                    ? (
+                                        item.quantity ??
+                                        item.quantidade ??
+                                        1
+                                    )
+                                    : 1;
+
+
+                            return `
+
+                                <div
+                                    class="mesa-data-item"
+                                >
+
+                                    <span>
+                                        ITEM
+                                    </span>
+
+                                    <strong>
+                                        ${escaparHTML(nome)}
+                                        ×${escaparHTML(
+                                            quantidade
+                                        )}
+                                    </strong>
+
+                                </div>
+
+                            `;
+
+                        }
+                    )
+                    .join("");
+
+        } else {
+
+            conteudo = `
+
+                <div
+                    style="
+                        grid-column:1/-1;
+                        padding:25px;
+                        text-align:center;
+                        color:#75687f;
+                    "
+                >
+                    🎒 Inventário vazio.
+                </div>
+
+            `;
+
+        }
+
+
+        return `
+
+            <div class="mesa-module-content">
+
+                <div class="mesa-module-title">
+                    🎒 INVENTÁRIO
+                </div>
+
+                <h2>
+                    ${escaparHTML(
+                        personagem.name ||
+                        personagem.nome ||
+                        "Personagem"
+                    )}
+                </h2>
+
+                <div class="mesa-data-grid">
+
+                    ${conteudo}
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — NECESSIDADES
+    // ==========================================
+
+    function criarTelaNecessidades(
+        personagem
+    ) {
+
+        if (!personagem) {
+
+            return criarTelaVazia(
+                "🍖",
+                "FOME E SEDE",
+                "Nenhum personagem selecionado."
+            );
+
+        }
+
+
+        const fome =
+            personagem.hunger ??
+            personagem.fome ??
+            100;
+
+
+        const sede =
+            personagem.thirst ??
+            personagem.sede ??
+            100;
+
+
+        return `
+
+            <div class="mesa-module-content">
+
+                <div class="mesa-module-title">
+                    🍖 NECESSIDADES
+                </div>
+
+                <h2>
+                    Fome e Sede
+                </h2>
+
+                <div class="mesa-data-grid">
+
+                    ${criarItemDados(
+                        "FOME",
+                        fome + "%"
+                    )}
+
+                    ${criarItemDados(
+                        "SEDE",
+                        sede + "%"
+                    )}
+
+                </div>
+
+                <p
+                    style="
+                        margin-top:15px;
+                        color:#75687f;
+                        font-size:9px;
+                    "
+                >
+                    Os valores poderão ser alterados pelo
+                    Mestre através do painel de controle.
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — JOGADORES
+    // ==========================================
+
+    function criarTelaJogadores() {
+
+        const jogadores =
+            window.rpgMesa.players || [];
+
+
+        if (!jogadores.length) {
+
+            return criarTelaVazia(
+                "👥",
+                "JOGADORES",
+                "Nenhum jogador conectado."
+            );
+
+        }
+
+
+        return `
+
+            <div class="mesa-module-content">
+
+                <div class="mesa-module-title">
+                    👥 JOGADORES
+                </div>
+
+                <h2>
+                    Jogadores da Mesa
+                </h2>
+
+                <div class="mesa-data-grid">
+
+                    ${
+                        jogadores
+                            .map(
+                                function (player, index) {
+
+                                    const nome =
+                                        player.character?.name ||
+                                        player.personagem?.name ||
+                                        player.name ||
+                                        player.username ||
+                                        "Jogador " + (index + 1);
+
+
+                                    return `
+
+                                        <button
+                                            type="button"
+                                            class="mesa-data-item"
+                                            data-select-player="${index}"
+                                            style="
+                                                cursor:pointer;
+                                                color:#fff;
+                                                text-align:left;
+                                            "
+                                        >
+
+                                            <span>
+                                                JOGADOR ${index + 1}
+                                            </span>
+
+                                            <strong>
+                                                ${escaparHTML(nome)}
+                                            </strong>
+
+                                        </button>
+
+                                    `;
+
+                                }
+                            )
+                            .join("")
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // SELEÇÃO DE JOGADORES
+    // ==========================================
+
+    function configurarSelecaoJogadores() {
+
+        const tela =
+            document.getElementById(
+                "mesa-screen"
+            );
+
+
+        if (!tela) {
+
+            return;
+
+        }
+
+
+        tela
+            .querySelectorAll(
+                "[data-select-player]"
+            )
+            .forEach(
+                function (botao) {
+
+                    botao.addEventListener(
+                        "click",
+                        function () {
+
+                            const index =
+                                Number(
+                                    botao.dataset.selectPlayer
+                                );
+
+
+                            const jogador =
+                                window.rpgMesa.players[
+                                    index
+                                ];
+
+
+                            if (!jogador) {
+
+                                return;
+
+                            }
+
+
+                            window.rpgMesa.selectedPlayer =
+                                jogador;
+
+
+                            window.rpgMesa.selectedCharacter =
+                                jogador.character ||
+                                jogador.personagem ||
+                                jogador;
+
+
+                            abrirModulo(
+                                "character"
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+    }
+
+
+    // ==========================================
+    // TELA — COMBATE
+    // ==========================================
+
+    function criarTelaCombate() {
+
+        return `
+
+            <div class="mesa-combat">
+
+                <div class="mesa-module-title">
+                    ⚔️ SISTEMA DE COMBATE
+                </div>
+
+                <div class="mesa-combat-title">
+                    COMBATE
+                </div>
+
+                <p
+                    style="
+                        color:#a99bb4;
+                        font-size:10px;
+                    "
+                >
+                    A mesa está em modo de combate.
+                </p>
+
+                ${
+                    usuarioEhMestre()
+                        ? `
+
+                            <div
+                                class="mesa-module-actions"
+                            >
+
+                                <button
+                                    type="button"
+                                    class="mesa-module-action"
+                                    data-combat-action="start"
+                                >
+                                    ⚔️ INICIAR COMBATE
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="mesa-module-action"
+                                    data-combat-action="end"
+                                >
+                                    🏳️ ENCERRAR COMBATE
+                                </button>
+
+                            </div>
+
+                        `
+                        : ""
+                }
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — CTE
+    // ==========================================
+
+    function criarTelaCTE() {
+
+        const cte =
+            window.rpgMesa.cte;
+
+
+        if (!cte) {
+
+            return `
+
+                <div class="mesa-cte">
+
+                    <div
+                        style="
+                            font-size:45px;
+                        "
+                    >
+                        ⚡
+                    </div>
+
+                    <h2>
+                        CTE
+                    </h2>
+
+                    <p
+                        style="
+                            color:#a99bb4;
+                            font-size:10px;
+                        "
+                    >
+                        Nenhum evento ativo.
+                    </p>
+
+                    ${
+                        usuarioEhMestre()
+                            ? `
+
+                                <button
+                                    type="button"
+                                    class="mesa-cte-button"
+                                    id="mesa-cte-demo"
+                                >
+                                    ⚡ INICIAR CTE
+                                </button>
+
+                            `
+                            : ""
+                    }
+
+                </div>
+
+            `;
+
+        }
+
+
+        return `
+
+            <div class="mesa-cte">
+
+                <div
+                    style="
+                        color:#fde047;
+                        font-size:9px;
+                        letter-spacing:3px;
+                    "
+                >
+                    ⚡ CLICK TIME EVENT
+                </div>
+
+                <h2>
+                    ${escaparHTML(
+                        cte.title ||
+                        "EVENTO"
+                    )}
+                </h2>
+
+                <p
+                    style="
+                        max-width:450px;
+                        color:#d6ccad;
+                        font-size:11px;
+                    "
+                >
+                    ${escaparHTML(
+                        cte.description ||
+                        "Escolha uma ação."
+                    )}
+                </p>
+
+                <div
+                    class="mesa-cte-timer"
+                    id="mesa-cte-timer"
+                >
+                    ${cte.timeLimit || 0}
+                </div>
+
+                <div
+                    class="mesa-module-actions"
+                    id="mesa-cte-options"
+                >
+
+                    ${
+                        (cte.options || [])
+                            .map(
+                                function (opcao) {
+
+                                    return `
+
+                                        <button
+                                            type="button"
+                                            class="mesa-cte-button"
+                                            data-cte-option="${escaparHTML(
+                                                opcao.id ||
+                                                opcao.value ||
+                                                opcao.label
+                                            )}"
+                                        >
+                                            ${escaparHTML(
+                                                opcao.label ||
+                                                opcao.text ||
+                                                "Escolher"
+                                            )}
+                                        </button>
+
+                                    `;
+
+                                }
+                            )
+                            .join("")
+                    }
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — INTERFACE
+    // ==========================================
+
+    function criarTelaInterface() {
+
+        return `
+
+            <div class="mesa-screen-home">
+
+                <div class="mesa-screen-symbol">
+                    🎨
+                </div>
+
+                <h3>
+                    INTERFACE DA MESA
+                </h3>
+
+                <p>
+                    Personalização visual.
+                </p>
+
+                <div
+                    class="mesa-module-actions"
+                    style="max-width:400px;"
+                >
+
+                    <button
+                        type="button"
+                        class="mesa-module-action"
+                        data-interface-mode="normal"
+                    >
+                        🟣 Padrão
+                    </button>
+
+                    <button
+                        type="button"
+                        class="mesa-module-action"
+                        data-interface-mode="green"
+                    >
+                        🟢 Verde
+                    </button>
+
+                </div>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — AJUDA
+    // ==========================================
+
+    function criarTelaAjuda() {
+
+        return `
+
+            <div class="mesa-screen-home">
+
+                <div class="mesa-screen-symbol">
+                    ❓
+                </div>
+
+                <h3>
+                    AJUDA
+                </h3>
+
+                <p>
+                    Bem-vindo à Mesa Online.
+                </p>
+
+                <span>
+                    Use os módulos para acessar
+                    personagem, status, inventário,
+                    mapa, combate e CTE.
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA — MAPA
+    // ==========================================
+
+    function criarTelaMapa() {
+
+        return `
+
+            <div
+                class="mesa-map-wrap"
+                id="mesa-map"
+            >
+
+                <div class="mesa-map-controls">
+
+                    <button
+                        type="button"
+                        id="mesa-map-minus"
+                    >
+                        −
+                    </button>
+
+                    <button
+                        type="button"
+                        id="mesa-map-reset"
+                    >
+                        ⟳
+                    </button>
+
+                    <button
+                        type="button"
+                        id="mesa-map-plus"
+                    >
+                        +
+                    </button>
+
+                </div>
+
+
+                <svg
+                    class="mesa-map-svg"
+                    id="mesa-map-svg"
+                    viewBox="0 0 1000 600"
+                >
+
+                    <rect
+                        width="1000"
+                        height="600"
+                        fill="#080b12"
+                    />
+
+
+                    <path
+                        class="mesa-map-region"
+                        d="
+                            M80 80
+                            Q250 20 400 100
+                            L350 250
+                            Q200 280 80 220
+                            Z
+                        "
+                        data-region="Região Norte"
+                    />
+
+                    <text
+                        class="mesa-map-label"
+                        x="230"
+                        y="160"
+                    >
+                        REGIÃO NORTE
+                    </text>
+
+
+                    <path
+                        class="mesa-map-region"
+                        d="
+                            M450 100
+                            Q650 30 900 120
+                            L850 300
+                            Q650 340 480 260
+                            Z
+                        "
+                        data-region="Região Leste"
+                    />
+
+                    <text
+                        class="mesa-map-label"
+                        x="680"
+                        y="180"
+                    >
+                        REGIÃO LESTE
+                    </text>
+
+
+                    <path
+                        class="mesa-map-region"
+                        d="
+                            M120 320
+                            Q300 270 470 350
+                            L420 520
+                            Q250 550 100 460
+                            Z
+                        "
+                        data-region="Região Sul"
+                    />
+
+                    <text
+                        class="mesa-map-label"
+                        x="280"
+                        y="420"
+                    >
+                        REGIÃO SUL
+                    </text>
+
+
+                    <circle
+                        class="mesa-map-portal"
+                        cx="500"
+                        cy="300"
+                        r="14"
+                        data-region="Portal Central"
+                    />
+
+                    <circle
+                        class="mesa-map-player"
+                        cx="700"
+                        cy="410"
+                        r="10"
+                        data-player-map="true"
+                    />
+
+                </svg>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // CONFIGURAR MAPA
+    // ==========================================
+
+    function configurarMapa() {
+
+        const mapa =
+            document.getElementById(
+                "mesa-map"
+            );
+
+
+        const svg =
+            document.getElementById(
+                "mesa-map-svg"
+            );
+
+
+        if (!mapa || !svg) {
+
+            return;
+
+        }
+
+
+        const estado =
+            window.rpgMesa.map;
+
+
+        estado.x = 0;
+        estado.y = 0;
+        estado.scale = 1;
+
+
+        function aplicarTransformacao() {
+
+            svg.style.transform =
+                `
+                    translate(
+                        ${estado.x}px,
+                        ${estado.y}px
+                    )
+                    scale(
+                        ${estado.scale}
+                    )
+                `;
+
+        }
+
+
+        const plus =
+            document.getElementById(
+                "mesa-map-plus"
+            );
+
+
+        const minus =
+            document.getElementById(
+                "mesa-map-minus"
+            );
+
+
+        const reset =
+            document.getElementById(
+                "mesa-map-reset"
+            );
+
+
+        if (plus) {
+
+            plus.onclick =
+                function () {
+
+                    estado.scale =
+                        Math.min(
+                            3,
+                            estado.scale + .2
+                        );
+
+                    aplicarTransformacao();
+
+                };
+
+        }
+
+
+        if (minus) {
+
+            minus.onclick =
+                function () {
+
+                    estado.scale =
+                        Math.max(
+                            .6,
+                            estado.scale - .2
+                        );
+
+                    aplicarTransformacao();
+
+                };
+
+        }
+
+
+        if (reset) {
+
+            reset.onclick =
+                function () {
+
+                    estado.x = 0;
+                    estado.y = 0;
+                    estado.scale = 1;
+
+                    aplicarTransformacao();
+
+                };
+
+        }
+
+
+        let arrastando = false;
+
+        let inicioX = 0;
+
+        let inicioY = 0;
+
+
+        mapa.addEventListener(
+            "pointerdown",
+            function (evento) {
+
+                if (
+                    evento.target.closest(
+                        ".mesa-map-controls"
+                    )
+                ) {
+
+                    return;
+
+                }
+
+
+                arrastando = true;
+
+                inicioX =
+                    evento.clientX -
+                    estado.x;
+
+                inicioY =
+                    evento.clientY -
+                    estado.y;
+
+                mapa.classList.add(
+                    "dragging"
+                );
+
+                mapa.setPointerCapture(
+                    evento.pointerId
+                );
+
+            }
+        );
+
+
+        mapa.addEventListener(
+            "pointermove",
+            function (evento) {
+
+                if (!arrastando) {
+
+                    return;
+
+                }
+
+
+                estado.x =
+                    evento.clientX -
+                    inicioX;
+
+                estado.y =
+                    evento.clientY -
+                    inicioY;
+
+                aplicarTransformacao();
+
+            }
+        );
+
+
+        mapa.addEventListener(
+            "pointerup",
+            function (evento) {
+
+                arrastando = false;
+
+                mapa.classList.remove(
+                    "dragging"
+                );
+
+                try {
+
+                    mapa.releasePointerCapture(
+                        evento.pointerId
+                    );
+
+                } catch (erro) {}
+
+            }
+        );
+
+
+        svg
+            .querySelectorAll(
+                ".mesa-map-region,.mesa-map-portal"
+            )
+            .forEach(
+                function (elemento) {
+
+                    elemento.addEventListener(
+                        "click",
+                        function () {
+
+                            const nome =
+                                elemento.dataset.region ||
+                                "Local";
+
+
+                            mostrarNotificacaoMesa(
+                                "🗺️ " + nome
+                            );
+
+                        }
+                    );
+
+                }
+            );
+
+    }
+
+
+    // ==========================================
+    // MODO DA MESA
+    // ==========================================
+
+    function definirModoMesa(
+        modo
+    ) {
+
+        const tabela =
+            document.getElementById(
+                "rpg-table"
+            );
+
+
+        const status =
+            document.getElementById(
+                "mesa-mode-status"
+            );
+
+
+        if (!tabela) {
+
+            return;
+
+        }
+
+
+        tabela.classList.remove(
+            "mesa-state-campaign",
+            "mesa-state-interface",
+            "mesa-state-combat",
+            "mesa-state-cte",
+            "mesa-state-map",
+            "mesa-state-boss"
+        );
+
+
+        let classe =
+            "mesa-state-campaign";
+
+
+        let texto =
+            "🟢 CAMPANHA";
+
+
+        switch (modo) {
+
+            case "interface":
+
+                classe =
+                    "mesa-state-interface";
+
+                texto =
+                    "🟢 INTERFACE";
+
+                break;
+
+
+            case "combat":
+
+                classe =
+                    "mesa-state-combat";
+
+                texto =
+                    "🔴 COMBATE";
+
+                break;
+
+
+            case "cte":
+
+                classe =
+                    "mesa-state-cte";
+
+                texto =
+                    "🟡 CTE";
+
+                break;
+
+
+            case "map":
+
+                classe =
+                    "mesa-state-map";
+
+                texto =
+                    "🔵 MAPA";
+
+                break;
+
+
+            case "boss":
+
+                classe =
+                    "mesa-state-boss";
+
+                texto =
+                    "🚨 BOSS";
+
+                break;
+
+
+            default:
+
+                break;
+
+        }
+
+
+        tabela.classList.add(
+            classe
+        );
+
+
+        window.rpgMesa.mode =
+            modo;
+
+
+        if (status) {
+
+            status.textContent =
+                texto;
+
+        }
+
+    }
+
+
+    // ==========================================
+    // CTE — INICIAR
+    // ==========================================
+
+    function iniciarCTE(
+        dados
+    ) {
+
+        dados =
+            dados || {};
+
+
+        const duracao =
+            Number(
+                dados.timeLimit ??
+                dados.tempo ??
+                10
+            );
+
+
+        window.rpgMesa.cte = {
+
+            title:
+                dados.title ||
+                dados.titulo ||
+                "EVENTO",
+
+            description:
+                dados.description ||
+                dados.descricao ||
+                "Escolha uma ação.",
+
+            timeLimit:
+                Math.max(
+                    1,
+                    duracao
+                ),
+
+            remaining:
+                Math.max(
+                    1,
+                    duracao
+                ),
+
+            options:
+                Array.isArray(
+                    dados.options
+                )
+                    ? dados.options
+                    : [],
+
+            active:true
+
+        };
+
+
+        definirModoMesa(
+            "cte"
+        );
+
+
+        abrirModulo(
+            "cte"
+        );
+
+
+        iniciarTimerCTE();
+
+    }
+
+
+    // ==========================================
+    // TIMER CTE
+    // ==========================================
+
+    function iniciarTimerCTE() {
+
+        if (
+            window.rpgMesa.cteTimer
+        ) {
+
+            clearInterval(
+                window.rpgMesa.cteTimer
+            );
+
+        }
+
+
+        window.rpgMesa.cteTimer =
+            setInterval(
+                function () {
+
+                    const cte =
+                        window.rpgMesa.cte;
+
+
+                    if (
+                        !cte ||
+                        !cte.active
+                    ) {
+
+                        clearInterval(
+                            window.rpgMesa.cteTimer
+                        );
+
+                        window.rpgMesa.cteTimer =
+                            null;
+
+                        return;
+
+                    }
+
+
+                    cte.remaining--;
+
+
+                    const timer =
+                        document.getElementById(
+                            "mesa-cte-timer"
+                        );
+
+
+                    if (timer) {
+
+                        timer.textContent =
+                            cte.remaining;
+
+                    }
+
+
+                    if (
+                        cte.remaining <= 0
+                    ) {
+
+                        finalizarCTE();
+
+                    }
+
+                },
+                1000
+            );
+
+    }
+
+
+    // ==========================================
+    // RESPONDER CTE
+    // ==========================================
+
+    function responderCTE(
+        id
+    ) {
+
+        const cte =
+            window.rpgMesa.cte;
+
+
+        if (
+            !cte ||
+            !cte.active
+        ) {
+
+            return;
+
+        }
+
+
+        const opcao =
+            cte.options.find(
+                function (item) {
+
+                    return String(
+                        item.id ||
+                        item.value ||
+                        item.label
+                    ) ===
+                    String(id);
+
+                }
+            );
+
+
+        if (!opcao) {
+
+            return;
+
+        }
+
+
+        cte.active = false;
+
+
+        mostrarNotificacaoMesa(
+            "⚡ Escolha registrada: " +
+            (
+                opcao.label ||
+                opcao.text ||
+                "opção"
+            )
+        );
+
+
+        finalizarCTE();
+
+    }
+
+
+    // ==========================================
+    // FINALIZAR CTE
+    // ==========================================
+
+    function finalizarCTE() {
+
+        if (
+            window.rpgMesa.cteTimer
+        ) {
+
+            clearInterval(
+                window.rpgMesa.cteTimer
+            );
+
+            window.rpgMesa.cteTimer =
+                null;
+
+        }
+
+
+        if (
+            window.rpgMesa.cte
+        ) {
+
+            window.rpgMesa.cte.active =
+                false;
+
+        }
+
+
+        window.rpgMesa.cte =
+            null;
+
+
+        definirModoMesa(
+            "interface"
+        );
+
+
+        abrirModulo(
+            "interface"
+        );
+
+    }
+
+
+    // ==========================================
+    // BOSS
+    // ==========================================
+
+    function ativarBoss(
+        nome
+    ) {
+
+        nome =
+            nome ||
+            "BOSS";
+
+        
+        definirModoMesa(
+            "boss"
+        );
+
+
+        const tabela =
+            document.getElementById(
+                "rpg-table"
+            );
+
+
+        if (!tabela) {
+
+            return;
+
+        }
+
+
+        tabela.classList.remove(
+            "mesa-boss-flash"
+        );
+
+
+        void tabela.offsetWidth;
+
+
+        tabela.classList.add(
+            "mesa-boss-flash"
+        );
+
+
+        const alerta =
+            document.createElement(
+                "div"
+            );
+
+
+        alerta.className =
+            "mesa-boss-alert";
+
+
+        alerta.innerHTML = `
+
+            <div
+                class="mesa-boss-alert-box"
+            >
+
+                <strong>
+                    🚨 BOSS
+                </strong>
+
+                <span>
+                    ${escaparHTML(nome)}
+                </span>
+
+            </div>
+
+        `;
+
+
+        tabela.appendChild(
+            alerta
+        );
+
+
+        mostrarNotificacaoMesa(
+            "🚨 ALERTA DE BOSS: " +
+            nome
+        );
+
+
+        if (
+            window.rpgMesa.bossTimeout
+        ) {
+
+            clearTimeout(
+                window.rpgMesa.bossTimeout
+            );
+
+        }
+
+
+        window.rpgMesa.bossTimeout =
+            setTimeout(
+                function () {
+
+                    tabela.classList.remove(
+                        "mesa-boss-flash"
+                    );
+
+
+                    if (
+                        alerta.parentNode
+                    ) {
+
+                        alerta.remove();
+
+                    }
+
+
+                    definirModoMesa(
+                        "interface"
+                    );
+
+                },
+                5000
+            );
+
+    }
+
+
+    // ==========================================
+    // ITEM DE DADOS
+    // ==========================================
+
+    function criarItemDados(
+        label,
+        valor
+    ) {
+
+        return `
+
+            <div class="mesa-data-item">
+
+                <span>
+                    ${escaparHTML(label)}
+                </span>
+
+                <strong>
+                    ${escaparHTML(valor)}
+                </strong>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // TELA VAZIA
+    // ==========================================
+
+    function criarTelaVazia(
+        icone,
+        titulo,
+        mensagem
+    ) {
+
+        return `
+
+            <div class="mesa-screen-home">
+
+                <div class="mesa-screen-symbol">
+                    ${icone}
+                </div>
+
+                <h3>
+                    ${escaparHTML(titulo)}
+                </h3>
+
+                <p>
+                    ${escaparHTML(mensagem)}
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    // ==========================================
+    // NOTIFICAÇÃO
+    // ==========================================
+
+    function mostrarNotificacaoMesa(
+        mensagem
+    ) {
+
+        let notificacao =
+            document.getElementById(
+                "mesa-notificacao"
+            );
+
+
+        if (!notificacao) {
+
+            notificacao =
+                document.createElement(
+                    "div"
+                );
+
+
+            notificacao.id =
+                "mesa-notificacao";
+
+
+            notificacao.style.cssText = `
+
+                position:fixed;
+                left:50%;
+                bottom:20px;
+                transform:translateX(-50%);
+                z-index:100000;
+
+                max-width:90%;
+                padding:10px 15px;
+
+                border:1px solid #8b5cf6;
+                border-radius:12px;
+
+                background:#171020;
+                color:#fff;
+
+                box-shadow:
+                    0 0 25px
+                    rgba(124,58,237,.35);
+
+                font-size:10px;
+                text-align:center;
+
+            `;
+
+
+            document.body.appendChild(
+                notificacao
+            );
+
+        }
+
+
+        notificacao.textContent =
+            mensagem;
+
+
+        notificacao.style.display =
+            "block";
+
+
+        clearTimeout(
+            notificacao._timeout
+        );
+
+
+        notificacao._timeout =
+            setTimeout(
+                function () {
+
+                    notificacao.style.display =
+                        "none";
+
+                },
+                3000
+            );
+
+    }
+
+
+    // ==========================================
+    // ATUALIZAR MESA
+    // ==========================================
+
+    async function atualizarMesaSemRecarregar() {
+
+        const status =
+            document.getElementById(
+                "mesa-refresh-status"
+            );
+
+
+        if (status) {
+
+            status.textContent =
+                "Atualizando...";
+
+        }
+
+
+        try {
+
+            await carregarJogadoresMesa();
+
+            if (status) {
+
+                status.textContent =
+                    "✓ Mesa atualizada.";
+
+            }
+
+
+            mostrarNotificacaoMesa(
+                "🔄 Mesa atualizada."
+            );
+
+        } catch (erro) {
+
+            console.error(
+                erro
+            );
+
+
+            if (status) {
+
+                status.textContent =
+                    "Erro ao atualizar.";
+
+            }
+
+        }
+
+    }
+
+
+    // ==========================================
+    // EXPOR FUNÇÕES
+    // ==========================================
+
+    window.rpgMesa.definirModo =
+        definirModoMesa;
+
+
+    window.rpgMesa.abrirModulo =
+        abrirModulo;
+
+
+    window.rpgMesa.iniciarCTE =
+        iniciarCTE;
+
+
+    window.rpgMesa.responderCTE =
+        responderCTE;
+
+
+    window.rpgMesa.finalizarCTE =
+        finalizarCTE;
+
+
+    window.rpgMesa.alertarBoss =
+        ativarBoss;
+
+
+    window.rpgMesa.abrirConfiguracoes =
+        abrirConfiguracoesMesa;
+
+
+    window.rpgMesa.fecharConfiguracoes =
+        fecharConfiguracoesMesa;
+
+
+    window.rpgMesa.usuarioEhMestre =
+        usuarioEhMestre;
+
+
+    window.rpgMesa.obterJogadores =
+        function () {
+
+            return (
+                window.rpgMesa.players || []
+            );
+
+        };
+
+
+    // ==========================================
+    // INICIAR
+    // ==========================================
+
+    if (
+        document.readyState ===
+        "loading"
+    ) {
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            iniciarMesa
+        );
+
+    } else {
+
+        iniciarMesa();
+
+    }
+
+
+})();
