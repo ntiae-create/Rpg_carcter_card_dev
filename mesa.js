@@ -20,6 +20,7 @@ function obterNomeMestre() {
         "Mestre"
     );
 }
+window.obterNomeMestre = obterNomeMestre;
 // ==========================================
 // MESA ONLINE — RPG
 // PASSO 6 — MESA FUNCIONAL
@@ -355,7 +356,7 @@ function obterNomeMestre() {
 
                     <strong>
                         ${escaparHTML(
-                            obterNomeMestre()
+                            window.obterNomeMestre()
                         )}
                     </strong>
 
