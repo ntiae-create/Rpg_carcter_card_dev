@@ -175,6 +175,18 @@ function criarEstadoInicial() {
 
     return {
 
+        /*
+           NOVO ESTADO
+
+           false = personagem ainda pode ser confirmado
+           true  = personagem já foi confirmado
+
+           Nesta etapa ele NÃO bloqueia os campos ainda.
+        */
+
+        confirmed: false,
+
+
         name: "Personagem",
 
         race: "Humano",
@@ -436,6 +448,301 @@ function limitarNumero(
         minimo,
         numero
     );
+
+}
+
+
+/* =========================================================
+   CONFIRMAÇÃO DO PERSONAGEM
+========================================================= */
+
+/*
+   Nesta primeira etapa:
+
+   - criamos o estado confirmed;
+   - criamos o botão visualmente;
+   - salvamos a confirmação;
+   - mostramos o estado confirmado.
+
+   O bloqueio dos campos será feito na ETAPA 2.
+*/
+
+function configurarConfirmacaoPersonagem() {
+
+    const existente =
+        get("character-confirmation-panel");
+
+
+    if (existente) {
+
+        atualizarInterfaceConfirmacao();
+
+        return;
+
+    }
+
+
+    /*
+       Procuramos o editor do personagem.
+
+       Como o index.html atual já possui
+       a área de edição, colocamos o painel
+       logo depois dela.
+    */
+
+    const editor =
+        document.querySelector(
+            ".character-editor"
+        );
+
+
+    if (!editor) {
+
+        /*
+           Se o editor ainda não estiver
+           disponível, tentamos novamente.
+        */
+
+        setTimeout(
+            configurarConfirmacaoPersonagem,
+            500
+        );
+
+        return;
+
+    }
+
+
+    const panel =
+        document.createElement(
+            "div"
+        );
+
+
+    panel.id =
+        "character-confirmation-panel";
+
+
+    Object.assign(
+        panel.style,
+        {
+            marginTop: "18px",
+            padding: "15px",
+            borderRadius: "14px",
+            border: "1px solid #6f3aa8",
+            background: "rgba(124, 58, 237, 0.07)",
+            textAlign: "center"
+        }
+    );
+
+
+    editor.insertAdjacentElement(
+        "afterend",
+        panel
+    );
+
+
+    atualizarInterfaceConfirmacao();
+
+}
+
+
+/* =========================================================
+   ATUALIZAR CONFIRMAÇÃO
+========================================================= */
+
+function atualizarInterfaceConfirmacao() {
+
+    const panel =
+        get(
+            "character-confirmation-panel"
+        );
+
+
+    if (!panel) {
+
+        return;
+
+    }
+
+
+    /*
+       PERSONAGEM CONFIRMADO
+    */
+
+    if (
+        character.confirmed === true
+    ) {
+
+        panel.innerHTML = `
+
+            <div
+                style="
+                    color:#86efac;
+                    font-weight:bold;
+                    font-size:14px;
+                    letter-spacing:1px;
+                "
+            >
+                ✓ PERSONAGEM CONFIRMADO
+            </div>
+
+            <div
+                style="
+                    margin-top:7px;
+                    color:#8f839d;
+                    font-size:10px;
+                    line-height:1.5;
+                "
+            >
+                A criação deste personagem foi confirmada.
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+    /*
+       PERSONAGEM AINDA NÃO CONFIRMADO
+    */
+
+    panel.innerHTML = `
+
+        <div
+            style="
+                color:#c084fc;
+                font-weight:bold;
+                font-size:12px;
+                letter-spacing:1px;
+                margin-bottom:7px;
+            "
+        >
+            PERSONAGEM AINDA NÃO CONFIRMADO
+        </div>
+
+        <div
+            style="
+                color:#8f839d;
+                font-size:10px;
+                line-height:1.5;
+                margin-bottom:12px;
+            "
+        >
+            Confira nome, raça, classe e afinidade
+            antes de confirmar.
+        </div>
+
+        <button
+            id="confirm-character-button"
+            type="button"
+            style="
+                width:100%;
+                padding:12px;
+                border:1px solid #8b5cf6;
+                border-radius:11px;
+                background:#1b1424;
+                color:#e9d5ff;
+                font-weight:bold;
+                cursor:pointer;
+                font-size:12px;
+                letter-spacing:1px;
+            "
+        >
+            ✓ CONFIRMAR PERSONAGEM
+        </button>
+
+    `;
+
+
+    const button =
+        get(
+            "confirm-character-button"
+        );
+
+
+    if (button) {
+
+        button.addEventListener(
+            "click",
+            confirmarPersonagem
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   CONFIRMAR PERSONAGEM
+========================================================= */
+
+function confirmarPersonagem() {
+
+    /*
+       Evita confirmar duas vezes.
+    */
+
+    if (
+        character.confirmed === true
+    ) {
+
+        return;
+
+    }
+
+
+    const confirmar =
+        window.confirm(
+            "Deseja confirmar este personagem?\n\nNesta etapa a confirmação será salva permanentemente neste dispositivo."
+        );
+
+
+    if (!confirmar) {
+
+        return;
+
+    }
+
+
+    /*
+       Salva o estado.
+    */
+
+    character.confirmed =
+        true;
+
+
+    salvarPersonagem();
+
+
+    /*
+       Atualiza a interface.
+    */
+
+    atualizarInterface();
+
+
+    atualizarInterfaceConfirmacao();
+
+
+    /*
+       Mensagem visual.
+    */
+
+    if (
+        typeof mostrarResultadoSupabase ===
+        "function"
+    ) {
+
+        mostrarResultadoSupabase(
+            "✓ PERSONAGEM CONFIRMADO",
+            "sucesso"
+        );
+
+    }
 
 }
 
@@ -918,6 +1225,9 @@ function configurarReset() {
             atualizarInterface();
 
 
+            atualizarInterfaceConfirmacao();
+
+
             StatusModule.iniciar();
 
             CharacterModule.atualizarImagem();
@@ -1125,10 +1435,6 @@ async function testarLeituraPersonagemSupabase() {
     );
 
 
-    /* -----------------------------------------------------
-       1. SUPABASE
-    ----------------------------------------------------- */
-
     if (
         !window.supabaseClient
     ) {
@@ -1153,10 +1459,6 @@ async function testarLeituraPersonagemSupabase() {
         "✅ supabaseClient encontrado."
     );
 
-
-    /* -----------------------------------------------------
-       2. AUTENTICAÇÃO
-    ----------------------------------------------------- */
 
     if (
         !window.rpgAuth
@@ -1184,10 +1486,6 @@ async function testarLeituraPersonagemSupabase() {
     );
 
 
-    /* -----------------------------------------------------
-       3. USUÁRIO
-    ----------------------------------------------------- */
-
     if (
         !window.rpgAuth.user
     ) {
@@ -1214,10 +1512,6 @@ async function testarLeituraPersonagemSupabase() {
     );
 
 
-    /* -----------------------------------------------------
-       4. CAMPANHA
-    ----------------------------------------------------- */
-
     if (
         !window.rpgAuth.campaign
     ) {
@@ -1243,10 +1537,6 @@ async function testarLeituraPersonagemSupabase() {
         window.rpgAuth.campaign
     );
 
-
-    /* -----------------------------------------------------
-       5. CONSULTA DO PERSONAGEM
-    ----------------------------------------------------- */
 
     try {
 
@@ -1615,6 +1905,13 @@ function atualizarInterface() {
 
 
     /* =====================================================
+       CONFIRMAÇÃO
+    ===================================================== */
+
+    atualizarInterfaceConfirmacao();
+
+
+    /* =====================================================
        EFEITO ELEMENTAL
     ===================================================== */
 
@@ -1665,12 +1962,13 @@ function iniciar() {
        1. Navegação
        2. Modo Mestre
        3. Editor do personagem
-       4. Status
-       5. XP
-       6. Reset
-       7. Combate
-       8. Inventário
-       9. Interface
+       4. Confirmação
+       5. Status
+       6. XP
+       7. Reset
+       8. Combate
+       9. Inventário
+       10. Interface
     */
 
 
@@ -1681,6 +1979,9 @@ function iniciar() {
 
 
     CharacterModule.configurarEditor();
+
+
+    configurarConfirmacaoPersonagem();
 
 
     StatusModule.iniciar();
@@ -1723,11 +2024,6 @@ function iniciar() {
         "🚀 Sistema iniciado. Aguardando autenticação..."
     );
 
-
-    /*
-       Em vez de desistir silenciosamente,
-       vamos verificar por até 15 segundos.
-    */
 
     let tentativas =
         0;
@@ -1783,11 +2079,6 @@ function iniciar() {
 
                 }
 
-
-                /*
-                   Mostra um diagnóstico
-                   enquanto aguarda.
-                */
 
                 if (
                     tentativas === 10
