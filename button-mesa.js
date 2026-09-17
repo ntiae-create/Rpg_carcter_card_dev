@@ -31,17 +31,9 @@
     function registrarEventos() {
 
 
-        /*
-         ======================================================
-         CLIQUES GERAIS
-         ======================================================
-
-         Qualquer elemento que possuir:
-
-             data-mesa-action="..."
-
-         será processado aqui.
-        */
+        /* ----------------------------------------------
+           CLIQUES GERAIS
+        ---------------------------------------------- */
 
         document.addEventListener(
             "click",
@@ -49,16 +41,9 @@
         );
 
 
-
-        /*
-         ======================================================
-         CLIQUE NOS CARDS DOS JOGADORES
-         ======================================================
-
-         O button-mesa.js detecta o clique.
-
-         O mesa.js processa a lógica.
-        */
+        /* ----------------------------------------------
+           CLIQUE NOS CARDS DOS JOGADORES
+        ---------------------------------------------- */
 
         document.addEventListener(
             "click",
@@ -66,21 +51,13 @@
         );
 
 
-
         /*
-         ======================================================
-         CTE
-         ======================================================
+         NÃO registramos um segundo listener específico
+         para CTE aqui.
 
-         Interações visuais do CTE podem ser capturadas
-         aqui futuramente sem mover a lógica do CTE
-         para este arquivo.
+         O CTE já é tratado por tratarCliqueGeral()
+         através de [data-mesa-action].
         */
-
-        document.addEventListener(
-            "click",
-            tratarCliqueCTE
-        );
 
     }
 
@@ -104,11 +81,6 @@
 
         }
 
-
-        /*
-         Impede que um clique em um elemento
-         interno seja processado duas vezes.
-        */
 
         event.preventDefault();
 
@@ -246,12 +218,6 @@
         }
 
 
-        /*
-         Se o card estiver dentro de outro
-         sistema que explicitamente bloqueie
-         a interação, respeitamos isso.
-        */
-
         if (
             card.dataset.interactive ===
             "false"
@@ -283,17 +249,6 @@
         }
 
 
-        /*
-         O button-mesa.js NÃO decide:
-
-         - se é o próprio jogador
-         - se está ocupado
-         - se pode abrir a ficha
-         - o que acontece com o alvo
-
-         Tudo isso pertence ao Core.
-        */
-
         if (
 
             window.MesaRPG &&
@@ -323,42 +278,6 @@
        CTE
     ======================================================== */
 
-    function tratarCliqueCTE(event) {
-
-        const elemento =
-            event.target.closest(
-                "[data-cte-action]"
-            );
-
-
-        if (!elemento) {
-
-            return;
-
-        }
-
-
-        event.preventDefault();
-
-
-        const acao =
-            elemento.dataset.cteAction;
-
-
-        interagirCTE(
-            elemento,
-            event,
-            acao
-        );
-
-    }
-
-
-
-    /* ========================================================
-       INTERAÇÃO CTE
-    ======================================================== */
-
     function interagirCTE(
         elemento,
         event,
@@ -368,14 +287,16 @@
         const acaoCTE =
             acao ||
             elemento?.dataset?.cteAction ||
-            null;
+            "iniciar";
 
 
         /*
-         A lógica principal do CTE continua
-         no mesa.js.
+         O botão CTE somente encaminha
+         a ação para o Core.
 
-         Aqui apenas encaminhamos a interação.
+         NÃO existe cronômetro aqui.
+         NÃO existe setInterval.
+         NÃO existe setTimeout.
         */
 
         switch (acaoCTE) {
@@ -396,13 +317,6 @@
 
 
             default:
-
-                /*
-                 Se futuramente o CTE possuir
-                 outras interações, elas entram aqui.
-
-                 A mecânica continua no Core.
-                */
 
                 document.dispatchEvent(
 
@@ -500,13 +414,6 @@
 
     function fecharPainel() {
 
-        /*
-         O button-mesa.js não manipula diretamente
-         o DOM interno da Mesa.
-
-         O Core decide como voltar à tela principal.
-        */
-
         mostrarMesaPrincipal();
 
     }
@@ -538,11 +445,6 @@
 
         }
 
-
-        /*
-         Permite que outros módulos reajam
-         ao pedido de atualização.
-        */
 
         document.dispatchEvent(
 
@@ -626,23 +528,9 @@
 
     window.ButtonMesa = {
 
-        /*
-         Interação geral
-        */
-
         executarAcao,
 
-
-        /*
-         Jogadores
-        */
-
         tratarCliqueCardJogador,
-
-
-        /*
-         Mesa
-        */
 
         voltarParaMesa,
 
@@ -651,11 +539,6 @@
         fecharPainel,
 
         atualizarMesa,
-
-
-        /*
-         CTE
-        */
 
         iniciarCTE,
 
