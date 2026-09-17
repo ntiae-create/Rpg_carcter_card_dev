@@ -91,6 +91,199 @@
 
 
     <!-- =====================================================
+         MESA RPG ONLINE
+    ====================================================== -->
+
+    <section
+        id="campaign-panel"
+        class="campaign-panel">
+
+
+        <!-- CABEÇALHO -->
+
+        <div class="campaign-panel-header">
+
+            <div class="campaign-title-icon">
+                🎲
+            </div>
+
+
+            <div class="campaign-title-content">
+
+                <span class="campaign-label">
+                    MESA RPG ONLINE
+                </span>
+
+
+                <h2 id="campaign-name">
+                    Sua próxima aventura começa aqui
+                </h2>
+
+
+                <p>
+                    Entre em uma campanha ou continue
+                    uma aventura já iniciada.
+                </p>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ÁREA DO MESTRE
+        ================================================== -->
+
+        <div
+            id="campaign-master-area"
+            class="campaign-area">
+
+
+            <div class="campaign-area-heading">
+
+                <span class="campaign-area-icon">
+                    👑
+                </span>
+
+
+                <div>
+
+                    <h3>
+                        Sua Campanha
+                    </h3>
+
+
+                    <p>
+                        Compartilhe o código da mesa
+                        com os jogadores.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CÓDIGO DA MESA -->
+
+            <div class="campaign-code-box">
+
+                <span>
+                    CÓDIGO DA MESA
+                </span>
+
+
+                <strong id="campaign-code-display">
+                    ------
+                </strong>
+
+            </div>
+
+
+
+            <!-- AÇÕES DO MESTRE -->
+
+            <div class="campaign-actions">
+
+                <button
+                    id="copy-campaign-code"
+                    class="campaign-button"
+                    type="button">
+
+                    📋 COPIAR CÓDIGO
+
+                </button>
+
+
+                <button
+                    id="continue-campaign-button"
+                    class="campaign-button campaign-primary-button"
+                    type="button">
+
+                    🎲 CONTINUAR CAMPANHA
+
+                </button>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- =================================================
+             ENTRAR EM UMA MESA
+        ================================================== -->
+
+        <div
+            id="campaign-join-area"
+            class="campaign-area campaign-join-area">
+
+
+            <div class="campaign-area-heading">
+
+                <span class="campaign-area-icon">
+                    🗝️
+                </span>
+
+
+                <div>
+
+                    <h3>
+                        Entrar em uma Mesa
+                    </h3>
+
+
+                    <p>
+                        Digite o código fornecido pelo Mestre
+                        para entrar na campanha.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CAMPO DO CÓDIGO -->
+
+            <div class="campaign-join-form">
+
+                <input
+                    id="campaign-code-input"
+                    type="text"
+                    maxlength="20"
+                    placeholder="Digite o código da mesa"
+                    autocomplete="off"
+                    inputmode="text"
+                    aria-label="Código da Mesa">
+
+
+                <button
+                    id="join-campaign-button"
+                    class="campaign-button campaign-primary-button"
+                    type="button">
+
+                    ⚔️ ENTRAR NA MESA
+
+                </button>
+
+            </div>
+
+
+
+            <p
+                id="campaign-join-message"
+                class="campaign-message">
+            </p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
          CARD PRINCIPAL
     ====================================================== -->
 
@@ -941,4 +1134,894 @@
                             type="button">
 
                             <span>🌑</span>
-                           
+                            <small>TREVAS</small>
+
+                        </button>
+
+
+                        <button
+                            class="element-option"
+                            data-element="vento"
+                            type="button">
+
+                            <span>🌪️</span>
+                            <small>VENTO</small>
+
+                        </button>
+
+
+                        <button
+                            class="element-option"
+                            data-element="fogo"
+                            type="button">
+
+                            <span>🔥</span>
+                            <small>FOGO</small>
+
+                        </button>
+
+
+                        <button
+                            class="element-option"
+                            data-element="fisico"
+                            type="button">
+
+                            <span>💪</span>
+                            <small>FÍSICO</small>
+
+                        </button>
+
+
+                        <button
+                            class="element-option"
+                            data-element="magico"
+                            type="button">
+
+                            <span>✨</span>
+                            <small>MÁGICO</small>
+
+                        </button>
+
+
+                    </div>
+
+
+
+                    <button
+                        id="confirm-element"
+                        class="confirm-element"
+                        type="button"
+                        disabled>
+
+                        CONFIRMAR AFINIDADE
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="badges">
+
+
+                    <h3>
+                        BRASÕES
+                    </h3>
+
+
+                    <div class="badge-list">
+
+                        <div class="badge">💧</div>
+                        <div class="badge">☀️</div>
+                        <div class="badge">🪨</div>
+                        <div class="badge">🌑</div>
+                        <div class="badge">🌪️</div>
+                        <div class="badge">🔥</div>
+                        <div class="badge">💪</div>
+                        <div class="badge">✨</div>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             DIMENSÃO 3 — COMBATE
+        ================================================== -->
+
+        <section
+            class="dimension combat-dimension"
+            data-dimension-content="combat">
+
+
+            <div class="combat-section">
+
+
+                <h2>
+                    ⚔️ COMBATE
+                </h2>
+
+
+                <p class="combat-subtitle">
+                    Configure suas ações e habilidades.
+                </p>
+
+
+
+                <div class="combat-resources">
+
+
+                    <div>
+
+                        <span>🔮 MP</span>
+
+                        <strong id="combat-mp">
+                            15
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>⚡ EST</span>
+
+                        <strong id="combat-est">
+                            30
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="combat-card basic-attack-card">
+
+
+                    <div class="combat-card-header">
+
+                        <h3>
+                            ⚔️ ATAQUE BÁSICO
+                        </h3>
+
+
+                        <span>
+                            −1 EST
+                        </span>
+
+                    </div>
+
+
+                    <input
+                        id="basic-attack-name"
+                        class="combat-name-input"
+                        type="text"
+                        value="Ataque básico"
+                        placeholder="[EDITÁVEL]">
+
+
+                    <p>
+                        Ataque físico básico.
+                    </p>
+
+
+                    <button
+                        class="combat-use-button"
+                        data-action="basic-attack"
+                        type="button">
+
+                        USAR ATAQUE
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="combat-card counterattack-card">
+
+
+                    <div class="combat-card-header">
+
+                        <h3>
+                            🔄 CONTRA-ATAQUE
+                        </h3>
+
+
+                        <span>
+                            −3 EST
+                        </span>
+
+                    </div>
+
+
+                    <p>
+                        Utilize após uma esquiva bem-sucedida.
+                    </p>
+
+
+                    <button
+                        class="combat-use-button"
+                        data-action="counterattack"
+                        type="button">
+
+                        CONTRA-ATACAR
+
+                    </button>
+
+                </div>
+
+
+
+                <div class="abilities-section">
+
+
+                    <h3 class="stats-title">
+                        HABILIDADES
+                    </h3>
+
+
+
+                    <div
+                        class="ability-card"
+                        data-ability-index="0">
+
+
+                        <div class="ability-header">
+
+                            <span>
+                                HABILIDADE 1
+                            </span>
+
+                            <span>
+                                EDITÁVEL
+                            </span>
+
+                        </div>
+
+
+                        <input
+                            class="ability-name-input"
+                            type="text"
+                            placeholder="[EDITÁVEL]">
+
+
+                        <div class="ability-cost-row">
+
+                            <select class="ability-cost-type">
+
+                                <option value="mp">
+                                    MP
+                                </option>
+
+                                <option value="est">
+                                    EST
+                                </option>
+
+                            </select>
+
+
+                            <input
+                                class="ability-cost-input"
+                                type="number"
+                                min="0"
+                                value="0">
+
+                        </div>
+
+
+                        <textarea
+                            class="ability-description-input"
+                            placeholder="Descrição da habilidade..."></textarea>
+
+
+                        <button
+                            class="combat-use-button ability-use-button"
+                            data-action="ability"
+                            data-ability-index="0"
+                            type="button">
+
+                            USAR HABILIDADE
+
+                        </button>
+
+                    </div>
+
+
+
+                    <div
+                        class="ability-card"
+                        data-ability-index="1">
+
+
+                        <div class="ability-header">
+
+                            <span>
+                                HABILIDADE 2
+                            </span>
+
+                            <span>
+                                EDITÁVEL
+                            </span>
+
+                        </div>
+
+
+                        <input
+                            class="ability-name-input"
+                            type="text"
+                            placeholder="[EDITÁVEL]">
+
+
+                        <div class="ability-cost-row">
+
+                            <select class="ability-cost-type">
+
+                                <option value="mp">
+                                    MP
+                                </option>
+
+                                <option value="est">
+                                    EST
+                                </option>
+
+                            </select>
+
+
+                            <input
+                                class="ability-cost-input"
+                                type="number"
+                                min="0"
+                                value="0">
+
+                        </div>
+
+
+                        <textarea
+                            class="ability-description-input"
+                            placeholder="Descrição da habilidade..."></textarea>
+
+
+                        <button
+                            class="combat-use-button ability-use-button"
+                            data-action="ability"
+                            data-ability-index="1"
+                            type="button">
+
+                            USAR HABILIDADE
+
+                        </button>
+
+                    </div>
+
+
+
+                    <div
+                        class="ability-card"
+                        data-ability-index="2">
+
+
+                        <div class="ability-header">
+
+                            <span>
+                                HABILIDADE 3
+                            </span>
+
+                            <span>
+                                EDITÁVEL
+                            </span>
+
+                        </div>
+
+
+                        <input
+                            class="ability-name-input"
+                            type="text"
+                            placeholder="[EDITÁVEL]">
+
+
+                        <div class="ability-cost-row">
+
+                            <select class="ability-cost-type">
+
+                                <option value="mp">
+                                    MP
+                                </option>
+
+                                <option value="est">
+                                    EST
+                                </option>
+
+                            </select>
+
+
+                            <input
+                                class="ability-cost-input"
+                                type="number"
+                                min="0"
+                                value="0">
+
+                        </div>
+
+
+                        <textarea
+                            class="ability-description-input"
+                            placeholder="Descrição da habilidade..."></textarea>
+
+
+                        <button
+                            class="combat-use-button ability-use-button"
+                            data-action="ability"
+                            data-ability-index="2"
+                            type="button">
+
+                            USAR HABILIDADE
+
+                        </button>
+
+                    </div>
+
+
+                </div>
+
+
+
+                <div class="passive-section">
+
+
+                    <h3 class="stats-title">
+                        PASSIVA
+                    </h3>
+
+
+                    <div class="passive-card">
+
+
+                        <div class="ability-header">
+
+                            <span>
+                                PASSIVA
+                            </span>
+
+                            <span>
+                                EDITÁVEL
+                            </span>
+
+                        </div>
+
+
+                        <input
+                            id="passive-name"
+                            class="passive-name-input"
+                            type="text"
+                            placeholder="[EDITÁVEL]">
+
+
+                        <textarea
+                            id="passive-description"
+                            class="passive-description-input"
+                            placeholder="Descreva o efeito da passiva..."></textarea>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="class-passive-section">
+
+
+                    <h3 class="stats-title">
+                        PASSIVA DE CLASSE
+                    </h3>
+
+
+                    <div
+                        class="passive-card class-passive-card">
+
+
+                        <div class="ability-header">
+
+                            <span>
+                                PASSIVA DE CLASSE
+                            </span>
+
+                            <span>
+                                AUTOMÁTICA
+                            </span>
+
+                        </div>
+
+
+
+                        <div class="class-passive-class">
+
+                            <small>
+                                CLASSE
+                            </small>
+
+
+                            <strong id="class-passive-class-name">
+                                —
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="class-passive-content">
+
+                            <small>
+                                PASSIVA
+                            </small>
+
+
+                            <strong id="class-passive-name">
+                                Selecione uma classe
+                            </strong>
+
+                        </div>
+
+
+
+                        <div class="class-passive-description">
+
+                            <small>
+                                EFEITO
+                            </small>
+
+
+                            <p id="class-passive-description">
+                                A passiva de classe aparecerá aqui automaticamente.
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="combat-log-section">
+
+
+                    <h3 class="stats-title">
+                        REGISTRO DE COMBATE
+                    </h3>
+
+
+                    <div
+                        id="combat-log"
+                        class="combat-log">
+
+                        <p>
+                            Nenhuma ação realizada.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+
+        <!-- =================================================
+             DIMENSÃO 4 — INVENTÁRIO
+        ================================================== -->
+
+        <section
+            class="dimension inventory-dimension"
+            data-dimension-content="inventory">
+
+
+            <div class="inventory-section">
+
+
+                <h2>
+                    🎒 INVENTÁRIO
+                </h2>
+
+
+
+                <div class="inventory-capacity">
+
+                    <span>
+                        ESPAÇOS
+                    </span>
+
+
+                    <strong>
+
+                        <span id="inventory-slots">
+                            0/50
+                        </span>
+
+                    </strong>
+
+                </div>
+
+
+
+                <button
+                    id="inventory-add-button"
+                    class="inventory-add-button"
+                    type="button">
+
+                    + ADICIONAR ITEM
+
+                </button>
+
+
+
+                <form
+                    id="inventory-form"
+                    class="inventory-form">
+
+
+                    <div class="inventory-form-header">
+
+                        <h3>
+                            NOVO ITEM
+                        </h3>
+
+                    </div>
+
+
+
+                    <div class="editor-field">
+
+                        <label for="inventory-item-name">
+                            NOME DO ITEM
+                        </label>
+
+
+                        <input
+                            id="inventory-item-name"
+                            type="text"
+                            placeholder="Ex.: Poção de Cura"
+                            autocomplete="off"
+                            required>
+
+                    </div>
+
+
+
+                    <div class="editor-field">
+
+                        <label for="inventory-item-quantity">
+                            QUANTIDADE
+                        </label>
+
+
+                        <input
+                            id="inventory-item-quantity"
+                            type="number"
+                            min="1"
+                            value="1"
+                            required>
+
+                    </div>
+
+
+
+                    <div class="inventory-form-buttons">
+
+
+                        <button
+                            id="inventory-submit-button"
+                            type="submit">
+
+                            ADICIONAR
+
+                        </button>
+
+
+                        <button
+                            id="inventory-cancel-button"
+                            type="button">
+
+                            CANCELAR
+
+                        </button>
+
+
+                    </div>
+
+
+                </form>
+
+
+
+                <div class="equipment-section">
+
+
+                    <h3>
+                        EQUIPAMENTOS
+                    </h3>
+
+
+                    <div class="equipment-list">
+
+
+                        <div class="equipment-slot">
+
+                            <span class="equipment-icon">
+                                ⚔️
+                            </span>
+
+
+                            <label for="equipment-weapon">
+                                ARMA
+                            </label>
+
+
+                            <input
+                                id="equipment-weapon"
+                                type="text"
+                                placeholder="Nenhuma">
+
+                        </div>
+
+
+
+                        <div class="equipment-slot">
+
+                            <span class="equipment-icon">
+                                🛡️
+                            </span>
+
+
+                            <label for="equipment-armor">
+                                ARMADURA
+                            </label>
+
+
+                            <input
+                                id="equipment-armor"
+                                type="text"
+                                placeholder="Nenhuma">
+
+                        </div>
+
+
+
+                        <div class="equipment-slot">
+
+                            <span class="equipment-icon">
+                                💍
+                            </span>
+
+
+                            <label for="equipment-accessory">
+                                ACESSÓRIO
+                            </label>
+
+
+                            <input
+                                id="equipment-accessory"
+                                type="text"
+                                placeholder="Nenhum">
+
+                        </div>
+
+
+
+                        <div class="equipment-slot">
+
+                            <span class="equipment-icon">
+                                🔮
+                            </span>
+
+
+                            <label for="equipment-relic">
+                                RELÍQUIA
+                            </label>
+
+
+                            <input
+                                id="equipment-relic"
+                                type="text"
+                                placeholder="Nenhuma">
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="inventory-list-section">
+
+
+                    <h3>
+                        ITENS
+                    </h3>
+
+
+                    <div id="inventory-list">
+
+
+                        <div class="inventory-empty">
+
+                            <span>
+                                🎒
+                            </span>
+
+
+                            <p>
+                                Inventário vazio.
+                            </p>
+
+                        </div>
+
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+    </main>
+
+</div>
+
+
+
+<!-- =========================================================
+     SUPABASE
+========================================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+
+
+<!-- =========================================================
+     SCRIPTS DO PROJETO
+========================================================= -->
+
+<script src="supabase.js"></script>
+
+<script src="auth.js"></script>
+
+<script src="permissoes.js"></script>
+
+<script src="campaign.js"></script>
+
+<script src="classe.js"></script>
+
+<script src="character.js"></script>
+
+<script src="status.js"></script>
+
+<script src="combat.js"></script>
+
+<script src="inventory.js"></script>
+
+<script src="script.js"></script>
+
+<script src="mesa-entrada.js"></script>
+
+
+</body>
+
+</html>
