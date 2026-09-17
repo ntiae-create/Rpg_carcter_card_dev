@@ -21,27 +21,6 @@
  - Conversar com mesa-jogadores.js
  - Conversar com mesa-aventura.js
 
- IMPORTANTE:
-
- A Mesa pode ser aberta sem auth.js/campaign.js carregados
- diretamente no mesa.html.
-
- Por isso, o CORE também recupera o contexto salvo em:
-
-     rpg_mesa_ativa
-
- Esse registro contém:
-
-     campaignId
-     userId
-     masterId
-     characterId
-     slot
-
- A identificação do Mestre é feita principalmente por:
-
-     usuario.id === campanha.master_id
-
 ==============================================================
 */
 
@@ -68,19 +47,19 @@ const MESA_CONFIG = {
 
         disponivel: true,
 
-        dificuldades: {
+        /*
+         TEMPO PADRÃO DO CTE
 
-            facil: 3000,
+         1000 = 1 segundo
+         500  = 0,5 segundo
+         2000 = 2 segundos
+         5000 = 5 segundos
 
-            normal: 2000,
+         Esse valor pode ser alterado pelo Mestre
+         ao iniciar um CTE.
+        */
 
-            dificil: 1000,
-
-            extremo: 500
-
-        },
-
-        dificuldadePadrao: "normal",
+        tempoPadrao: 1000,
 
         quantidadePadrao: 1
 
@@ -197,19 +176,40 @@ const mesaState = {
     },
 
 
+    /*
+     ESTADO DO CTE
+
+     O CTE agora funciona por clique.
+
+     inicio:
+         momento exato em que a janela começou.
+
+     tempo:
+         duração da janela de clique.
+
+     cliques:
+         quantidade de cliques realizados.
+
+     quantidade:
+         quantidade necessária de cliques.
+
+     resultado:
+         resultado final do CTE.
+    */
+
     cte: {
 
         ativo:
             false,
 
-        dificuldade:
-            MESA_CONFIG.cte.dificuldadePadrao,
-
-        duracao:
-            MESA_CONFIG.cte.dificuldades.normal,
+        tempo:
+            MESA_CONFIG.cte.tempoPadrao,
 
         quantidade:
             MESA_CONFIG.cte.quantidadePadrao,
+
+        cliques:
+            0,
 
         resultados:
             [],
@@ -373,13 +373,6 @@ function inicializarMesa() {
     }
 
 
-    /*
-     IMPORTANTE:
-
-     O contexto é carregado ANTES de definir
-     o visual da Mesa.
-    */
-
     carregarContextoUsuario();
 
 
@@ -446,10 +439,6 @@ function carregarContextoUsuario() {
         obterCampanhaAtiva();
 
 
-    /* ========================================================
-       USUÁRIO
-    ======================================================== */
-
     let usuarioId =
         null;
 
@@ -459,10 +448,6 @@ function carregarContextoUsuario() {
     let usuarioEmail =
         null;
 
-
-    /*
-     Primeiro tenta auth.js.
-    */
 
     if (
         auth?.user
@@ -490,11 +475,6 @@ function carregarContextoUsuario() {
 
     }
 
-
-    /*
-     Se auth.js não estiver carregado no mesa.html,
-     recuperamos o usuário salvo pela entrada.
-    */
 
     if (
         !usuarioId &&
@@ -543,10 +523,6 @@ function carregarContextoUsuario() {
         null;
 
 
-    /* ========================================================
-       CAMPANHA
-    ======================================================== */
-
     if (campanha) {
 
         mesaState.campanha.id =
@@ -583,11 +559,6 @@ function carregarContextoUsuario() {
     }
 
 
-    /*
-     Se a campanha veio do localStorage,
-     o masterId também está salvo lá.
-    */
-
     if (
         !mesaState.campanha.masterId &&
         salvo?.masterId
@@ -599,16 +570,7 @@ function carregarContextoUsuario() {
     }
 
 
-    /* ========================================================
-       IDENTIFICAÇÃO DO MESTRE
-    ======================================================== */
-
     atualizarPermissaoUsuario();
-
-
-    /* ========================================================
-       PERSONAGEM / SLOT
-    ======================================================== */
 
     descobrirJogadorAtual();
 
@@ -629,16 +591,6 @@ function atualizarPermissaoUsuario() {
         mesaState.campanha.masterId;
 
 
-    /*
-     REGRA PRINCIPAL:
-
-     O Mestre é definido pela igualdade entre:
-
-         auth.users.id
-                +
-         campaigns.master_id
-    */
-
     const mestrePorCampanha =
         Boolean(
 
@@ -653,19 +605,11 @@ function atualizarPermissaoUsuario() {
         );
 
 
-    /*
-     Compatibilidade com auth.js.
-    */
-
     const mestrePorAuth =
         Boolean(
             window.rpgAuth?.isMaster === true
         );
 
-
-    /*
-     Compatibilidade com sistemas antigos.
-    */
 
     let mestrePorInterface =
         false;
@@ -694,16 +638,6 @@ function atualizarPermissaoUsuario() {
     }
 
 
-    /*
-     O ID da campanha tem prioridade.
-
-     Se o UID do usuário for exatamente o
-     master_id, é Mestre.
-
-     Isso funciona mesmo se auth.js não estiver
-     carregado no mesa.html.
-    */
-
     mesaState.usuario.isMaster =
 
         mestrePorCampanha ||
@@ -721,12 +655,6 @@ function atualizarPermissaoUsuario() {
 
         !mesaState.usuario.isMaster;
 
-
-    /*
-     Se descobrimos Mestre pelo banco/localStorage,
-     corrigimos também o estado do auth, quando
-     ele existir.
-    */
 
     if (
         window.rpgAuth
@@ -770,10 +698,6 @@ function atualizarPermissaoUsuario() {
 
 function obterCampanhaAtiva() {
 
-    /*
-     1. campaign.js
-    */
-
     if (
 
         window.rpgCampaign &&
@@ -808,10 +732,6 @@ function obterCampanhaAtiva() {
     }
 
 
-    /*
-     2. auth.js
-    */
-
     if (
         window.rpgAuth?.campaign
     ) {
@@ -820,13 +740,6 @@ function obterCampanhaAtiva() {
 
     }
 
-
-    /*
-     3. localStorage
-
-     Esse é o caminho principal quando
-     mesa.html é aberto diretamente.
-    */
 
     const salvo =
         obterMesaSalva();
@@ -884,10 +797,6 @@ function descobrirJogadorAtual() {
         obterMesaSalva();
 
 
-    /*
-     Primeiro: dados salvos pela entrada.
-    */
-
     if (salvo) {
 
         mesaState.jogadorAtual.characterId =
@@ -905,10 +814,6 @@ function descobrirJogadorAtual() {
 
     }
 
-
-    /*
-     Segundo: auth.js.
-    */
 
     if (
 
@@ -948,10 +853,6 @@ function descobrirJogadorAtual() {
 
     }
 
-
-    /*
-     Terceiro: personagens da campanha.
-    */
 
     if (
 
@@ -1060,20 +961,6 @@ function registrarEventos() {
 
         event => {
 
-            /*
-             campaign.js pode disparar:
-
-                 detail: campanha
-
-             ou:
-
-                 detail: {
-                     campanha: campanha
-                 }
-
-             Aceitamos os dois.
-            */
-
             const detalhe =
                 event.detail || null;
 
@@ -1151,13 +1038,7 @@ function sincronizarCampanha(
         mesaState.campanha.masterId;
 
 
-    /*
-     Recalcula Mestre/Jogador depois
-     da campanha ser atualizada.
-    */
-
     atualizarPermissaoUsuario();
-
 
     atualizarCampanhaVisual();
 
@@ -1384,6 +1265,19 @@ function atualizarModoVisual() {
 ============================================================ */
 
 function voltarParaMesaNormal() {
+
+    /*
+     Se houver CTE ativo, ele é encerrado.
+    */
+
+    if (
+        mesaState.cte.ativo
+    ) {
+
+        limparCTE();
+
+    }
+
 
     mesaState.modoAtual =
         MESA_CONFIG.modos.NORMAL;
@@ -1732,9 +1626,42 @@ function iniciarBoss(
    CTE
 ============================================================ */
 
+/*
+==============================================================
+ INICIAR CTE
+
+ O CTE agora é:
+
+     1. Mestre inicia
+     2. Área central entra em modo CTE
+     3. Botão aparece
+     4. Começa a janela de tempo
+     5. Jogador clica
+     6. O CORE verifica o tempo exato
+     7. Sucesso ou falha
+
+ O tempo NÃO é o evento.
+
+ O clique é o evento.
+==============================================================
+*/
+
 function iniciarCTE(
     opcoes = {}
 ) {
+
+    if (
+        !MESA_CONFIG.cte.disponivel
+    ) {
+
+        console.warn(
+            "[Mesa] CTE está desativado."
+        );
+
+        return;
+
+    }
+
 
     if (
         mesaState.cte.ativo
@@ -1745,53 +1672,100 @@ function iniciarCTE(
     }
 
 
-    const dificuldade =
+    /*
+     ----------------------------------------------------------
+     TEMPO
+     ----------------------------------------------------------
 
-        opcoes.dificuldade ||
+     Aceitamos:
 
-        MESA_CONFIG.cte
-            .dificuldadePadrao;
+         tempo: 1000
+         duracao: 1000
 
+     para manter compatibilidade com chamadas antigas.
+    */
 
-    const duracao =
-
-        opcoes.duracao ||
-
-        MESA_CONFIG.cte
-            .dificuldades[
-                dificuldade
-            ] ||
-
-        MESA_CONFIG.cte
-            .dificuldades.normal;
-
-
-    const quantidade =
+    let tempo =
 
         Number(
-
-            opcoes.quantidade ||
-
-            MESA_CONFIG.cte
-                .quantidadePadrao
-
+            opcoes.tempo
         );
 
+
+    if (
+        !Number.isFinite(tempo) ||
+        tempo <= 0
+    ) {
+
+        tempo =
+            Number(
+                opcoes.duracao
+            );
+
+    }
+
+
+    if (
+        !Number.isFinite(tempo) ||
+        tempo <= 0
+    ) {
+
+        tempo =
+            MESA_CONFIG.cte.tempoPadrao;
+
+    }
+
+
+    /*
+     ----------------------------------------------------------
+     QUANTIDADE DE CLIQUES
+     ----------------------------------------------------------
+    */
+
+    let quantidade =
+
+        Number(
+            opcoes.quantidade
+        );
+
+
+    if (
+        !Number.isFinite(quantidade) ||
+        quantidade < 1
+    ) {
+
+        quantidade =
+            MESA_CONFIG.cte.quantidadePadrao;
+
+    }
+
+
+    quantidade =
+        Math.floor(
+            quantidade
+        );
+
+
+    /*
+     ----------------------------------------------------------
+     ESTADO
+     ----------------------------------------------------------
+    */
 
     mesaState.cte.ativo =
         true;
 
 
-    mesaState.cte.dificuldade =
-        dificuldade;
-
-
-    mesaState.cte.duracao =
-        duracao;
+    mesaState.cte.tempo =
+        tempo;
 
 
     mesaState.cte.quantidade =
         quantidade;
+
+
+    mesaState.cte.cliques =
+        0;
 
 
     mesaState.cte.resultados =
@@ -1799,10 +1773,16 @@ function iniciarCTE(
 
 
     mesaState.cte.inicio =
-        Date.now();
+        performance.now();
 
 
-    criarOverlayCTE();
+    /*
+     ----------------------------------------------------------
+     MOSTRAR CTE
+     ----------------------------------------------------------
+    */
+
+    criarTelaCTE();
 
 
     document.dispatchEvent(
@@ -1813,11 +1793,12 @@ function iniciarCTE(
 
                 detail: {
 
-                    dificuldade,
-
-                    duracao,
+                    tempo,
 
                     quantidade,
+
+                    inicio:
+                        mesaState.cte.inicio,
 
                     estado:
                         mesaState
@@ -1830,83 +1811,127 @@ function iniciarCTE(
 
     );
 
+
+    /*
+     ----------------------------------------------------------
+     COMEÇAR A JANELA DE TEMPO
+     ----------------------------------------------------------
+    */
+
+    executarContagemCTE();
+
 }
 
 
 /* ============================================================
-   OVERLAY CTE
+   TELA CENTRAL DO CTE
 ============================================================ */
 
-function criarOverlayCTE() {
+function criarTelaCTE() {
 
-    if (!MesaUI.screen) {
+    if (!MesaUI.screenContent) {
+
+        console.warn(
+            "[Mesa] #mesa-screen-content não encontrado."
+        );
 
         return;
 
     }
 
 
-    const anterior =
-        document.getElementById(
-            "cte-overlay"
-        );
+    /*
+     IMPORTANTE:
 
+     Não criamos mais um overlay.
 
-    if (anterior) {
+     O CTE vive diretamente dentro da
+     área central de informações.
+    */
 
-        anterior.remove();
+    MesaUI.screenContent.innerHTML = `
 
-    }
+        <div
+            class="mesa-cte"
+            id="mesa-cte">
 
+            <div class="mesa-cte-header">
 
-    const overlay =
-        document.createElement(
-            "div"
-        );
-
-
-    overlay.id =
-        "cte-overlay";
-
-
-    overlay.className =
-        "cte-overlay";
-
-
-    overlay.innerHTML = `
-
-        <div class="cte-panel">
-
-            <div class="cte-header">
-
-                <span class="cte-icon">
+                <span class="mesa-cte-icon">
                     ⚡
                 </span>
 
-                <h2>
-                    CTE
-                </h2>
+                <div>
+
+                    <span class="mesa-cte-label">
+                        CLICK TIME EVENT
+                    </span>
+
+                    <h2>
+                        Prepare-se
+                    </h2>
+
+                </div>
 
             </div>
 
-            <p class="cte-instruction">
-                Prepare-se...
+
+            <p
+                class="mesa-cte-instruction"
+                id="cte-instruction">
+
+                Clique quando estiver pronto!
+
             </p>
 
-            <div class="cte-timer">
 
-                <span id="cte-timer-value">
-                    0
+            <div class="mesa-cte-timer">
+
+                <span
+                    id="cte-timer-value">
+                    1.000
                 </span>
+
+                <small>
+                    segundos
+                </small>
 
             </div>
 
-            <div class="cte-progress">
+
+            <div class="mesa-cte-progress">
 
                 <div
                     id="cte-progress-bar"
-                    class="cte-progress-bar">
+                    class="mesa-cte-progress-bar">
                 </div>
+
+            </div>
+
+
+            <button
+                type="button"
+                class="mesa-cte-click"
+                id="cte-click-button"
+                data-mesa-action="cte"
+                data-cte-action="clique">
+
+                <span class="mesa-cte-click-icon">
+                    ⚡
+                </span>
+
+                <span>
+                    CLIQUE!
+                </span>
+
+            </button>
+
+
+            <div
+                class="mesa-cte-counter"
+                id="cte-click-counter">
+
+                0 / ${mesaState.cte.quantidade}
 
             </div>
 
@@ -1914,149 +1939,14 @@ function criarOverlayCTE() {
 
     `;
 
-
-    MesaUI.screen.appendChild(
-        overlay
-    );
-
-
-    executarContagemCTE(
-        overlay
-    );
-
 }
 
 
 /* ============================================================
-   CONTAGEM CTE
+   CONTAGEM / JANELA DE TEMPO DO CTE
 ============================================================ */
 
-function executarContagemCTE(
-    overlay
-) {
-
-    const timer =
-        overlay.querySelector(
-            "#cte-timer-value"
-        );
-
-
-    const progress =
-        overlay.querySelector(
-            "#cte-progress-bar"
-        );
-
-
-    const inicio =
-        Date.now();
-
-
-    const duracao =
-        mesaState.cte.duracao;
-
-
-    let frameId =
-        null;
-
-
-    function atualizar() {
-
-        if (
-            !mesaState.cte.ativo
-        ) {
-
-            if (frameId) {
-
-                cancelAnimationFrame(
-                    frameId
-                );
-
-            }
-
-            return;
-
-        }
-
-
-        const decorrido =
-            Date.now() -
-            inicio;
-
-
-        const restante =
-            Math.max(
-
-                0,
-
-                duracao -
-                decorrido
-
-            );
-
-
-        const percentual =
-            Math.min(
-
-                100,
-
-                (
-                    decorrido /
-                    duracao
-                ) * 100
-
-            );
-
-
-        if (timer) {
-
-            timer.textContent =
-
-                (
-                    restante /
-                    1000
-
-                ).toFixed(1);
-
-        }
-
-
-        if (progress) {
-
-            progress.style.width =
-                `${percentual}%`;
-
-        }
-
-
-        if (
-            restante <= 0
-        ) {
-
-            mostrarResultadoCTE();
-
-            return;
-
-        }
-
-
-        frameId =
-            requestAnimationFrame(
-                atualizar
-            );
-
-    }
-
-
-    atualizar();
-
-}
-
-
-/* ============================================================
-   RESULTADO CTE
-============================================================ */
-
-function mostrarResultadoCTE() {
+function executarContagemCTE() {
 
     if (
         !mesaState.cte.ativo
@@ -2067,13 +1957,366 @@ function mostrarResultadoCTE() {
     }
 
 
+    const inicio =
+        mesaState.cte.inicio;
+
+
+    const tempo =
+        mesaState.cte.tempo;
+
+
+    function atualizar() {
+
+        if (
+            !mesaState.cte.ativo
+        ) {
+
+            return;
+
+        }
+
+
+        const agora =
+            performance.now();
+
+
+        const decorrido =
+            agora -
+            inicio;
+
+
+        const restante =
+            Math.max(
+
+                0,
+
+                tempo -
+                decorrido
+
+            );
+
+
+        const percentual =
+
+            Math.min(
+
+                100,
+
+                (
+                    decorrido /
+                    tempo
+                ) * 100
+
+            );
+
+
+        const timer =
+            document.getElementById(
+                "cte-timer-value"
+            );
+
+
+        const progress =
+            document.getElementById(
+                "cte-progress-bar"
+            );
+
+
+        /*
+         ------------------------------------------------------
+         MOSTRAR TEMPO
+         ------------------------------------------------------
+        */
+
+        if (timer) {
+
+            timer.textContent =
+
+                (
+                    restante /
+                    1000
+
+                ).toFixed(3);
+
+        }
+
+
+        /*
+         ------------------------------------------------------
+         BARRA
+         ------------------------------------------------------
+        */
+
+        if (progress) {
+
+            progress.style.width =
+                `${percentual}%`;
+
+        }
+
+
+        /*
+         ------------------------------------------------------
+         TEMPO ESGOTADO
+         ------------------------------------------------------
+
+         IMPORTANTE:
+
+         O tempo acabar NÃO significa sucesso.
+
+         Significa que a janela de clique fechou.
+        */
+
+        if (
+            restante <= 0
+        ) {
+
+            finalizarCTEPorTempo();
+
+            return;
+
+        }
+
+
+        requestAnimationFrame(
+            atualizar
+        );
+
+    }
+
+
+    atualizar();
+
+}
+
+
+/* ============================================================
+   CLIQUE REAL DO CTE
+============================================================ */
+
+function executarCliqueCTE(
+    elemento = null,
+    evento = null
+) {
+
+    if (
+        !mesaState.cte.ativo
+    ) {
+
+        return;
+
+    }
+
+
+    const agora =
+        performance.now();
+
+
+    const decorrido =
+        agora -
+        mesaState.cte.inicio;
+
+
+    /*
+     ----------------------------------------------------------
+     O CLIQUE PRECISA ESTAR DENTRO DA JANELA
+     ----------------------------------------------------------
+    */
+
+    if (
+        decorrido >
+        mesaState.cte.tempo
+    ) {
+
+        finalizarCTEPorTempo();
+
+        return;
+
+    }
+
+
+    /*
+     ----------------------------------------------------------
+     REGISTRAR CLIQUE
+     ----------------------------------------------------------
+    */
+
+    mesaState.cte.cliques++;
+
+
+    const cliqueAtual =
+        mesaState.cte.cliques;
+
+
+    const quantidade =
+        mesaState.cte.quantidade;
+
+
+    /*
+     ----------------------------------------------------------
+     EVENTO DE CLIQUE
+     ----------------------------------------------------------
+    */
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:cteClique",
+            {
+
+                detail: {
+
+                    clique:
+                        cliqueAtual,
+
+                    quantidade,
+
+                    tempoDecorrido:
+                        decorrido,
+
+                    tempoRestante:
+
+                        Math.max(
+
+                            0,
+
+                            mesaState.cte.tempo -
+                            decorrido
+
+                        ),
+
+                    elemento,
+
+                    evento,
+
+                    estado:
+                        mesaState
+
+                }
+
+            }
+
+        )
+
+    );
+
+
+    /*
+     ----------------------------------------------------------
+     ATUALIZAR CONTADOR
+     ----------------------------------------------------------
+    */
+
+    const contador =
+        document.getElementById(
+            "cte-click-counter"
+        );
+
+
+    if (contador) {
+
+        contador.textContent =
+
+            `${cliqueAtual} / ${quantidade}`;
+
+    }
+
+
+    /*
+     ----------------------------------------------------------
+     QUANTIDADE ATINGIDA
+     ----------------------------------------------------------
+    */
+
+    if (
+        cliqueAtual >=
+        quantidade
+    ) {
+
+        finalizarCTESucesso(
+            decorrido
+        );
+
+        return;
+
+    }
+
+
+    /*
+     Ainda precisa de mais cliques.
+    */
+
+    const instrucao =
+        document.getElementById(
+            "cte-instruction"
+        );
+
+
+    if (instrucao) {
+
+        instrucao.textContent =
+
+            `Clique novamente! ${cliqueAtual} / ${quantidade}`;
+
+    }
+
+}
+
+
+/* ============================================================
+   CTE — SUCESSO
+============================================================ */
+
+function finalizarCTESucesso(
+    tempoDecorrido
+) {
+
+    if (
+        !mesaState.cte.ativo
+    ) {
+
+        return;
+
+    }
+
+
+    /*
+     Desativa imediatamente.
+
+     Isso impede que o requestAnimationFrame
+     continue processando o CTE.
+    */
+
+    mesaState.cte.ativo =
+        false;
+
+
     const resultado = {
 
         sucesso:
             true,
 
-        dificuldade:
-            mesaState.cte.dificuldade,
+        cliques:
+            mesaState.cte.cliques,
+
+        quantidade:
+            mesaState.cte.quantidade,
+
+        tempo:
+            mesaState.cte.tempo,
+
+        tempoDecorrido,
+
+        tempoRestante:
+
+            Math.max(
+
+                0,
+
+                mesaState.cte.tempo -
+                tempoDecorrido
+
+            ),
 
         timestamp:
             Date.now()
@@ -2086,40 +2329,9 @@ function mostrarResultadoCTE() {
     );
 
 
-    const overlay =
-        document.getElementById(
-            "cte-overlay"
-        );
-
-
-    if (!overlay) {
-
-        limparCTE();
-
-        return;
-
-    }
-
-
-    overlay.innerHTML = `
-
-        <div class="cte-panel cte-result">
-
-            <div class="cte-result-icon">
-                ✨
-            </div>
-
-            <h2>
-                CTE CONCLUÍDO
-            </h2>
-
-            <p>
-                A ação foi processada.
-            </p>
-
-        </div>
-
-    `;
+    mostrarResultadoCTE(
+        resultado
+    );
 
 
     document.dispatchEvent(
@@ -2143,10 +2355,213 @@ function mostrarResultadoCTE() {
 
     );
 
+}
+
+
+/* ============================================================
+   CTE — FALHA POR TEMPO
+============================================================ */
+
+function finalizarCTEPorTempo() {
+
+    if (
+        !mesaState.cte.ativo
+    ) {
+
+        return;
+
+    }
+
+
+    mesaState.cte.ativo =
+        false;
+
+
+    const resultado = {
+
+        sucesso:
+            false,
+
+        motivo:
+            "tempo_esgotado",
+
+        cliques:
+            mesaState.cte.cliques,
+
+        quantidade:
+            mesaState.cte.quantidade,
+
+        tempo:
+            mesaState.cte.tempo,
+
+        tempoDecorrido:
+            mesaState.cte.tempo,
+
+        tempoRestante:
+            0,
+
+        timestamp:
+            Date.now()
+
+    };
+
+
+    mesaState.cte.resultados.push(
+        resultado
+    );
+
+
+    mostrarResultadoCTE(
+        resultado
+    );
+
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:cteResultado",
+            {
+
+                detail: {
+
+                    resultado,
+
+                    estado:
+                        mesaState
+
+                }
+
+            }
+
+        )
+
+    );
+
+}
+
+
+/* ============================================================
+   MOSTRAR RESULTADO CTE
+============================================================ */
+
+function mostrarResultadoCTE(
+    resultado
+) {
+
+    if (!MesaUI.screenContent) {
+
+        return;
+
+    }
+
+
+    const sucesso =
+        resultado?.sucesso === true;
+
+
+    if (sucesso) {
+
+        MesaUI.screenContent.innerHTML = `
+
+            <div
+                class="mesa-cte-result mesa-cte-success">
+
+                <div class="mesa-cte-result-icon">
+                    ✓
+                </div>
+
+                <span class="mesa-cte-label">
+                    CLICK TIME EVENT
+                </span>
+
+                <h2>
+                    CTE CONCLUÍDO
+                </h2>
+
+                <p>
+                    Clique realizado no tempo certo.
+                </p>
+
+                <div class="mesa-cte-result-time">
+
+                    ${(
+                        resultado.tempoDecorrido /
+                        1000
+                    ).toFixed(3)}s
+
+                </div>
+
+            </div>
+
+        `;
+
+    } else {
+
+        MesaUI.screenContent.innerHTML = `
+
+            <div
+                class="mesa-cte-result mesa-cte-fail">
+
+                <div class="mesa-cte-result-icon">
+                    ×
+                </div>
+
+                <span class="mesa-cte-label">
+                    CLICK TIME EVENT
+                </span>
+
+                <h2>
+                    CTE FALHOU
+                </h2>
+
+                <p>
+                    O tempo acabou antes do clique necessário.
+                </p>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /*
+     Depois do resultado, voltamos para
+     a tela normal.
+    */
 
     setTimeout(
-        limparCTE,
+
+        () => {
+
+            mostrarTelaPrincipal();
+
+            document.dispatchEvent(
+
+                new CustomEvent(
+                    "mesa:cteFinalizado",
+                    {
+
+                        detail: {
+
+                            resultados:
+                                mesaState.cte.resultados,
+
+                            estado:
+                                mesaState
+
+                        }
+
+                    }
+
+                )
+
+            );
+
+        },
+
         1500
+
     );
 
 }
@@ -2162,17 +2577,17 @@ function limparCTE() {
         false;
 
 
-    const overlay =
-        document.getElementById(
-            "cte-overlay"
-        );
+    mesaState.cte.inicio =
+        null;
 
 
-    if (overlay) {
+    /*
+     Não procuramos mais #cte-overlay.
 
-        overlay.remove();
+     O CTE está dentro da tela central.
+    */
 
-    }
+    mostrarTelaPrincipal();
 
 
     document.dispatchEvent(
@@ -2574,6 +2989,71 @@ function resetarMesaVisual() {
 
 
 /* ============================================================
+   SUBMÓDULOS
+============================================================ */
+
+function inicializarSubmodulos() {
+
+    /*
+     Os submódulos possuem suas próprias
+     inicializações quando disponíveis.
+
+     Não forçamos nenhuma dependência.
+    */
+
+    if (
+
+        window.MesaJogadores &&
+
+        typeof window.MesaJogadores.inicializar ===
+        "function"
+
+    ) {
+
+        try {
+
+            window.MesaJogadores.inicializar();
+
+        } catch (erro) {
+
+            console.warn(
+                "[Mesa] Erro ao inicializar MesaJogadores:",
+                erro
+            );
+
+        }
+
+    }
+
+
+    if (
+
+        window.MesaAventura &&
+
+        typeof window.MesaAventura.inicializar ===
+        "function"
+
+    ) {
+
+        try {
+
+            window.MesaAventura.inicializar();
+
+        } catch (erro) {
+
+            console.warn(
+                "[Mesa] Erro ao inicializar MesaAventura:",
+                erro
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ============================================================
    API PÚBLICA
 ============================================================ */
 
@@ -2612,6 +3092,8 @@ window.MesaRPG = {
     iniciarBoss,
 
     iniciarCTE,
+
+    executarCliqueCTE,
 
     limparCTE,
 
@@ -2709,6 +3191,10 @@ window.iniciarMesaBoss =
 
 window.iniciarMesaCTE =
     iniciarCTE;
+
+
+window.executarCliqueMesaCTE =
+    executarCliqueCTE;
 
 
 window.limparMesaCTE =
