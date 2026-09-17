@@ -1,0 +1,530 @@
+/* ==========================================
+   RPG — PASSIVAS
+   EFEITOS VISUAIS DOS STACKS
+========================================== */
+
+
+/* ------------------------------------------
+   CONTAINER DA PASSIVA
+------------------------------------------ */
+
+.passiva-visual {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+
+    padding: 7px 9px;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+    background: rgba(0, 0, 0, 0.28);
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    transition:
+        border-color 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease,
+        transform 0.25s ease;
+}
+
+
+/* ------------------------------------------
+   CABEÇALHO
+------------------------------------------ */
+
+.passiva-visual-header {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+
+.passiva-visual-icon {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    width: 18px;
+    height: 18px;
+
+    font-size: 0.8rem;
+
+    transition:
+        transform 0.25s ease,
+        text-shadow 0.25s ease;
+}
+
+
+.passiva-visual-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+/* ------------------------------------------
+   STACKS
+------------------------------------------ */
+
+.passiva-visual-stacks {
+    position: relative;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+
+    gap: 3px;
+
+    min-height: 12px;
+
+    font-size: 0.7rem;
+
+    letter-spacing: 1px;
+}
+
+
+.passiva-stack-ativo {
+    opacity: 1;
+}
+
+
+.passiva-stack-inativo {
+    opacity: 0.2;
+}
+
+
+/* ------------------------------------------
+   AURA
+------------------------------------------ */
+
+.passiva-visual-aura {
+    position: absolute;
+
+    inset: -50%;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    transition:
+        opacity 0.4s ease,
+        transform 0.5s ease;
+}
+
+
+/* ------------------------------------------
+   PARTÍCULAS
+------------------------------------------ */
+
+.passiva-visual-particles {
+    position: absolute;
+
+    inset: 0;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    overflow: hidden;
+}
+
+
+/* ------------------------------------------
+   PASSIVA INATIVA
+------------------------------------------ */
+
+.passiva-inativa {
+    opacity: 0.65;
+}
+
+.passiva-inativa .passiva-visual-aura {
+    opacity: 0;
+}
+
+
+/* ------------------------------------------
+   PASSIVA ATIVA
+------------------------------------------ */
+
+.passiva-ativa {
+    opacity: 1;
+}
+
+
+/* ------------------------------------------
+   STACK 1
+------------------------------------------ */
+
+.passiva-visual.stack-1 {
+    border-color: rgba(124, 58, 237, 0.35);
+
+    box-shadow:
+        0 0 6px rgba(124, 58, 237, 0.15);
+}
+
+
+.passiva-visual.stack-1 .passiva-visual-aura {
+    opacity: 0.12;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.35),
+            transparent 65%
+        );
+}
+
+
+.passiva-visual.stack-1 .passiva-visual-icon {
+    transform: scale(1.05);
+}
+
+
+/* ------------------------------------------
+   STACK 2
+------------------------------------------ */
+
+.passiva-visual.stack-2 {
+    border-color: rgba(124, 58, 237, 0.5);
+
+    box-shadow:
+        0 0 9px rgba(124, 58, 237, 0.25);
+}
+
+
+.passiva-visual.stack-2 .passiva-visual-aura {
+    opacity: 0.18;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.45),
+            transparent 65%
+        );
+
+    animation:
+        passivaAura 2.5s ease-in-out infinite;
+}
+
+
+.passiva-visual.stack-2 .passiva-visual-icon {
+    transform: scale(1.1);
+
+    text-shadow:
+        0 0 7px rgba(124, 58, 237, 0.7);
+}
+
+
+/* ------------------------------------------
+   STACK 3
+------------------------------------------ */
+
+.passiva-visual.stack-3 {
+    border-color: rgba(124, 58, 237, 0.65);
+
+    box-shadow:
+        0 0 12px rgba(124, 58, 237, 0.35),
+        inset 0 0 8px rgba(124, 58, 237, 0.08);
+}
+
+
+.passiva-visual.stack-3 .passiva-visual-aura {
+    opacity: 0.25;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.55),
+            transparent 65%
+        );
+
+    animation:
+        passivaAura 2s ease-in-out infinite;
+}
+
+
+.passiva-visual.stack-3 .passiva-visual-particles {
+    opacity: 0.35;
+
+    background-image:
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.8) 1px,
+            transparent 1.5px
+        );
+
+    background-size: 18px 18px;
+
+    animation:
+        passivaParticles 4s linear infinite;
+}
+
+
+/* ------------------------------------------
+   STACK 4
+------------------------------------------ */
+
+.passiva-visual.stack-4 {
+    border-color: rgba(124, 58, 237, 0.8);
+
+    box-shadow:
+        0 0 15px rgba(124, 58, 237, 0.45),
+        0 0 28px rgba(124, 58, 237, 0.15),
+        inset 0 0 10px rgba(124, 58, 237, 0.1);
+}
+
+
+.passiva-visual.stack-4 .passiva-visual-aura {
+    opacity: 0.32;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.65),
+            transparent 65%
+        );
+
+    animation:
+        passivaAura 1.6s ease-in-out infinite;
+}
+
+
+.passiva-visual.stack-4 .passiva-visual-particles {
+    opacity: 0.5;
+
+    background-image:
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.9) 1px,
+            transparent 1.5px
+        );
+
+    background-size: 14px 14px;
+
+    animation:
+        passivaParticles 3s linear infinite;
+}
+
+
+.passiva-visual.stack-4 .passiva-visual-icon {
+    transform: scale(1.18);
+
+    text-shadow:
+        0 0 8px rgba(124, 58, 237, 0.9),
+        0 0 14px rgba(124, 58, 237, 0.5);
+}
+
+
+/* ------------------------------------------
+   STACK 5 — MÁXIMO
+------------------------------------------ */
+
+.passiva-visual.stack-5 {
+    border-color: rgba(124, 58, 237, 1);
+
+    box-shadow:
+        0 0 18px rgba(124, 58, 237, 0.65),
+        0 0 35px rgba(124, 58, 237, 0.35),
+        inset 0 0 14px rgba(124, 58, 237, 0.14);
+
+    animation:
+        passivaMaxima 1.8s ease-in-out infinite;
+}
+
+
+.passiva-visual.stack-5 .passiva-visual-aura {
+    opacity: 0.45;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(124, 58, 237, 0.85),
+            transparent 65%
+        );
+
+    animation:
+        passivaAura 1.2s ease-in-out infinite;
+}
+
+
+.passiva-visual.stack-5 .passiva-visual-particles {
+    opacity: 0.7;
+
+    background-image:
+        radial-gradient(
+            circle,
+            rgba(255, 255, 255, 1) 1px,
+            transparent 1.5px
+        );
+
+    background-size: 11px 11px;
+
+    animation:
+        passivaParticles 2s linear infinite;
+}
+
+
+.passiva-visual.stack-5 .passiva-visual-icon {
+    transform: scale(1.25);
+
+    text-shadow:
+        0 0 10px rgba(124, 58, 237, 1),
+        0 0 20px rgba(124, 58, 237, 0.8),
+        0 0 30px rgba(124, 58, 237, 0.45);
+}
+
+
+/* ------------------------------------------
+   ANIMAÇÃO AO GANHAR/PERDER STACK
+------------------------------------------ */
+
+.passiva-stack-alterada {
+    animation:
+        passivaStackAlterada 0.55s ease;
+}
+
+
+/* ------------------------------------------
+   NÍVEIS
+------------------------------------------ */
+
+.passiva-nivel-baixo {
+    --passiva-intensidade: 0.25;
+}
+
+.passiva-nivel-medio {
+    --passiva-intensidade: 0.5;
+}
+
+.passiva-nivel-alto {
+    --passiva-intensidade: 0.75;
+}
+
+.passiva-maxima {
+    --passiva-intensidade: 1;
+}
+
+
+/* ------------------------------------------
+   ANIMAÇÕES
+------------------------------------------ */
+
+@keyframes passivaAura {
+
+    0% {
+        transform: scale(0.9);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(0.9);
+    }
+}
+
+
+@keyframes passivaParticles {
+
+    0% {
+        transform:
+            translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform:
+            translate3d(8px, -8px, 0);
+    }
+
+    100% {
+        transform:
+            translate3d(0, 0, 0);
+    }
+}
+
+
+@keyframes passivaMaxima {
+
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.015);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+@keyframes passivaStackAlterada {
+
+    0% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.06);
+    }
+
+    70% {
+        transform: scale(0.98);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+
+/* ------------------------------------------
+   ACESSIBILIDADE
+------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+
+    .passiva-visual,
+    .passiva-visual *,
+    .passiva-visual.stack-5 {
+        animation: none !important;
+        transition: none !important;
+    }
+
+}
+
+
+/* ------------------------------------------
+   CELULAR
+------------------------------------------ */
+
+@media (max-width: 600px) {
+
+    .passiva-visual {
+        padding: 6px 8px;
+        gap: 4px;
+    }
+
+    .passiva-visual-header {
+        font-size: 0.7rem;
+    }
+
+    .passiva-visual-stacks {
+        font-size: 0.65rem;
+    }
+
+}
