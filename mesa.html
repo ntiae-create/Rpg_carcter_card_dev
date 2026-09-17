@@ -12,12 +12,21 @@
 
     <title>Mesa RPG</title>
 
+
     <!-- =====================================================
          CSS DA MESA
-         ===================================================== -->
+    ====================================================== -->
 
-    <link rel="stylesheet" href="mesa.css">
-    <link rel="stylesheet" href="css/passivas.css">
+    <link
+        rel="stylesheet"
+        href="mesa.css"
+    >
+
+    <link
+        rel="stylesheet"
+        href="css/passivas.css"
+    >
+
 </head>
 
 
@@ -25,7 +34,7 @@
 
     <!-- =====================================================
          MESA RPG
-         ===================================================== -->
+    ====================================================== -->
 
     <main
         id="online-table-panel"
@@ -35,7 +44,7 @@
 
         <!-- =================================================
              CABEÇALHO
-             ================================================= -->
+        ================================================== -->
 
         <header class="mesa-header">
 
@@ -51,16 +60,8 @@
 
 
             <!-- =================================================
-                 CONFIGURAÇÕES DA MESA
-                 
-                 ESTE BOTÃO É VISÍVEL PARA TODOS.
-                 
-                 O conteúdo do menu é definido pelo
-                 config-mesa.js conforme o usuário:
-                 
-                 • Jogador → configurações do jogador
-                 • Mestre → opções do Mestre
-                 ================================================= -->
+                 CONFIGURAÇÕES
+            ================================================== -->
 
             <button
                 id="btn-configuracoes"
@@ -77,15 +78,15 @@
 
 
         <!-- =================================================
-             ÁREA PRINCIPAL DA MESA
-             ================================================= -->
+             ÁREA PRINCIPAL
+        ================================================== -->
 
         <section class="mesa-layout">
 
 
             <!-- =============================================
                  JOGADORES
-                 ============================================= -->
+            ============================================== -->
 
             <section
                 id="jogadores"
@@ -96,7 +97,7 @@
 
                 <!-- =========================================
                      PLAYER 1
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -183,7 +184,7 @@
 
                 <!-- =========================================
                      PLAYER 2
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -270,7 +271,7 @@
 
                 <!-- =========================================
                      PLAYER 3
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -357,7 +358,7 @@
 
                 <!-- =========================================
                      PLAYER 4
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -444,7 +445,7 @@
 
                 <!-- =========================================
                      PLAYER 5
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -531,7 +532,7 @@
 
                 <!-- =========================================
                      PLAYER 6
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -618,7 +619,7 @@
 
                 <!-- =========================================
                      PLAYER 7
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -705,7 +706,7 @@
 
                 <!-- =========================================
                      PLAYER 8
-                     ========================================= -->
+                ========================================== -->
 
                 <article
                     class="jogador-card player-card"
@@ -795,7 +796,7 @@
 
             <!-- =============================================
                  PALCO CENTRAL
-                 ============================================= -->
+            ============================================== -->
 
             <section
                 id="mesa-stage"
@@ -832,14 +833,8 @@
 
 
         <!-- =================================================
-             MENU DE CONFIGURAÇÕES / MESTRE
-             
-             O ID é mantido como "master-menu" porque
-             config-mesa.js já trabalha com ele.
-             
-             Para o jogador, o config-mesa.js cria
-             dinamicamente a área de configurações do jogador.
-             ================================================= -->
+             MENU DE CONFIGURAÇÕES
+        ================================================== -->
 
         <aside
             id="master-menu"
@@ -853,10 +848,6 @@
                     ⚙️ Configurações da Mesa
                 </h2>
 
-
-                <!-- =========================================
-                     OPÇÕES DO MESTRE
-                     ========================================= -->
 
                 <div class="master-controls">
 
@@ -911,54 +902,100 @@
 
 
     <!-- =====================================================
-         JAVASCRIPT DA MESA
+         JAVASCRIPT
+    ====================================================== -->
 
-         ORDEM:
-
-         1. mesa.js
-            → núcleo da Mesa
-
-         2. config-mesa.js
-            → configurações e menu
-
-         3. button-mesa.js
-            → camada de interação/cliques
-
-         4. mesa-jogadores.js
-            → jogadores/cards
-
-         5. mesa-aventura.js
-            → aventura/mapa/dungeon
-         ===================================================== -->
+    <!-- =============================================
+         1. NÚCLEO DA MESA
+    ============================================== -->
 
     <script
         src="mesa.js"
         defer
     ></script>
 
+
+    <!-- =============================================
+         2. CONFIGURAÇÕES
+    ============================================== -->
+
     <script
         src="config-mesa.js"
         defer
     ></script>
 
-    <script
-        src="button-mesa.js"
-        defer
-    ></script>
+
+    <!-- =============================================
+         3. JOGADORES / CARDS
+    ============================================== -->
 
     <script
         src="mesa-jogadores.js"
         defer
     ></script>
 
+
+    <!-- =============================================
+         4. AVENTURA / MAPA / DUNGEON
+    ============================================== -->
+
     <script
         src="mesa-aventura.js"
         defer
     ></script>
-    <script src="js/passivas/passivas-dados.js" defer></script>
-<script src="js/passivas/passivas-stacks.js" defer></script>
-<script src="js/passivas/passivas-efeitos.js" defer></script>
-<script src="js/passivas/passivas.js" defer></script>
+
+
+    <!-- =============================================
+         5. DADOS DAS PASSIVAS
+    ============================================== -->
+
+    <script
+        src="js/passivas/passivas-dados.js"
+        defer
+    ></script>
+
+
+    <!-- =============================================
+         6. CONTROLE DOS STACKS
+    ============================================== -->
+
+    <script
+        src="js/passivas/passivas-stacks.js"
+        defer
+    ></script>
+
+
+    <!-- =============================================
+         7. EFEITOS VISUAIS DAS PASSIVAS
+    ============================================== -->
+
+    <script
+        src="js/passivas/passivas-efeitos.js"
+        defer
+    ></script>
+
+
+    <!-- =============================================
+         8. CONTROLADOR CENTRAL DAS PASSIVAS
+    ============================================== -->
+
+    <script
+        src="js/passivas/passivas.js"
+        defer
+    ></script>
+
+
+    <!-- =============================================
+         9. INTERAÇÕES / CLIQUES
+         
+         Fica por último porque utiliza os sistemas
+         carregados anteriormente.
+    ============================================== -->
+
+    <script
+        src="button-mesa.js"
+        defer
+    ></script>
 
 
 </body>
