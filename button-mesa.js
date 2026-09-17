@@ -51,14 +51,6 @@
         );
 
 
-        /*
-         NÃO registramos um segundo listener específico
-         para CTE aqui.
-
-         O CTE já é tratado por tratarCliqueGeral()
-         através de [data-mesa-action].
-        */
-
     }
 
 
@@ -291,16 +283,19 @@
 
 
         /*
-         O botão CTE somente encaminha
-         a ação para o Core.
+         O Button Mesa NÃO controla
+         o tempo do CTE.
 
-         NÃO existe cronômetro aqui.
-         NÃO existe setInterval.
-         NÃO existe setTimeout.
+         Ele somente identifica a interação
+         e encaminha para o Core.
         */
 
         switch (acaoCTE) {
 
+
+            /* ----------------------------------------------
+               INICIAR CTE
+            ---------------------------------------------- */
 
             case "iniciar":
 
@@ -309,12 +304,34 @@
                 break;
 
 
+            /* ----------------------------------------------
+               CLIQUE REAL DO CTE
+            ---------------------------------------------- */
+
+            case "clique":
+
+                executarCliqueCTE(
+                    elemento,
+                    event
+                );
+
+                break;
+
+
+            /* ----------------------------------------------
+               CANCELAR CTE
+            ---------------------------------------------- */
+
             case "cancelar":
 
                 limparCTE();
 
                 break;
 
+
+            /* ----------------------------------------------
+               OUTRAS INTERAÇÕES
+            ---------------------------------------------- */
 
             default:
 
@@ -343,6 +360,50 @@
                 );
 
         }
+
+    }
+
+
+
+    /* ========================================================
+       CTE — CLIQUE REAL
+    ======================================================== */
+
+    function executarCliqueCTE(
+        elemento,
+        event
+    ) {
+
+        /*
+         O clique chegou até aqui.
+
+         Quem decide se o clique foi válido,
+         se estava dentro do tempo e qual será
+         o resultado é o mesa.js.
+        */
+
+        if (
+
+            window.MesaRPG &&
+
+            typeof window.MesaRPG.executarCliqueCTE ===
+            "function"
+
+        ) {
+
+            window.MesaRPG.executarCliqueCTE(
+                elemento,
+                event
+            );
+
+            return;
+
+        }
+
+
+        console.warn(
+            "[Button Mesa] executarCliqueCTE() ainda não está disponível no MesaRPG."
+        );
 
     }
 
@@ -544,7 +605,9 @@
 
         limparCTE,
 
-        interagirCTE
+        interagirCTE,
+
+        executarCliqueCTE
 
     };
 
