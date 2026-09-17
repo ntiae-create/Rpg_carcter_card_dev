@@ -1,37 +1,45 @@
 /* ==========================================
    MESA ONLINE — RPG
-   CONFIGURAÇÕES DO MESTRE
+   CONFIGURAÇÕES E SISTEMA DO MESTRE
 ========================================== */
 
 "use strict";
 
 (function () {
 
-    /* ------------------------------------------
-       REFERÊNCIAS
-    ------------------------------------------ */
-
     let settingsButton = null;
     let masterMenu = null;
     let masterButtons = [];
 
-
-    /* ------------------------------------------
+    /* ==========================================
        INICIALIZAÇÃO
-    ------------------------------------------ */
+    ========================================== */
 
     function inicializarConfigMesa() {
 
-        settingsButton = document.getElementById("btn-configuracoes");
-        masterMenu = document.getElementById("master-menu");
+        settingsButton =
+            document.getElementById("btn-configuracoes");
 
-        masterButtons = Array.from(
-            document.querySelectorAll("[data-master-action]")
-        );
+        masterMenu =
+            document.getElementById("master-menu");
 
-        if (!settingsButton || !masterMenu) {
+        masterButtons =
+            Array.from(
+                document.querySelectorAll(
+                    "[data-master-action]"
+                )
+            );
+
+        if (!settingsButton) {
             console.warn(
-                "[Config Mesa] Botão de configurações ou menu do Mestre não encontrado."
+                "[Config Mesa] Botão de configurações não encontrado."
+            );
+            return;
+        }
+
+        if (!masterMenu) {
+            console.warn(
+                "[Config Mesa] Menu do Mestre não encontrado."
             );
             return;
         }
@@ -39,119 +47,186 @@
         registrarEventos();
 
         atualizarPermissaoMestre();
-
     }
 
 
-    /* ------------------------------------------
-       PERMISSÃO
-    ------------------------------------------ */
+    /* ==========================================
+       PERMISSÃO DO MESTRE
+    ========================================== */
 
     function usuarioEhMestre() {
 
         if (
             window.MesaRPG &&
-            typeof window.MesaRPG.usuarioEhMestre === "function"
+            typeof window.MesaRPG.usuarioEhMestre ===
+                "function"
         ) {
             return window.MesaRPG.usuarioEhMestre();
         }
 
         return false;
-
     }
 
 
     function atualizarPermissaoMestre() {
 
-        const ehMestre = usuarioEhMestre();
+        if (!settingsButton || !masterMenu) {
+            return;
+        }
 
-        settingsButton.hidden = !ehMestre;
+        const ehMestre =
+            usuarioEhMestre();
+
+        /*
+         * O botão só aparece para o Mestre.
+         */
+
+        settingsButton.hidden =
+            !ehMestre;
+
+        /*
+         * Se deixar de ser Mestre,
+         * o menu também é fechado.
+         */
 
         if (!ehMestre) {
             fecharMenuMestre();
         }
-
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        EVENTOS
-    ------------------------------------------ */
+    ========================================== */
 
     function registrarEventos() {
 
-        settingsButton.addEventListener("click", function (event) {
+        /*
+         * BOTÃO ⚙️
+         */
 
-            event.preventDefault();
-            event.stopPropagation();
-
-            alternarMenuMestre();
-
-        });
-
-
-        document.addEventListener("click", function (event) {
-
-            if (!masterMenu || masterMenu.hidden) {
-                return;
-            }
-
-            const clicouNoMenu =
-                masterMenu.contains(event.target);
-
-            const clicouNoBotao =
-                settingsButton.contains(event.target);
-
-            if (!clicouNoMenu && !clicouNoBotao) {
-                fecharMenuMestre();
-            }
-
-        });
-
-
-        document.addEventListener("keydown", function (event) {
-
-            if (event.key === "Escape") {
-                fecharMenuMestre();
-            }
-
-        });
-
-
-        masterButtons.forEach(function (button) {
-
-            button.addEventListener("click", function (event) {
+        settingsButton.addEventListener(
+            "click",
+            function (event) {
 
                 event.preventDefault();
                 event.stopPropagation();
 
-                const acao =
-                    button.dataset.masterAction;
+                alternarMenuMestre();
+            }
+        );
 
-                executarAcaoMestre(acao);
 
-            });
+        /*
+         * AÇÕES DO MENU DO MESTRE
+         */
 
-        });
+        masterButtons.forEach(
+            function (button) {
 
+                button.addEventListener(
+                    "click",
+                    function (event) {
+
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const acao =
+                            button.dataset.masterAction;
+
+                        executarAcaoMestre(
+                            acao
+                        );
+                    }
+                );
+
+            }
+        );
+
+
+        /*
+         * FECHAR MENU AO CLICAR FORA
+         */
+
+        document.addEventListener(
+            "click",
+            function (event) {
+
+                if (
+                    !masterMenu ||
+                    masterMenu.hidden
+                ) {
+                    return;
+                }
+
+                const clicouNoMenu =
+                    masterMenu.contains(
+                        event.target
+                    );
+
+                const clicouNoBotao =
+                    settingsButton &&
+                    settingsButton.contains(
+                        event.target
+                    );
+
+                if (
+                    !clicouNoMenu &&
+                    !clicouNoBotao
+                ) {
+                    fecharMenuMestre();
+                }
+            }
+        );
+
+
+        /*
+         * ESC FECHA O MENU
+         */
+
+        document.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key === "Escape"
+                ) {
+                    fecharMenuMestre();
+                }
+            }
+        );
+
+
+        /*
+         * MESA TERMINOU DE INICIALIZAR
+         */
 
         document.addEventListener(
             "mesa:inicializada",
-            atualizarPermissaoMestre
+            function () {
+
+                atualizarPermissaoMestre();
+            }
         );
 
+
+        /*
+         * CAMPANHA FOI ALTERADA
+         */
 
         document.addEventListener(
             "mesa:campanhaAlterada",
-            atualizarPermissaoMestre
-        );
+            function () {
 
+                atualizarPermissaoMestre();
+            }
+        );
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        MENU DO MESTRE
-    ------------------------------------------ */
+    ========================================== */
 
     function abrirMenuMestre() {
 
@@ -159,8 +234,11 @@
             return;
         }
 
-        masterMenu.hidden = false;
+        if (!masterMenu) {
+            return;
+        }
 
+        masterMenu.hidden = false;
     }
 
 
@@ -171,7 +249,6 @@
         }
 
         masterMenu.hidden = true;
-
     }
 
 
@@ -186,170 +263,244 @@
         } else {
             fecharMenuMestre();
         }
-
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        AÇÕES DO MESTRE
-    ------------------------------------------ */
+    ========================================== */
 
     function executarAcaoMestre(acao) {
+
+        /*
+         * Segurança:
+         * nenhuma ação do Mestre pode ser executada
+         * se o usuário não tiver permissão.
+         */
 
         if (!usuarioEhMestre()) {
             return;
         }
 
+        /*
+         * Fecha o menu antes de executar a ação.
+         */
+
         fecharMenuMestre();
+
 
         switch (acao) {
 
+            /* ------------------------------
+               MAPA
+            ------------------------------ */
+
             case "mapa":
+
                 abrirMapa();
+
                 break;
 
+
+            /* ------------------------------
+               DUNGEON
+            ------------------------------ */
 
             case "dungeon":
+
                 abrirDungeon();
+
                 break;
 
+
+            /* ------------------------------
+               COMBATE
+            ------------------------------ */
 
             case "combate":
+
                 iniciarCombate();
+
                 break;
 
+
+            /* ------------------------------
+               BOSS
+            ------------------------------ */
 
             case "boss":
+
                 iniciarBoss();
+
                 break;
 
 
+            /* ------------------------------
+               CTE
+            ------------------------------ */
+
             case "cte":
+
                 iniciarCTE();
+
                 break;
 
 
             default:
+
                 console.warn(
                     "[Config Mesa] Ação desconhecida:",
                     acao
                 );
 
+                break;
         }
-
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        MAPA
-    ------------------------------------------ */
+    ========================================== */
 
     function abrirMapa() {
 
         if (
             window.MesaRPG &&
-            typeof window.MesaRPG.abrirAventura === "function"
+            typeof window.MesaRPG.abrirAventura ===
+                "function"
         ) {
 
-            window.MesaRPG.abrirAventura("mapa");
+            window.MesaRPG.abrirAventura(
+                "mapa"
+            );
 
+            return;
         }
 
+        console.warn(
+            "[Config Mesa] MesaRPG.abrirAventura() não está disponível."
+        );
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        DUNGEON
-    ------------------------------------------ */
+    ========================================== */
 
     function abrirDungeon() {
 
         if (
             window.MesaRPG &&
-            typeof window.MesaRPG.abrirAventura === "function"
+            typeof window.MesaRPG.abrirAventura ===
+                "function"
         ) {
 
-            window.MesaRPG.abrirAventura("dungeon");
+            window.MesaRPG.abrirAventura(
+                "dungeon"
+            );
 
+            return;
         }
 
+        console.warn(
+            "[Config Mesa] MesaRPG.abrirAventura() não está disponível."
+        );
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        COMBATE
-    ------------------------------------------ */
+    ========================================== */
 
     function iniciarCombate() {
 
         if (
             window.MesaRPG &&
-            typeof window.MesaRPG.iniciarBatalha === "function"
+            typeof window.MesaRPG.iniciarBatalha ===
+                "function"
         ) {
 
             window.MesaRPG.iniciarBatalha();
 
+            return;
         }
 
+        console.warn(
+            "[Config Mesa] MesaRPG.iniciarBatalha() não está disponível."
+        );
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        BOSS
-    ------------------------------------------ */
+    ========================================== */
 
     function iniciarBoss() {
 
         if (
             window.MesaRPG &&
-            typeof window.MesaRPG.iniciarBoss === "function"
+            typeof window.MesaRPG.iniciarBoss ===
+                "function"
         ) {
 
             window.MesaRPG.iniciarBoss();
 
+            return;
         }
 
+        console.warn(
+            "[Config Mesa] MesaRPG.iniciarBoss() não está disponível."
+        );
     }
 
 
-    /* ------------------------------------------
+    /* ==========================================
        CTE
-    ------------------------------------------ */
+    ========================================== */
 
     function iniciarCTE() {
 
         if (
             window.MesaRPG &&
-            typeof window.MesaRPG.iniciarCTE === "function"
+            typeof window.MesaRPG.iniciarCTE ===
+                "function"
         ) {
 
             window.MesaRPG.iniciarCTE();
 
+            return;
         }
 
+        console.warn(
+            "[Config Mesa] MesaRPG.iniciarCTE() não está disponível."
+        );
     }
 
 
-    /* ------------------------------------------
-       API
-    ------------------------------------------ */
+    /* ==========================================
+       API PÚBLICA
+    ========================================== */
 
     window.ConfigMesa = {
 
         abrirMenuMestre,
         fecharMenuMestre,
         alternarMenuMestre,
-        atualizarPermissaoMestre,
-        executarAcaoMestre
 
+        atualizarPermissaoMestre,
+
+        executarAcaoMestre
     };
 
 
-    /* ------------------------------------------
+    /* ==========================================
        DOM READY
-    ------------------------------------------ */
+    ========================================== */
 
-    if (document.readyState === "loading") {
+    if (
+        document.readyState ===
+        "loading"
+    ) {
 
         document.addEventListener(
             "DOMContentLoaded",
