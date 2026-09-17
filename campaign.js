@@ -24,10 +24,26 @@
     }
 
     /* =====================================================
+       EVENTO DE CAMPANHA
+    ===================================================== */
+
+    function dispararEventoCampanha() {
+        window.dispatchEvent(
+            new CustomEvent("mesa:campanhaAlterada", {
+                detail: {
+                    campanha:
+                        window.rpgCampaign.activeCampaign
+                }
+            })
+        );
+    }
+
+    /* =====================================================
        CAMPANHAS
     ===================================================== */
 
     async function carregarCampanhas() {
+
         if (
             !window.supabase ||
             !window.rpgAuth ||
@@ -36,23 +52,27 @@
             return [];
         }
 
-        const userId = window.rpgAuth.user.id;
+        const userId =
+            window.rpgAuth.user.id;
 
         try {
+
             /*
-             * Campanhas onde o usuário é MESTRE
+             * Campanhas onde o usuário é MESTRE.
              */
-            const { data: campanhasMestre, error: erroMestre } =
-                await window.supabase
-                    .from("campaigns")
-                    .select(`
-                        id,
-                        name,
-                        master_id,
-                        codigo_mesa,
-                        created_at
-                    `)
-                    .eq("master_id", userId);
+            const {
+                data: campanhasMestre,
+                error: erroMestre
+            } = await window.supabase
+                .from("campaigns")
+                .select(`
+                    id,
+                    name,
+                    master_id,
+                    codigo_mesa,
+                    created_at
+                `)
+                .eq("master_id", userId);
 
             if (erroMestre) {
                 console.error(
@@ -62,13 +82,15 @@
             }
 
             /*
-             * Campanhas onde o usuário é JOGADOR
+             * Campanhas onde o usuário é JOGADOR.
              */
-            const { data: membros, error: erroMembros } =
-                await window.supabase
-                    .from("campaign_members")
-                    .select("campaign_id")
-                    .eq("user_id", userId);
+            const {
+                data: membros,
+                error: erroMembros
+            } = await window.supabase
+                .from("campaign_members")
+                .select("campaign_id")
+                .eq("user_id", userId);
 
             if (erroMembros) {
                 console.error(
@@ -78,22 +100,32 @@
             }
 
             const idsCampanhasJogador =
-                (membros || []).map(membro => membro.campaign_id);
+                (membros || [])
+                    .map(membro => membro.campaign_id)
+                    .filter(Boolean);
 
             let campanhasJogador = [];
 
-            if (idsCampanhasJogador.length > 0) {
-                const { data, error } =
-                    await window.supabase
-                        .from("campaigns")
-                        .select(`
-                            id,
-                            name,
-                            master_id,
-                            codigo_mesa,
-                            created_at
-                        `)
-                        .in("id", idsCampanhasJogador);
+            if (
+                idsCampanhasJogador.length > 0
+            ) {
+
+                const {
+                    data,
+                    error
+                } = await window.supabase
+                    .from("campaigns")
+                    .select(`
+                        id,
+                        name,
+                        master_id,
+                        codigo_mesa,
+                        created_at
+                    `)
+                    .in(
+                        "id",
+                        idsCampanhasJogador
+                    );
 
                 if (error) {
                     console.error(
@@ -101,46 +133,78 @@
                         error
                     );
                 } else {
-                    campanhasJogador = data || [];
+                    campanhasJogador =
+                        data || [];
                 }
             }
 
             /*
-             * Junta as campanhas e remove duplicadas
+             * Junta as campanhas e remove duplicadas.
              */
-            const mapa = new Map();
+            const mapa =
+                new Map();
 
             [
                 ...(campanhasMestre || []),
                 ...campanhasJogador
             ].forEach(campanha => {
-                mapa.set(campanha.id, campanha);
+
+                if (campanha?.id) {
+                    mapa.set(
+                        campanha.id,
+                        campanha
+                    );
+                }
+
             });
 
-            const campanhas = Array.from(mapa.values());
+            const campanhas =
+                Array.from(
+                    mapa.values()
+                );
 
-            window.rpgCampaign.campaigns = campanhas;
-            window.rpgCampaign.loaded = true;
+            window.rpgCampaign.campaigns =
+                campanhas;
+
+            window.rpgCampaign.loaded =
+                true;
 
             /*
-             * Se já havia uma campanha ativa,
-             * tenta mantê-la.
+             * IMPORTANTE:
+             *
+             * Carregar campanhas NÃO significa
+             * selecionar uma delas.
+             *
+             * Se já houver uma campanha ativa,
+             * tentamos mantê-la.
+             *
+             * Caso contrário, deixamos null.
+             *
+             * NÃO usamos mais campaigns[0].
              */
             const campanhaAnterior =
                 window.rpgCampaign.activeCampaign;
 
             if (
                 campanhaAnterior &&
-                campanhas.some(c => c.id === campanhaAnterior.id)
+                campanhas.some(
+                    campanha =>
+                        String(campanha.id) ===
+                        String(campanhaAnterior.id)
+                )
             ) {
+
                 window.rpgCampaign.activeCampaign =
                     campanhas.find(
-                        c => c.id === campanhaAnterior.id
+                        campanha =>
+                            String(campanha.id) ===
+                            String(campanhaAnterior.id)
                     );
-            } else if (campanhas.length > 0) {
-                window.rpgCampaign.activeCampaign = campanhas[0];
+
             } else {
-                window.rpgCampaign.activeCampaign = null;
+
+                window.rpgCampaign.activeCampaign =
+                    null;
             }
 
             sincronizarCampanhaAuth();
@@ -153,12 +217,15 @@
             return campanhas;
 
         } catch (erro) {
+
             console.error(
                 "[Campaign] Erro inesperado:",
                 erro
             );
 
-            window.rpgCampaign.loaded = true;
+            window.rpgCampaign.loaded =
+                true;
+
             return [];
         }
     }
@@ -172,19 +239,37 @@
     }
 
     function obterCampanhas() {
-        return window.rpgCampaign.campaigns || [];
+        return (
+            window.rpgCampaign.campaigns ||
+            []
+        );
     }
 
     function definirCampanhaAtiva(campanha) {
+
         if (!campanha) {
-            window.rpgCampaign.activeCampaign = null;
+
+            window.rpgCampaign.activeCampaign =
+                null;
+
             sincronizarCampanhaAuth();
+
+            dispararEventoCampanha();
+
             return null;
         }
 
-        window.rpgCampaign.activeCampaign = campanha;
+        window.rpgCampaign.activeCampaign =
+            campanha;
 
         sincronizarCampanhaAuth();
+
+        dispararEventoCampanha();
+
+        console.log(
+            "[Campaign] Campanha ativa:",
+            campanha
+        );
 
         return campanha;
     }
@@ -193,7 +278,10 @@
        CÓDIGO DA MESA
     ===================================================== */
 
-    function obterCodigoMesa(campanha = null) {
+    function obterCodigoMesa(
+        campanha = null
+    ) {
+
         const alvo =
             campanha ||
             window.rpgCampaign.activeCampaign;
@@ -205,7 +293,10 @@
         return alvo.codigo_mesa || null;
     }
 
-    async function buscarCampanhaPorCodigo(codigo) {
+    async function buscarCampanhaPorCodigo(
+        codigo
+    ) {
+
         const codigoNormalizado =
             normalizarCodigoMesa(codigo);
 
@@ -214,37 +305,48 @@
         }
 
         if (!window.supabase) {
+
             console.error(
                 "[Campaign] Supabase não disponível."
             );
+
             return null;
         }
 
         try {
-            const { data, error } =
-                await window.supabase
-                    .from("campaigns")
-                    .select(`
-                        id,
-                        name,
-                        master_id,
-                        codigo_mesa,
-                        created_at
-                    `)
-                    .eq("codigo_mesa", codigoNormalizado)
-                    .maybeSingle();
+
+            const {
+                data,
+                error
+            } = await window.supabase
+                .from("campaigns")
+                .select(`
+                    id,
+                    name,
+                    master_id,
+                    codigo_mesa,
+                    created_at
+                `)
+                .eq(
+                    "codigo_mesa",
+                    codigoNormalizado
+                )
+                .maybeSingle();
 
             if (error) {
+
                 console.error(
                     "[Campaign] Erro ao procurar código da mesa:",
                     error
                 );
+
                 return null;
             }
 
             return data || null;
 
         } catch (erro) {
+
             console.error(
                 "[Campaign] Erro inesperado ao procurar mesa:",
                 erro
@@ -255,32 +357,40 @@
     }
 
     /* =====================================================
-       SINCRONIZAÇÃO COM AUTENTICAÇÃO
+       SINCRONIZAÇÃO COM AUTH
     ===================================================== */
 
     function sincronizarCampanhaAuth() {
+
         if (!window.rpgAuth) {
             return;
         }
 
         window.rpgAuth.campaign =
-            window.rpgCampaign.activeCampaign || null;
+            window.rpgCampaign.activeCampaign ||
+            null;
 
         window.rpgAuth.campaigns =
-            window.rpgCampaign.campaigns || [];
+            window.rpgCampaign.campaigns ||
+            [];
 
-        /*
-         * Atualiza também a informação de mestre.
-         */
         if (
             window.rpgAuth.user &&
             window.rpgAuth.campaign
         ) {
+
             window.rpgAuth.isMaster =
-                window.rpgAuth.campaign.master_id ===
-                window.rpgAuth.user.id;
+                String(
+                    window.rpgAuth.campaign.master_id
+                ) ===
+                String(
+                    window.rpgAuth.user.id
+                );
+
         } else {
-            window.rpgAuth.isMaster = false;
+
+            window.rpgAuth.isMaster =
+                false;
         }
     }
 
@@ -289,18 +399,25 @@
     ===================================================== */
 
     function encontrarCampanhaPorId(id) {
+
         if (!id) {
             return null;
         }
 
         return (
-            window.rpgCampaign.campaigns || []
-        ).find(campanha =>
-            campanha.id === id
+            window.rpgCampaign.campaigns ||
+            []
+        ).find(
+            campanha =>
+                String(campanha.id) ===
+                String(id)
         ) || null;
     }
 
-    async function selecionarCampanhaPorId(id) {
+    async function selecionarCampanhaPorId(
+        id
+    ) {
+
         let campanha =
             encontrarCampanhaPorId(id);
 
@@ -308,22 +425,29 @@
          * Caso ainda não esteja carregada,
          * busca diretamente no Supabase.
          */
-        if (!campanha && window.supabase) {
-            const { data, error } =
-                await window.supabase
-                    .from("campaigns")
-                    .select(`
-                        id,
-                        name,
-                        master_id,
-                        codigo_mesa,
-                        created_at
-                    `)
-                    .eq("id", id)
-                    .maybeSingle();
+        if (
+            !campanha &&
+            window.supabase
+        ) {
+
+            const {
+                data,
+                error
+            } = await window.supabase
+                .from("campaigns")
+                .select(`
+                    id,
+                    name,
+                    master_id,
+                    codigo_mesa,
+                    created_at
+                `)
+                .eq("id", id)
+                .maybeSingle();
 
             if (!error) {
-                campanha = data || null;
+                campanha =
+                    data || null;
             }
         }
 
@@ -331,7 +455,9 @@
             return null;
         }
 
-        definirCampanhaAtiva(campanha);
+        definirCampanhaAtiva(
+            campanha
+        );
 
         return campanha;
     }
@@ -341,10 +467,11 @@
     ===================================================== */
 
     async function inicializar() {
-        /*
-         * O auth.js pode ainda estar carregando.
-         */
-        if (!window.rpgAuth || !window.rpgAuth.user) {
+
+        if (
+            !window.rpgAuth ||
+            !window.rpgAuth.user
+        ) {
             return;
         }
 
@@ -352,36 +479,42 @@
     }
 
     /*
-     * Aguarda o auth.js
+     * Aguarda o auth.js.
      */
     let tentativas = 0;
 
     const intervaloInicializacao =
-        setInterval(async () => {
+        setInterval(
+            async () => {
 
-            tentativas++;
+                tentativas++;
 
-            if (
-                window.rpgAuth &&
-                window.rpgAuth.user
-            ) {
-                clearInterval(
-                    intervaloInicializacao
-                );
+                if (
+                    window.rpgAuth &&
+                    window.rpgAuth.user
+                ) {
 
-                await inicializar();
-            }
+                    clearInterval(
+                        intervaloInicializacao
+                    );
 
-            /*
-             * Evita ficar tentando para sempre.
-             */
-            if (tentativas >= 40) {
-                clearInterval(
-                    intervaloInicializacao
-                );
-            }
+                    await inicializar();
 
-        }, 250);
+                    return;
+                }
+
+                if (
+                    tentativas >= 40
+                ) {
+
+                    clearInterval(
+                        intervaloInicializacao
+                    );
+                }
+
+            },
+            250
+        );
 
     /* =====================================================
        API PÚBLICA
@@ -412,7 +545,7 @@
         selecionarCampanhaPorId;
 
     /*
-     * Compatibilidade com outros arquivos
+     * Compatibilidade.
      */
     window.carregarCampanhas =
         carregarCampanhas;
