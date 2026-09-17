@@ -204,7 +204,7 @@ body {
 
 
 /* ============================================================
-   BOTÃO DE CONFIGURAÇÕES DO MESTRE
+   BOTÃO DE CONFIGURAÇÕES
 ============================================================ */
 
 .mesa-settings-btn {
@@ -213,7 +213,7 @@ body {
     top: 22px;
     right: 25px;
 
-    z-index: 50;
+    z-index: 10000;
 
     width: 42px;
     height: 42px;
@@ -371,7 +371,9 @@ body {
 }
 
 
-/* textura decorativa */
+/* ============================================================
+   TEXTURA DECORATIVA
+============================================================ */
 
 .mesa-screen::before {
     content: "";
@@ -392,7 +394,9 @@ body {
 }
 
 
-/* brilho central */
+/* ============================================================
+   BRILHO CENTRAL
+============================================================ */
 
 .mesa-screen::after {
     content: "";
@@ -516,7 +520,9 @@ body {
 }
 
 
-/* brilho interno */
+/* ============================================================
+   BRILHO INTERNO
+============================================================ */
 
 .player-card::before {
     content: "";
@@ -537,15 +543,11 @@ body {
    POSIÇÕES DOS 8 JOGADORES
 ============================================================ */
 
-/* superior esquerdo */
-
 .player-card[data-seat="1"] {
     top: 11%;
     left: 3%;
     transform: rotate(-1deg);
 }
-
-/* superior centro-esquerdo */
 
 .player-card[data-seat="2"] {
     top: 8%;
@@ -553,15 +555,11 @@ body {
     transform: rotate(-0.5deg);
 }
 
-/* superior centro-direito */
-
 .player-card[data-seat="3"] {
     top: 8%;
     right: 23%;
     transform: rotate(0.5deg);
 }
-
-/* superior direito */
 
 .player-card[data-seat="4"] {
     top: 11%;
@@ -569,15 +567,11 @@ body {
     transform: rotate(1deg);
 }
 
-/* inferior esquerdo */
-
 .player-card[data-seat="5"] {
     bottom: 10%;
     left: 3%;
     transform: rotate(1deg);
 }
-
-/* inferior centro-esquerdo */
 
 .player-card[data-seat="6"] {
     bottom: 7%;
@@ -585,15 +579,11 @@ body {
     transform: rotate(0.5deg);
 }
 
-/* inferior centro-direito */
-
 .player-card[data-seat="7"] {
     bottom: 7%;
     right: 23%;
     transform: rotate(-0.5deg);
 }
-
-/* inferior direito */
 
 .player-card[data-seat="8"] {
     bottom: 10%;
@@ -831,7 +821,7 @@ body {
 
     inset: 0;
 
-    z-index: 100;
+    z-index: 9999;
 
     display: flex;
 
@@ -858,6 +848,8 @@ body {
 ============================================================ */
 
 .master-menu-content {
+    position: relative;
+
     width: min(310px, calc(100vw - 35px));
 
     padding: 18px;
@@ -2018,23 +2010,12 @@ body {
         transition-duration: 0.01ms !important;
     }
 }
-/* ==========================================
-   CORREÇÃO — MENU DO MESTRE
-========================================== */
+
+
+/* ============================================================
+   CORREÇÃO FINAL — MENU DO MESTRE
+============================================================ */
 
 .master-menu[hidden] {
     display: none !important;
-}
-
-.master-menu {
-    z-index: 9999;
-}
-
-.master-menu-content {
-    position: relative;
-}
-
-.mesa-settings-btn {
-    position: relative;
-    z-index: 10000;
 }
