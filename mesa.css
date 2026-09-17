@@ -286,8 +286,12 @@ body {
 
     transform: translate(-50%, -50%);
 
-    width: min(58vw, 760px);
-    height: min(61vh, 650px);
+    /*
+       ÁREA CENTRAL AMPLIADA
+    */
+
+    width: min(64vw, 850px);
+    height: min(66vh, 700px);
 
     min-width: 400px;
     min-height: 330px;
@@ -1574,8 +1578,12 @@ body {
 @media (max-width: 900px) {
 
     .mesa-stage {
-        width: 59vw;
-        height: 57vh;
+        /*
+           PALCO CENTRAL AMPLIADO NO TABLET
+        */
+
+        width: 64vw;
+        height: 62vh;
 
         min-width: 340px;
     }
@@ -1670,8 +1678,12 @@ body {
         left: 50%;
         top: 50%;
 
-        width: 55vw;
-        height: 53vh;
+        /*
+           PALCO CENTRAL MAIOR NO CELULAR
+        */
+
+        width: 62vw;
+        height: 58vh;
 
         min-width: 0;
         min-height: 0;
@@ -1954,8 +1966,12 @@ body {
     }
 
     .mesa-stage {
-        width: 53vw;
-        height: 50vh;
+        /*
+           PALCO CENTRAL MAIOR EM TELAS PEQUENAS
+        */
+
+        width: 60vw;
+        height: 55vh;
     }
 
     .player-card[data-seat="2"],
