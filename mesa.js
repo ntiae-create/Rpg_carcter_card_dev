@@ -70,15 +70,7 @@ const MESA_CONFIG = {
 
         dificuldadePadrao: "normal",
 
-        quantidadePadrao: 1,
-
-        duracaoMinima: 100,
-
-        duracaoMaxima: 30000,
-
-        quantidadeMinima: 1,
-
-        quantidadeMaxima: 20
+        quantidadePadrao: 1
 
     }
 
@@ -94,8 +86,7 @@ const mesaState = {
 
     inicializado: false,
 
-    modoAtual:
-        MESA_CONFIG.modos.NORMAL,
+    modoAtual: MESA_CONFIG.modos.NORMAL,
 
 
 
@@ -156,17 +147,13 @@ const mesaState = {
 
         (_, index) => ({
 
-            slot:
-                index + 1,
+            slot: index + 1,
 
-            ocupado:
-                false,
+            ocupado: false,
 
-            characterId:
-                null,
+            characterId: null,
 
-            userId:
-                null
+            userId: null
 
         })
 
@@ -176,14 +163,11 @@ const mesaState = {
 
     aventura: {
 
-        aberta:
-            false,
+        aberta: false,
 
-        tipo:
-            null,
+        tipo: null,
 
-        dados:
-            null
+        dados: null
 
     },
 
@@ -191,74 +175,31 @@ const mesaState = {
 
     batalha: {
 
-        ativa:
-            false,
+        ativa: false,
 
-        rodada:
-            0,
+        rodada: 0,
 
-        turno:
-            null,
+        turno: null,
 
-        participantes:
-            []
+        participantes: []
 
     },
 
 
 
-    /*
-     =========================================================
-     CTE
-     =========================================================
-
-     O CTE é transversal à mesa.
-
-     Ele NÃO muda o modo da mesa.
-
-     O Mestre pode determinar:
-
-     - tempo
-     - dificuldade
-     - quantidade de acertos
-     - todos os jogadores
-     - jogadores específicos
-     - se uma falha será divulgada globalmente
-
-     Cada jogador selecionado possui seu próprio resultado.
-    */
-
     cte: {
 
-        ativo:
-            false,
+        ativo: false,
 
-        id:
-            null,
+        dificuldade: MESA_CONFIG.cte.dificuldadePadrao,
 
-        dificuldade:
-            MESA_CONFIG.cte.dificuldadePadrao,
+        duracao: MESA_CONFIG.cte.dificuldades.normal,
 
-        duracao:
-            MESA_CONFIG.cte.dificuldades.normal,
+        quantidade: MESA_CONFIG.cte.quantidadePadrao,
 
-        quantidade:
-            MESA_CONFIG.cte.quantidadePadrao,
+        resultados: [],
 
-        todos:
-            true,
-
-        alvos:
-            [],
-
-        resultados:
-            [],
-
-        inicio:
-            null,
-
-        falhaGlobal:
-            true
+        inicio: null
 
     }
 
@@ -272,35 +213,25 @@ const mesaState = {
 
 const MesaUI = {
 
-    container:
-        null,
+    container: null,
 
-    layout:
-        null,
+    layout: null,
 
-    jogadores:
-        null,
+    jogadores: null,
 
-    stage:
-        null,
+    stage: null,
 
-    screen:
-        null,
+    screen: null,
 
-    screenContent:
-        null,
+    screenContent: null,
 
-    settingsButton:
-        null,
+    settingsButton: null,
 
-    masterMenu:
-        null,
+    masterMenu: null,
 
-    masterButtons:
-        [],
+    masterButtons: [],
 
-    nomeCampanha:
-        null
+    nomeCampanha: null
 
 };
 
@@ -321,58 +252,42 @@ function inicializarMesa() {
 
 
     MesaUI.container =
-        document.getElementById(
-            "online-table-panel"
-        );
+        document.getElementById("online-table-panel");
 
 
 
     MesaUI.layout =
-        document.querySelector(
-            ".mesa-layout"
-        );
+        document.querySelector(".mesa-layout");
 
 
 
     MesaUI.jogadores =
-        document.getElementById(
-            "jogadores"
-        );
+        document.getElementById("jogadores");
 
 
 
     MesaUI.stage =
-        document.getElementById(
-            "mesa-stage"
-        );
+        document.getElementById("mesa-stage");
 
 
 
     MesaUI.screen =
-        document.getElementById(
-            "mesa-screen"
-        );
+        document.getElementById("mesa-screen");
 
 
 
     MesaUI.screenContent =
-        document.getElementById(
-            "mesa-screen-content"
-        );
+        document.getElementById("mesa-screen-content");
 
 
 
     MesaUI.settingsButton =
-        document.getElementById(
-            "btn-configuracoes"
-        );
+        document.getElementById("btn-configuracoes");
 
 
 
     MesaUI.masterMenu =
-        document.getElementById(
-            "master-menu"
-        );
+        document.getElementById("master-menu");
 
 
 
@@ -386,9 +301,7 @@ function inicializarMesa() {
 
 
     MesaUI.nomeCampanha =
-        document.getElementById(
-            "nome-campanha"
-        );
+        document.getElementById("nome-campanha");
 
 
 
@@ -404,8 +317,7 @@ function inicializarMesa() {
 
 
 
-    mesaState.inicializado =
-        true;
+    mesaState.inicializado = true;
 
 
 
@@ -430,16 +342,11 @@ function inicializarMesa() {
         new CustomEvent(
             "mesa:inicializada",
             {
-
-                detail:
-                    mesaState
-
+                detail: mesaState
             }
-
         )
 
     );
-
 
 
     console.log(
@@ -470,16 +377,10 @@ function carregarContextoUsuario() {
      Usuário
     */
 
-    if (
-        auth &&
-        auth.user
-    ) {
+    if (auth && auth.user) {
 
         mesaState.usuario.id =
-            auth.user.id ||
-            null;
-
-
+            auth.user.id || null;
 
         mesaState.usuario.nome =
             auth.user.user_metadata?.name ||
@@ -498,24 +399,17 @@ function carregarContextoUsuario() {
     if (campanha) {
 
         mesaState.campanha.id =
-            campanha.id ||
-            null;
-
-
+            campanha.id || null;
 
         mesaState.campanha.nome =
             campanha.name ||
             campanha.nome ||
             "Campanha";
 
-
-
         mesaState.campanha.codigoMesa =
             campanha.codigo_mesa ||
             campanha.codigoMesa ||
             null;
-
-
 
         mesaState.campanha.masterId =
             campanha.master_id ||
@@ -535,36 +429,27 @@ function carregarContextoUsuario() {
 
 
 
-    mesaState.usuario.isMaster =
-        Boolean(
+    mesaState.usuario.isMaster = Boolean(
 
-            (
+        (
+            mesaState.campanha.masterId &&
+            usuarioId &&
+            mesaState.campanha.masterId === usuarioId
+        )
 
-                mesaState.campanha.masterId &&
+        ||
 
-                usuarioId &&
+        auth?.isMaster === true
 
-                mesaState.campanha.masterId ===
-                usuarioId
+        ||
 
-            )
+        (
+            typeof window.usuarioEhMestreInterface ===
+            "function" &&
+            window.usuarioEhMestreInterface() === true
+        )
 
-            ||
-
-            auth?.isMaster === true
-
-            ||
-
-            (
-
-                typeof window.usuarioEhMestreInterface ===
-                "function" &&
-
-                window.usuarioEhMestreInterface() === true
-
-            )
-
-        );
+    );
 
 
 
@@ -652,21 +537,15 @@ function obterCampanhaAtiva() {
         if (salvo) {
 
             const mesa =
-                JSON.parse(
-                    salvo
-                );
+                JSON.parse(salvo);
 
 
 
-            if (
-                mesa &&
-                mesa.campaignId
-            ) {
+            if (mesa && mesa.campaignId) {
 
                 return {
 
-                    id:
-                        mesa.campaignId,
+                    id: mesa.campaignId,
 
                     name:
                         mesa.campaignName ||
@@ -737,23 +616,17 @@ function descobrirJogadorAtual() {
         if (salvo) {
 
             const mesa =
-                JSON.parse(
-                    salvo
-                );
+                JSON.parse(salvo);
 
 
 
             if (mesa) {
 
                 mesaState.jogadorAtual.characterId =
-                    mesa.characterId ||
-                    null;
-
-
+                    mesa.characterId || null;
 
                 mesaState.jogadorAtual.slot =
-                    mesa.slot ||
-                    null;
+                    mesa.slot || null;
 
             }
 
@@ -780,19 +653,14 @@ function descobrirJogadorAtual() {
 
         window.rpgAuth &&
 
-        Array.isArray(
-            window.rpgAuth.campaignCharacters
-        )
+        Array.isArray(window.rpgAuth.campaignCharacters)
 
     ) {
 
         const personagem =
             window.rpgAuth.campaignCharacters.find(
-
                 character =>
-                    character.user_id ===
-                    usuarioId
-
+                    character.user_id === usuarioId
             );
 
 
@@ -800,14 +668,10 @@ function descobrirJogadorAtual() {
         if (personagem) {
 
             mesaState.jogadorAtual.characterId =
-                personagem.id ||
-                null;
-
-
+                personagem.id || null;
 
             mesaState.jogadorAtual.slot =
-                personagem.slot ||
-                null;
+                personagem.slot || null;
 
         }
 
@@ -830,9 +694,7 @@ function registrarEventos() {
     if (MesaUI.settingsButton) {
 
         MesaUI.settingsButton.addEventListener(
-
             "click",
-
             event => {
 
                 event.stopPropagation();
@@ -840,7 +702,6 @@ function registrarEventos() {
                 alternarMenuMestre();
 
             }
-
         );
 
     }
@@ -852,17 +713,12 @@ function registrarEventos() {
     */
 
     document.addEventListener(
-
         "click",
-
         event => {
 
             if (
-
                 !MesaUI.masterMenu ||
-
                 MesaUI.masterMenu.hidden
-
             ) {
 
                 return;
@@ -880,7 +736,6 @@ function registrarEventos() {
 
             const clicouNoBotao =
                 MesaUI.settingsButton &&
-
                 MesaUI.settingsButton.contains(
                     event.target
                 );
@@ -888,11 +743,8 @@ function registrarEventos() {
 
 
             if (
-
                 !clicouNoMenu &&
-
                 !clicouNoBotao
-
             ) {
 
                 fecharMenuMestre();
@@ -900,7 +752,6 @@ function registrarEventos() {
             }
 
         }
-
     );
 
 
@@ -910,22 +761,16 @@ function registrarEventos() {
     */
 
     document.addEventListener(
-
         "keydown",
-
         event => {
 
-            if (
-                event.key ===
-                "Escape"
-            ) {
+            if (event.key === "Escape") {
 
                 fecharMenuMestre();
 
             }
 
         }
-
     );
 
 
@@ -935,34 +780,25 @@ function registrarEventos() {
     */
 
     MesaUI.masterButtons.forEach(
-
         button => {
 
             button.addEventListener(
-
                 "click",
-
                 event => {
 
                     event.stopPropagation();
 
-
-
                     const acao =
                         button.dataset.masterAction;
-
-
 
                     executarAcaoMestre(
                         acao
                     );
 
                 }
-
             );
 
         }
-
     );
 
 
@@ -987,53 +823,39 @@ function registrarEventos() {
     */
 
     document.addEventListener(
-
         "mesa:jogadorAtualizado",
-
         event => {
 
             if (
-
                 event.detail &&
-
                 event.detail.slot
-
             ) {
 
                 atualizarAssento(
-
                     event.detail.slot,
-
                     event.detail
-
                 );
 
             }
 
         }
-
     );
 
 
 
     document.addEventListener(
-
         "mesa:jogadoresAtualizados",
-
         () => {
 
             atualizarAssentos();
 
         }
-
     );
 
 
 
     document.addEventListener(
-
         "mesa:campanhaAlterada",
-
         event => {
 
             sincronizarCampanha(
@@ -1041,7 +863,6 @@ function registrarEventos() {
             );
 
         }
-
     );
 
 }
@@ -1069,8 +890,7 @@ function configurarMenuMestre() {
 
     if (!mesaState.usuario.isMaster) {
 
-        MesaUI.masterMenu.hidden =
-            true;
+        MesaUI.masterMenu.hidden = true;
 
     }
 
@@ -1100,8 +920,7 @@ function abrirMenuMestre() {
 
 
 
-    MesaUI.masterMenu.hidden =
-        false;
+    MesaUI.masterMenu.hidden = false;
 
 }
 
@@ -1121,8 +940,7 @@ function fecharMenuMestre() {
 
 
 
-    MesaUI.masterMenu.hidden =
-        true;
+    MesaUI.masterMenu.hidden = true;
 
 }
 
@@ -1248,11 +1066,9 @@ function executarAcaoMestre(acao) {
 function mudarModo(modo) {
 
     if (
-
         !Object.values(
             MESA_CONFIG.modos
         ).includes(modo)
-
     ) {
 
         console.warn(
@@ -1280,7 +1096,6 @@ function mudarModo(modo) {
         new CustomEvent(
             "mesa:modoAlterado",
             {
-
                 detail: {
 
                     modo,
@@ -1291,7 +1106,6 @@ function mudarModo(modo) {
                 }
 
             }
-
         )
 
     );
@@ -1320,21 +1134,15 @@ function atualizarModoVisual() {
 
 
     MesaUI.container.classList.remove(
-
         "modo-normal",
-
         "modo-aventura",
-
         "modo-batalha"
-
     );
 
 
 
     MesaUI.container.classList.add(
-
         `modo-${mesaState.modoAtual}`
-
     );
 
 }
@@ -1375,12 +1183,8 @@ function voltarParaMesaNormal() {
         new CustomEvent(
             "mesa:modoNormal",
             {
-
-                detail:
-                    mesaState
-
+                detail: mesaState
             }
-
         )
 
     );
@@ -1393,10 +1197,7 @@ function voltarParaMesaNormal() {
    AVENTURA
 ============================================================ */
 
-function abrirAventura(
-    tipo,
-    dados = {}
-) {
+function abrirAventura(tipo, dados = {}) {
 
     mesaState.aventura.aberta =
         true;
@@ -1443,7 +1244,6 @@ function abrirAventura(
                 }
 
             }
-
         )
 
     );
@@ -1455,12 +1255,9 @@ function abrirAventura(
     */
 
     if (
-
         window.MesaAventura &&
-
         typeof window.MesaAventura.abrir ===
         "function"
-
     ) {
 
         window.MesaAventura.abrir(
@@ -1498,9 +1295,7 @@ function iniciarBatalha(
 
 
     if (
-        Array.isArray(
-            participantes
-        )
+        Array.isArray(participantes)
     ) {
 
         mesaState.batalha.participantes =
@@ -1511,16 +1306,17 @@ function iniciarBatalha(
         /*
          Por padrão, participantes são os jogadores
          que possuem personagem conectado.
+
+         O módulo de jogadores pode atualizar
+         essa lista depois.
         */
 
         mesaState.batalha.participantes =
             mesaState.jogadores
-
                 .filter(
                     jogador =>
                         jogador.ocupado
                 )
-
                 .map(
                     jogador =>
                         jogador.slot
@@ -1559,7 +1355,6 @@ function iniciarBatalha(
                 }
 
             }
-
         )
 
     );
@@ -1630,7 +1425,6 @@ function finalizarBatalha(
                 }
 
             }
-
         )
 
     );
@@ -1707,7 +1501,6 @@ function iniciarBoss(
                 }
 
             }
-
         )
 
     );
@@ -1738,372 +1531,54 @@ function iniciarBoss(
 ============================================================ */
 
 /*
- CTE é GLOBAL / TRANSVERSAL.
+ CTE é GLOBAL.
 
  Ele não troca o modo da mesa.
 
- O Mestre pode iniciar:
+ Ele aparece como uma camada sobre a tela atual.
 
- - todos os jogadores
- - um jogador
- - vários jogadores
-
- Somente os jogadores presentes em "alvos"
- devem receber o desafio.
-
- O resultado de cada jogador é armazenado
- separadamente.
-
- Se falhaGlobal estiver ativo, uma falha
- pode gerar um evento visível para toda a mesa.
+ Quando termina, a tela anterior continua intacta.
 */
-
 
 function iniciarCTE(
     opcoes = {}
 ) {
 
-    if (!mesaState.usuario.isMaster) {
+    if (
+        mesaState.cte.ativo
+    ) {
 
-        console.warn(
-            "[Mesa] Somente o Mestre pode iniciar um CTE."
-        );
-
-        return null;
+        return;
 
     }
-
-
-
-    if (mesaState.cte.ativo) {
-
-        console.warn(
-            "[Mesa] Já existe um CTE ativo."
-        );
-
-        return null;
-
-    }
-
-
-
-    /*
-     =========================================================
-     DIFICULDADE
-     =========================================================
-    */
-
-    const dificuldadesValidas =
-        Object.keys(
-            MESA_CONFIG.cte.dificuldades
-        );
 
 
 
     const dificuldade =
-        dificuldadesValidas.includes(
-            opcoes.dificuldade
-        )
-
-            ? opcoes.dificuldade
-
-            : MESA_CONFIG.cte.dificuldadePadrao;
+        opcoes.dificuldade ||
+        MESA_CONFIG.cte.dificuldadePadrao;
 
 
 
-    /*
-     =========================================================
-     DURAÇÃO
-     =========================================================
-    */
-
-    let duracao;
-
-
-
-    if (
-        opcoes.duracao !== undefined &&
-        opcoes.duracao !== null &&
-        opcoes.duracao !== ""
-    ) {
-
-        duracao =
-            Number(
-                opcoes.duracao
-            );
-
-    } else {
-
-        duracao =
-            MESA_CONFIG.cte.dificuldades[
-                dificuldade
-            ];
-
-    }
+    const duracao =
+        opcoes.duracao ||
+        MESA_CONFIG.cte.dificuldades[
+            dificuldade
+        ] ||
+        MESA_CONFIG.cte.dificuldades.normal;
 
 
 
-    if (!Number.isFinite(duracao)) {
-
-        duracao =
-            MESA_CONFIG.cte.dificuldades[
-                dificuldade
-            ];
-
-    }
-
-
-
-    duracao =
-        Math.min(
-
-            MESA_CONFIG.cte.duracaoMaxima,
-
-            Math.max(
-
-                MESA_CONFIG.cte.duracaoMinima,
-
-                duracao
-
-            )
-
-        );
-
-
-
-    /*
-     =========================================================
-     QUANTIDADE DE ACERTOS
-     =========================================================
-    */
-
-    let quantidade =
+    const quantidade =
         Number(
-            opcoes.quantidade
+            opcoes.quantidade ||
+            MESA_CONFIG.cte.quantidadePadrao
         );
 
 
-
-    if (!Number.isFinite(quantidade)) {
-
-        quantidade =
-            MESA_CONFIG.cte.quantidadePadrao;
-
-    }
-
-
-
-    quantidade =
-        Math.min(
-
-            MESA_CONFIG.cte.quantidadeMaxima,
-
-            Math.max(
-
-                MESA_CONFIG.cte.quantidadeMinima,
-
-                Math.floor(
-                    quantidade
-                )
-
-            )
-
-        );
-
-
-
-    /*
-     =========================================================
-     ALVOS
-     =========================================================
-
-     todos = true
-
-     → todos os assentos ocupados.
-
-     todos = false
-
-     → somente os slots enviados.
-    */
-
-    const todos =
-        opcoes.todos === true;
-
-
-
-    let alvos = [];
-
-
-
-    if (todos) {
-
-        alvos =
-            mesaState.jogadores
-
-                .filter(
-                    jogador =>
-                        jogador.ocupado
-                )
-
-                .map(
-                    jogador =>
-                        Number(
-                            jogador.slot
-                        )
-                );
-
-    } else {
-
-        if (
-            Array.isArray(
-                opcoes.alvos
-            )
-        ) {
-
-            alvos =
-                opcoes.alvos
-
-                    .map(
-                        slot =>
-                            Number(slot)
-                    )
-
-                    .filter(
-                        slot =>
-                            Number.isInteger(slot) &&
-                            slot >= 1 &&
-                            slot <=
-                                MESA_CONFIG.maxJogadores
-                    );
-
-        }
-
-    }
-
-
-
-    /*
-     Remove duplicados.
-    */
-
-    alvos =
-        [
-            ...new Set(
-                alvos
-            )
-        ];
-
-
-
-    /*
-     Somente assentos ocupados podem
-     receber um CTE.
-    */
-
-    alvos =
-        alvos.filter(
-
-            slot => {
-
-                const jogador =
-                    mesaState.jogadores[
-                        slot - 1
-                    ];
-
-
-
-                return Boolean(
-                    jogador &&
-                    jogador.ocupado
-                );
-
-            }
-
-        );
-
-
-
-    /*
-     Não existe CTE sem alvo.
-    */
-
-    if (!alvos.length) {
-
-        console.warn(
-            "[Mesa] Nenhum jogador válido foi selecionado para o CTE."
-        );
-
-        return null;
-
-    }
-
-
-
-    /*
-     =========================================================
-     RESULTADOS INDIVIDUAIS
-     =========================================================
-    */
-
-    const agora =
-        Date.now();
-
-
-
-    const resultados =
-        alvos.map(
-
-            slot => ({
-
-                slot,
-
-                iniciadoEm:
-                    agora,
-
-                concluido:
-                    false,
-
-                sucesso:
-                    null,
-
-                falhou:
-                    false,
-
-                acertos:
-                    0
-
-            })
-
-        );
-
-
-
-    /*
-     =========================================================
-     ID ÚNICO DO CTE
-     =========================================================
-    */
-
-    const id =
-        `cte-${agora}-${Math.random()
-            .toString(36)
-            .slice(2, 8)}`;
-
-
-
-    /*
-     =========================================================
-     ATUALIZA ESTADO
-     =========================================================
-    */
 
     mesaState.cte.ativo =
         true;
-
-
-
-    mesaState.cte.id =
-        id;
 
 
 
@@ -2122,46 +1597,19 @@ function iniciarCTE(
 
 
 
-    mesaState.cte.todos =
-        todos;
-
-
-
-    mesaState.cte.alvos =
-        alvos;
-
-
-
     mesaState.cte.resultados =
-        resultados;
+        [];
 
 
 
     mesaState.cte.inicio =
-        agora;
+        Date.now();
 
 
-
-    mesaState.cte.falhaGlobal =
-        opcoes.falhaGlobal !== false;
-
-
-
-    /*
-     O overlay local será criado pelo sistema
-     visual do CTE.
-
-     O mesa-aventura.js poderá substituir
-     esta apresentação por uma versão própria.
-    */
 
     criarOverlayCTE();
 
 
-
-    /*
-     Evento global do início.
-    */
 
     document.dispatchEvent(
 
@@ -2171,22 +1619,11 @@ function iniciarCTE(
 
                 detail: {
 
-                    id,
-
                     dificuldade,
 
                     duracao,
 
                     quantidade,
-
-                    todos,
-
-                    alvos,
-
-                    falhaGlobal:
-                        mesaState.cte.falhaGlobal,
-
-                    resultados,
 
                     estado:
                         mesaState
@@ -2194,53 +1631,9 @@ function iniciarCTE(
                 }
 
             }
-
         )
 
     );
-
-
-
-    console.log(
-        "[Mesa] CTE iniciado:",
-        {
-
-            id,
-
-            dificuldade,
-
-            duracao,
-
-            quantidade,
-
-            todos,
-
-            alvos
-
-        }
-
-    );
-
-
-
-    return {
-
-        id,
-
-        dificuldade,
-
-        duracao,
-
-        quantidade,
-
-        todos,
-
-        alvos,
-
-        falhaGlobal:
-            mesaState.cte.falhaGlobal
-
-    };
 
 }
 
@@ -2344,7 +1737,7 @@ function criarOverlayCTE() {
 
 
     /*
-     O overlay fica dentro da tela,
+     O overlay é colocado dentro da tela,
      sem destruir o conteúdo existente.
     */
 
@@ -2370,14 +1763,6 @@ function executarContagemCTE(
     overlay
 ) {
 
-    if (!overlay) {
-
-        return;
-
-    }
-
-
-
     const timer =
         overlay.querySelector(
             "#cte-timer-value"
@@ -2402,8 +1787,7 @@ function executarContagemCTE(
 
 
 
-    let frameId =
-        null;
+    let frameId = null;
 
 
 
@@ -2413,7 +1797,7 @@ function executarContagemCTE(
             !mesaState.cte.ativo
         ) {
 
-            if (frameId !== null) {
+            if (frameId) {
 
                 cancelAnimationFrame(
                     frameId
@@ -2428,35 +1812,25 @@ function executarContagemCTE(
 
 
         const decorrido =
-            Date.now() -
-            inicio;
+            Date.now() - inicio;
 
 
 
         const restante =
             Math.max(
-
                 0,
-
-                duracao -
-                decorrido
-
+                duracao - decorrido
             );
 
 
 
         const percentual =
             Math.min(
-
                 100,
-
                 (
-
                     decorrido /
                     duracao
-
                 ) * 100
-
             );
 
 
@@ -2465,8 +1839,7 @@ function executarContagemCTE(
 
             timer.textContent =
                 (
-                    restante /
-                    1000
+                    restante / 1000
                 ).toFixed(1);
 
         }
@@ -2486,24 +1859,7 @@ function executarContagemCTE(
             restante <= 0
         ) {
 
-            /*
-             IMPORTANTE:
-
-             O CTE não é automaticamente
-             considerado sucesso.
-
-             O módulo visual deverá registrar
-             o resultado do jogador.
-
-             Caso ainda não exista um resultado
-             individual para este dispositivo,
-             o sistema encerra a etapa visual
-             sem inventar um sucesso.
-            */
-
-            finalizarTempoCTEVisual(
-                overlay
-            );
+            mostrarResultadoCTE();
 
             return;
 
@@ -2527,12 +1883,10 @@ function executarContagemCTE(
 
 
 /* ============================================================
-   FINALIZAR TEMPO VISUAL DO CTE
+   RESULTADO CTE
 ============================================================ */
 
-function finalizarTempoCTEVisual(
-    overlay
-) {
+function mostrarResultadoCTE() {
 
     if (!mesaState.cte.ativo) {
 
@@ -2543,4 +1897,1040 @@ function finalizarTempoCTEVisual(
 
 
     /*
-     O mesa-aventura
+     Aqui o sistema registra o resultado básico.
+
+     A mecânica específica do CTE pode ser expandida
+     posteriormente sem alterar o funcionamento da mesa.
+    */
+
+    const resultado = {
+
+        sucesso: true,
+
+        dificuldade:
+            mesaState.cte.dificuldade,
+
+        timestamp:
+            Date.now()
+
+    };
+
+
+
+    mesaState.cte.resultados.push(
+        resultado
+    );
+
+
+
+    const overlay =
+        document.getElementById(
+            "cte-overlay"
+        );
+
+
+
+    if (!overlay) {
+
+        limparCTE();
+
+        return;
+
+    }
+
+
+
+    overlay.innerHTML = `
+
+        <div class="cte-panel cte-result">
+
+            <div class="cte-result-icon">
+                ✨
+            </div>
+
+            <h2>
+                CTE CONCLUÍDO
+            </h2>
+
+            <p>
+                A ação foi processada.
+            </p>
+
+        </div>
+
+    `;
+
+
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:cteResultado",
+            {
+
+                detail: {
+
+                    resultado,
+
+                    estado:
+                        mesaState
+
+                }
+
+            }
+        )
+
+    );
+
+
+
+    setTimeout(
+        limparCTE,
+        1500
+    );
+
+}
+
+
+
+/* ============================================================
+   LIMPAR CTE
+============================================================ */
+
+function limparCTE() {
+
+    mesaState.cte.ativo =
+        false;
+
+
+
+    const overlay =
+        document.getElementById(
+            "cte-overlay"
+        );
+
+
+
+    if (overlay) {
+
+        overlay.remove();
+
+    }
+
+
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:cteFinalizado",
+            {
+
+                detail: {
+
+                    resultados:
+                        mesaState.cte.resultados,
+
+                    estado:
+                        mesaState
+
+                }
+
+            }
+        )
+
+    );
+
+}
+
+
+
+/* ============================================================
+   TELA PRINCIPAL
+============================================================ */
+
+function mostrarTelaPrincipal() {
+
+    if (!MesaUI.screenContent) {
+
+        return;
+
+    }
+
+
+
+    MesaUI.screenContent.innerHTML = `
+
+        <div class="mesa-welcome">
+
+            <div class="mesa-welcome-icon">
+                🎲
+            </div>
+
+            <h2>
+                Mesa de RPG
+            </h2>
+
+            <p>
+                Aguardando o início da aventura...
+            </p>
+
+        </div>
+
+    `;
+
+}
+
+
+
+/* ============================================================
+   MOSTRAR TELA
+============================================================ */
+
+function mostrarTela(
+    conteudo
+) {
+
+    if (!MesaUI.screenContent) {
+
+        return;
+
+    }
+
+
+
+    if (
+        typeof conteudo === "string"
+    ) {
+
+        MesaUI.screenContent.innerHTML = `
+
+            <div class="mesa-screen-message">
+
+                ${conteudo}
+
+            </div>
+
+        `;
+
+        return;
+
+    }
+
+
+
+    if (
+        conteudo instanceof HTMLElement
+    ) {
+
+        MesaUI.screenContent.innerHTML = "";
+
+        MesaUI.screenContent.appendChild(
+            conteudo
+        );
+
+    }
+
+}
+
+
+
+/* ============================================================
+   CARDS / ASSENTOS
+============================================================ */
+
+/*
+ Os cards já existem no HTML.
+
+ Este arquivo não cria personagens falsos.
+
+ Apenas atualiza a ocupação dos oito lugares.
+*/
+
+function atualizarAssentos() {
+
+    if (!MesaUI.jogadores) {
+
+        return;
+
+    }
+
+
+
+    const cards =
+        Array.from(
+            MesaUI.jogadores.querySelectorAll(
+                "[data-player]"
+            )
+        );
+
+
+
+    cards.forEach(
+        card => {
+
+            const slot =
+                Number(
+                    card.dataset.player
+                );
+
+
+
+            const assento =
+                mesaState.jogadores[
+                    slot - 1
+                ];
+
+
+
+            if (!assento) {
+
+                return;
+
+            }
+
+
+
+            atualizarAssento(
+                slot,
+                assento
+            );
+
+        }
+    );
+
+}
+
+
+
+/* ============================================================
+   ATUALIZAR ASSENTO
+============================================================ */
+
+function atualizarAssento(
+    slot,
+    dados = {}
+) {
+
+    const card =
+        MesaUI.jogadores?.querySelector(
+            `[data-player="${slot}"]`
+        );
+
+
+
+    if (!card) {
+
+        return;
+
+    }
+
+
+
+    const assento =
+        mesaState.jogadores[
+            Number(slot) - 1
+        ];
+
+
+
+    if (!assento) {
+
+        return;
+
+    }
+
+
+
+    /*
+     Atualiza somente dados de ocupação.
+    */
+
+    if (
+        typeof dados.ocupado !==
+        "undefined"
+    ) {
+
+        assento.ocupado =
+            Boolean(
+                dados.ocupado
+            );
+
+    }
+
+
+
+    if (
+        dados.characterId
+    ) {
+
+        assento.characterId =
+            dados.characterId;
+
+    }
+
+
+
+    if (
+        dados.userId
+    ) {
+
+        assento.userId =
+            dados.userId;
+
+    }
+
+
+
+    /*
+     Estado visual.
+    */
+
+    card.classList.toggle(
+        "ocupado",
+        assento.ocupado
+    );
+
+
+
+    card.classList.toggle(
+        "vazio",
+        !assento.ocupado
+    );
+
+}
+
+
+
+/* ============================================================
+   CLIQUE NO JOGADOR
+============================================================ */
+
+function tratarCliqueJogador(
+    event
+) {
+
+    const card =
+        event.target.closest(
+            "[data-player]"
+        );
+
+
+
+    if (!card) {
+
+        return;
+
+    }
+
+
+
+    const slot =
+        Number(
+            card.dataset.player
+        );
+
+
+
+    if (
+        !slot ||
+        slot < 1 ||
+        slot > 8
+    ) {
+
+        return;
+
+    }
+
+
+
+    const jogador =
+        mesaState.jogadores[
+            slot - 1
+        ];
+
+
+
+    /*
+     Evento global.
+
+     Outros módulos podem usar isso para:
+
+     - abrir interação
+     - abrir chat privado
+     - mostrar status público
+     - selecionar alvo
+    */
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:jogadorSelecionado",
+            {
+
+                detail: {
+
+                    slot,
+
+                    jogador,
+
+                    ehProprioJogador:
+                        Number(
+                            mesaState.jogadorAtual.slot
+                        ) === slot
+
+                }
+
+            }
+        )
+
+    );
+
+
+
+    /*
+     Se for o próprio jogador,
+     podemos abrir a ficha normalmente.
+    */
+
+    if (
+
+        Number(
+            mesaState.jogadorAtual.slot
+        ) === slot
+
+    ) {
+
+        if (
+
+            typeof window.abrirFichaJogador ===
+            "function"
+
+        ) {
+
+            window.abrirFichaJogador(
+                slot
+            );
+
+        }
+
+        return;
+
+    }
+
+
+
+    /*
+     Jogador de outra pessoa:
+
+     Não abrimos a ficha privada.
+
+     Emitimos apenas o evento para futura
+     interação / chat privado.
+    */
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:interacaoJogador",
+            {
+
+                detail: {
+
+                    origem:
+                        mesaState.jogadorAtual.slot,
+
+                    alvo:
+                        slot
+
+                }
+
+            }
+        )
+
+    );
+
+}
+
+
+
+/* ============================================================
+   CAMPANHA VISUAL
+============================================================ */
+
+function atualizarCampanhaVisual() {
+
+    if (!MesaUI.nomeCampanha) {
+
+        return;
+
+    }
+
+
+
+    MesaUI.nomeCampanha.textContent =
+        mesaState.campanha.nome ||
+        "Campanha";
+
+}
+
+
+
+/* ============================================================
+   SINCRONIZAR CAMPANHA
+============================================================ */
+
+function sincronizarCampanha(
+    campanha
+) {
+
+    if (!campanha) {
+
+        return;
+
+    }
+
+
+
+    mesaState.campanha.id =
+        campanha.id ||
+        mesaState.campanha.id;
+
+
+
+    mesaState.campanha.nome =
+        campanha.name ||
+        campanha.nome ||
+        mesaState.campanha.nome;
+
+
+
+    mesaState.campanha.codigoMesa =
+        campanha.codigo_mesa ||
+        campanha.codigoMesa ||
+        mesaState.campanha.codigoMesa;
+
+
+
+    mesaState.campanha.masterId =
+        campanha.master_id ||
+        campanha.masterId ||
+        mesaState.campanha.masterId;
+
+
+
+    carregarContextoUsuario();
+
+    atualizarCampanhaVisual();
+
+}
+
+
+
+/* ============================================================
+   INICIALIZAR SUBMÓDULOS
+============================================================ */
+
+function inicializarSubmodulos() {
+
+    /*
+     mesa-jogadores.js e mesa-aventura.js
+     possuem seus próprios listeners.
+
+     Aqui apenas avisamos que o core terminou
+     de carregar.
+    */
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:corePronto",
+            {
+
+                detail: mesaState
+
+            }
+        )
+
+    );
+
+}
+
+
+
+/* ============================================================
+   RECUPERAR ESTADO
+============================================================ */
+
+function obterEstadoMesa() {
+
+    return mesaState;
+
+}
+
+
+
+/* ============================================================
+   VERIFICAR MESTRE
+============================================================ */
+
+function usuarioEhMestre() {
+
+    return (
+        mesaState.usuario.isMaster === true
+    );
+
+}
+
+
+
+/* ============================================================
+   VERIFICAR JOGADOR
+============================================================ */
+
+function usuarioEhJogador() {
+
+    return (
+        mesaState.usuario.isPlayer === true
+    );
+
+}
+
+
+
+/* ============================================================
+   OBTER SLOT ATUAL
+============================================================ */
+
+function obterSlotAtual() {
+
+    return (
+        mesaState.jogadorAtual.slot ||
+        null
+    );
+
+}
+
+
+
+/* ============================================================
+   OBTER CAMPANHA
+============================================================ */
+
+function obterCampanhaMesa() {
+
+    return {
+        ...mesaState.campanha
+    };
+
+}
+
+
+
+/* ============================================================
+   ATUALIZAR JOGADORES
+============================================================ */
+
+function definirAssentos(
+    jogadores = []
+) {
+
+    /*
+     Limpa somente os assentos.
+
+     Não apaga dados de personagens no banco.
+    */
+
+    mesaState.jogadores =
+        Array.from(
+
+            { length: MESA_CONFIG.maxJogadores },
+
+            (_, index) => {
+
+                const jogador =
+                    jogadores.find(
+                        item =>
+                            Number(item.slot) ===
+                            index + 1
+                    );
+
+
+
+                if (!jogador) {
+
+                    return {
+
+                        slot: index + 1,
+
+                        ocupado: false,
+
+                        characterId: null,
+
+                        userId: null
+
+                    };
+
+                }
+
+
+
+                return {
+
+                    slot:
+                        index + 1,
+
+                    ocupado:
+                        true,
+
+                    characterId:
+                        jogador.characterId ||
+                        jogador.id ||
+                        null,
+
+                    userId:
+                        jogador.userId ||
+                        jogador.user_id ||
+                        null
+
+                };
+
+            }
+
+        );
+
+
+
+    atualizarAssentos();
+
+
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:assentosAtualizados",
+            {
+
+                detail:
+                    mesaState.jogadores
+
+            }
+        )
+
+    );
+
+}
+
+
+
+/* ============================================================
+   RESETAR MESA VISUAL
+============================================================ */
+
+function resetarMesaVisual() {
+
+    voltarParaMesaNormal();
+
+    atualizarCampanhaVisual();
+
+    atualizarAssentos();
+
+}
+
+
+
+/* ============================================================
+   API PÚBLICA
+============================================================ */
+
+window.MesaRPG = {
+
+    /*
+     Estado
+    */
+
+    estado:
+        obterEstadoMesa,
+
+
+
+    /*
+     Campanha
+    */
+
+    campanha:
+        obterCampanhaMesa,
+
+    sincronizarCampanha,
+
+
+
+    /*
+     Usuário
+    */
+
+    usuarioEhMestre,
+
+    usuarioEhJogador,
+
+
+
+    /*
+     Jogador atual
+    */
+
+    obterSlotAtual,
+
+
+
+    /*
+     Assentos
+    */
+
+    definirAssentos,
+
+    atualizarAssentos,
+
+
+
+    /*
+     Modos
+    */
+
+    mudarModo,
+
+    voltarParaMesaNormal,
+
+
+
+    /*
+     Aventura
+    */
+
+    abrirAventura,
+
+
+
+    /*
+     Batalha
+    */
+
+    iniciarBatalha,
+
+    finalizarBatalha,
+
+
+
+    /*
+     Boss
+    */
+
+    iniciarBoss,
+
+
+
+    /*
+     CTE
+    */
+
+    iniciarCTE,
+
+    limparCTE,
+
+
+
+    /*
+     Interface
+    */
+
+    mostrarTela,
+
+    mostrarTelaPrincipal,
+
+    abrirMenuMestre,
+
+    fecharMenuMestre,
+
+    resetarMesaVisual
+
+};
+
+
+
+/* ============================================================
+   COMPATIBILIDADE GLOBAL
+============================================================ */
+
+window.inicializarMesa =
+    inicializarMesa;
+
+
+
+window.mudarModoMesa =
+    mudarModo;
+
+
+
+window.abrirMesaAventura =
+    abrirAventura;
+
+
+
+window.iniciarMesaBatalha =
+    iniciarBatalha;
+
+
+
+window.finalizarMesaBatalha =
+    finalizarBatalha;
+
+
+
+window.iniciarMesaBoss =
+    iniciarBoss;
+
+
+
+window.iniciarMesaCTE =
+    iniciarCTE;
+
+
+
+window.limparMesaCTE =
+    limparCTE;
+
+
+
+window.obterEstadoMesa =
+    obterEstadoMesa;
+
+
+
+window.usuarioEhMestreMesa =
+    usuarioEhMestre;
+
+
+
+window.usuarioEhJogadorMesa =
+    usuarioEhJogador;
+
+
+
+/* ============================================================
+   DOM READY
+============================================================ */
+
+if (
+    document.readyState ===
+    "loading"
+) {
+
+    document.addEventListener(
+        "DOMContentLoaded",
+        inicializarMesa
+    );
+
+} else {
+
+    inicializarMesa();
+
+}
