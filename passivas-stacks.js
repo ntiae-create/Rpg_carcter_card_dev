@@ -7,34 +7,21 @@
 (function () {
 
     /*
-     * Este módulo controla APENAS o estado
-     * das Stacks das passivas.
+     * Este arquivo controla APENAS o estado
+     * das passivas que utilizam Stacks.
      *
-     * Ele NÃO cria interface.
-     * Ele NÃO aplica efeitos visuais.
-     * Ele NÃO decide regras específicas
-     * de cada classe.
-     *
-     * Sua função é controlar:
-     *
-     * • criação
-     * • leitura
-     * • adição
-     * • remoção
-     * • definição
-     * • limite mínimo
-     * • limite máximo
-     * • reset
+     * Ele NÃO decide as regras de ativação.
+     * Os outros sistemas podem adicionar,
+     * remover ou definir Stacks através desta API.
      */
 
 
     const estadoStacks = {};
 
 
-
     /* ======================================================
        UTILITÁRIOS
-       ====================================================== */
+    ====================================================== */
 
     function obterDefinicao(passivaId) {
 
@@ -42,22 +29,12 @@
             !window.PassivasDados ||
             typeof window.PassivasDados.obter !== "function"
         ) {
-
-            console.warn(
-                "[Passivas Stacks] PassivasDados não está disponível."
-            );
-
             return null;
-
         }
 
-
-        return window.PassivasDados.obter(
-            passivaId
-        );
+        return window.PassivasDados.obter(passivaId);
 
     }
-
 
 
     function normalizarIdJogador(jogadorId) {
@@ -66,99 +43,93 @@
             jogadorId === null ||
             jogadorId === undefined
         ) {
-
             return null;
-
         }
 
-
-        return String(
-            jogadorId
-        );
+        return String(jogadorId);
 
     }
 
 
+    function limitarValor(valor, minimo, maximo) {
 
-    function limitarValor(
-        valor,
-        minimo,
-        maximo
-    ) {
+        let resultado = Number(valor);
 
-        let resultado =
-            Number(valor);
-
-
-        if (
-            !Number.isFinite(resultado)
-        ) {
-
+        if (!Number.isFinite(resultado)) {
             resultado = minimo;
-
         }
 
+        resultado = Math.max(
+            minimo,
+            resultado
+        );
 
-        resultado =
-            Math.floor(resultado);
-
+        /*
+         * Algumas passivas não possuem limite
+         * definido. Nesse caso, maximo pode ser null.
+         */
 
         if (
-            resultado < minimo
+            maximo !== null &&
+            maximo !== undefined
         ) {
 
-            resultado = minimo;
+            resultado = Math.min(
+                maximo,
+                resultado
+            );
 
         }
-
-
-        if (
-            resultado > maximo
-        ) {
-
-            resultado = maximo;
-
-        }
-
 
         return resultado;
 
     }
 
 
+    function passivaUtilizaStacks(passiva) {
+
+        if (!passiva) {
+            return false;
+        }
+
+        return (
+            passiva.tipo === "stack" ||
+            passiva.tipo === "stack_alvo"
+        );
+
+    }
+
 
     /* ======================================================
        GARANTIR ESTADO
-       ====================================================== */
+    ====================================================== */
 
     function garantirEstado(
         jogadorId,
         passivaId
     ) {
 
-        const idJogador =
-            normalizarIdJogador(
-                jogadorId
-            );
+        jogadorId = normalizarIdJogador(jogadorId);
 
-
-        if (!idJogador) {
-
+        if (!jogadorId || !passivaId) {
             return null;
-
         }
 
-
-        const passiva =
-            obterDefinicao(
-                passivaId
-            );
-
+        const passiva = obterDefinicao(passivaId);
 
         if (!passiva) {
+            console.warn(
+                "[PassivasStacks] Passiva não encontrada:",
+                passivaId
+            );
+
+            return null;
+        }
+
+        if (!passivaUtilizaStacks(passiva)) {
 
             console.warn(
-                "[Passivas Stacks] Passiva não encontrada:",
+                "[PassivasStacks] A passiva não utiliza Stacks:",
                 passivaId
             );
 
@@ -166,65 +137,59 @@
 
         }
 
-
-        if (
-            !estadoStacks[idJogador]
-        ) {
-
-            estadoStacks[idJogador] = {};
-
+        if (!estadoStacks[jogadorId]) {
+            estadoStacks[jogadorId] = {};
         }
 
+        if (!estadoStacks[jogadorId][passivaId]) {
 
-        if (
-            !estadoStacks[idJogador][passivaId]
-        ) {
+            const configuracao =
+                passiva.stacks || {};
 
             const minimo =
-                passiva.stacks?.minimo ?? 0;
+                Number.isFinite(configuracao.minimo)
+                    ? configuracao.minimo
+                    : 0;
 
             const maximo =
-                passiva.stacks?.maximo ?? 0;
+                configuracao.maximo === null ||
+                configuracao.maximo === undefined
+                    ? null
+                    : configuracao.maximo;
 
             const inicial =
-                passiva.stacks?.inicial ?? minimo;
+                configuracao.inicial !== undefined
+                    ? configuracao.inicial
+                    : minimo;
 
+            estadoStacks[jogadorId][passivaId] = {
 
-            estadoStacks[idJogador][passivaId] = {
+                jogadorId: jogadorId,
 
-                jogadorId:
-                    idJogador,
+                passivaId: passivaId,
 
-                passivaId:
-                    passivaId,
-
-                valor:
-                    limitarValor(
-                        inicial,
-                        minimo,
-                        maximo
-                    ),
-
-                minimo:
+                valor: limitarValor(
+                    inicial,
                     minimo,
-
-                maximo:
                     maximo
+                ),
+
+                minimo: minimo,
+
+                maximo: maximo
 
             };
 
         }
 
-
-        return estadoStacks[idJogador][passivaId];
+        return estadoStacks[jogadorId][passivaId];
 
     }
 
 
-
     /* ======================================================
        OBTER STACKS
-       ====================================================== */
+    ====================================================== */
 
     function obter(
         jogadorId,
@@ -237,91 +202,78 @@
                 passivaId
             );
 
-
         if (!estado) {
-
             return null;
-
         }
-
 
         return {
 
-            jogadorId:
-                estado.jogadorId,
+            jogadorId: estado.jogadorId,
 
-            passivaId:
-                estado.passivaId,
+            passivaId: estado.passivaId,
 
-            valor:
-                estado.valor,
+            valor: estado.valor,
 
-            minimo:
-                estado.minimo,
+            minimo: estado.minimo,
 
-            maximo:
-                estado.maximo,
+            maximo: estado.maximo,
 
             percentual:
-                calcularPercentual(
-                    estado
-                )
+                calcularPercentual(estado)
 
         };
 
     }
 
 
-
     /* ======================================================
-       PERCENTUAL
-       ====================================================== */
+       CALCULAR PORCENTAGEM
+    ====================================================== */
 
-    function calcularPercentual(
-        estado
-    ) {
+    function calcularPercentual(estado) {
 
         if (!estado) {
-
             return 0;
-
         }
 
-
-        const intervalo =
-            estado.maximo -
-            estado.minimo;
-
+        /*
+         * Passivas sem máximo definido não podem
+         * ter uma porcentagem de preenchimento confiável.
+         */
 
         if (
-            intervalo <= 0
+            estado.maximo === null ||
+            estado.maximo === undefined
         ) {
 
             return 0;
 
         }
 
+        const intervalo =
+            estado.maximo - estado.minimo;
+
+        if (intervalo <= 0) {
+            return 100;
+        }
 
         return (
             (
-                estado.valor -
-                estado.minimo
-            ) /
-            intervalo
+                estado.valor - estado.minimo
+            ) / intervalo
         ) * 100;
 
     }
 
 
-
     /* ======================================================
        DEFINIR STACKS
-       ====================================================== */
+    ====================================================== */
 
     function definir(
         jogadorId,
         passivaId,
-        quantidade
+        valor
     ) {
 
         const estado =
@@ -330,31 +282,24 @@
                 passivaId
             );
 
-
         if (!estado) {
-
             return null;
-
         }
 
-
-        const valorAnterior =
+        const anterior =
             estado.valor;
-
 
         estado.valor =
             limitarValor(
-                quantidade,
+                valor,
                 estado.minimo,
                 estado.maximo
             );
 
-
         emitirAlteracao(
             estado,
-            valorAnterior
+            anterior
         );
-
 
         return obter(
             jogadorId,
@@ -364,10 +309,9 @@
     }
 
 
-
     /* ======================================================
-       ADICIONAR STACKS
-       ====================================================== */
+       ADICIONAR STACK
+    ====================================================== */
 
     function adicionar(
         jogadorId,
@@ -381,48 +325,34 @@
                 passivaId
             );
 
-
         if (!estado) {
-
             return null;
-
         }
 
-
-        const valorAnterior =
+        const anterior =
             estado.valor;
 
+        const valorAdicionar =
+            Number(quantidade);
 
-        const quantidadeNormalizada =
-            Number.isFinite(
-                Number(quantidade)
-            )
-
-                ?
-
-                Math.floor(
-                    Number(quantidade)
-                )
-
-                :
-
-                1;
-
+        if (!Number.isFinite(valorAdicionar)) {
+            return obter(
+                jogadorId,
+                passivaId
+            );
+        }
 
         estado.valor =
             limitarValor(
-                estado.valor +
-                quantidadeNormalizada,
+                estado.valor + valorAdicionar,
                 estado.minimo,
                 estado.maximo
             );
 
-
         emitirAlteracao(
             estado,
-            valorAnterior
+            anterior
         );
-
 
         return obter(
             jogadorId,
@@ -432,10 +362,9 @@
     }
 
 
-
     /* ======================================================
-       REMOVER STACKS
-       ====================================================== */
+       REMOVER STACK
+    ====================================================== */
 
     function remover(
         jogadorId,
@@ -449,48 +378,34 @@
                 passivaId
             );
 
-
         if (!estado) {
-
             return null;
-
         }
 
-
-        const valorAnterior =
+        const anterior =
             estado.valor;
 
+        const valorRemover =
+            Number(quantidade);
 
-        const quantidadeNormalizada =
-            Number.isFinite(
-                Number(quantidade)
-            )
-
-                ?
-
-                Math.floor(
-                    Number(quantidade)
-                )
-
-                :
-
-                1;
-
+        if (!Number.isFinite(valorRemover)) {
+            return obter(
+                jogadorId,
+                passivaId
+            );
+        }
 
         estado.valor =
             limitarValor(
-                estado.valor -
-                quantidadeNormalizada,
+                estado.valor - valorRemover,
                 estado.minimo,
                 estado.maximo
             );
 
-
         emitirAlteracao(
             estado,
-            valorAnterior
+            anterior
         );
-
 
         return obter(
             jogadorId,
@@ -500,171 +415,195 @@
     }
 
 
-
     /* ======================================================
        RESETAR PASSIVA
-       ====================================================== */
+    ====================================================== */
 
     function resetar(
         jogadorId,
         passivaId
     ) {
 
-        const passiva =
-            obterDefinicao(
+        const estado =
+            garantirEstado(
+                jogadorId,
                 passivaId
             );
 
-
-        if (!passiva) {
-
+        if (!estado) {
             return null;
-
         }
 
+        const anterior =
+            estado.valor;
 
-        const inicial =
-            passiva.stacks?.inicial ?? 0;
+        estado.valor =
+            estado.minimo;
 
+        emitirAlteracao(
+            estado,
+            anterior
+        );
 
-        return definir(
+        return obter(
             jogadorId,
-            passivaId,
-            inicial
+            passivaId
         );
 
     }
-
 
 
     /* ======================================================
        RESETAR TODAS AS PASSIVAS DO JOGADOR
-       ====================================================== */
+    ====================================================== */
 
-    function resetarJogador(
-        jogadorId
-    ) {
+    function resetarJogador(jogadorId) {
 
-        const idJogador =
-            normalizarIdJogador(
-                jogadorId
-            );
+        jogadorId =
+            normalizarIdJogador(jogadorId);
 
-
-        if (!idJogador) {
-
+        if (!jogadorId) {
             return;
-
         }
 
-
-        if (
-            !estadoStacks[idJogador]
-        ) {
-
+        if (!estadoStacks[jogadorId]) {
             return;
-
         }
-
 
         Object.keys(
-            estadoStacks[idJogador]
-        ).forEach(
+            estadoStacks[jogadorId]
+        ).forEach(function (passivaId) {
 
-            function (passivaId) {
+            resetar(
+                jogadorId,
+                passivaId
+            );
 
-                resetar(
-                    idJogador,
-                    passivaId
-                );
-
-            }
-
-        );
+        });
 
     }
 
 
-
     /* ======================================================
        OBTER TODAS AS STACKS DO JOGADOR
-       ====================================================== */
+    ====================================================== */
 
-    function obterTodas(
-        jogadorId
-    ) {
+    function obterTodas(jogadorId) {
 
-        const idJogador =
-            normalizarIdJogador(
-                jogadorId
-            );
+        jogadorId =
+            normalizarIdJogador(jogadorId);
 
-
-        if (!idJogador) {
-
+        if (!jogadorId) {
             return {};
-
         }
 
+        /*
+         * Primeiro garantimos que todas as passivas
+         * de Stack conhecidas tenham estado inicial.
+         */
 
-        const jogador =
-            estadoStacks[idJogador];
+        if (
+            window.PassivasDados &&
+            typeof window.PassivasDados.listar === "function"
+        ) {
 
+            window.PassivasDados
+                .listar()
+                .forEach(function (passiva) {
 
-        if (!jogador) {
+                    if (
+                        passivaUtilizaStacks(passiva)
+                    ) {
 
-            return {};
+                        garantirEstado(
+                            jogadorId,
+                            passiva.id
+                        );
+
+                    }
+
+                });
 
         }
-
 
         const resultado = {};
 
-
         Object.keys(
-            jogador
-        ).forEach(
+            estadoStacks[jogadorId] || {}
+        ).forEach(function (passivaId) {
 
-            function (passivaId) {
+            resultado[passivaId] =
+                obter(
+                    jogadorId,
+                    passivaId
+                );
 
-                resultado[passivaId] =
-                    obter(
-                        idJogador,
-                        passivaId
-                    );
-
-            }
-
-        );
-
+        });
 
         return resultado;
 
     }
 
 
-
     /* ======================================================
-       EVENTO DE ALTERAÇÃO
-       ====================================================== */
+       VERIFICAR SE ESTÁ NO MÁXIMO
+    ====================================================== */
 
-    function emitirAlteracao(
-        estado,
-        valorAnterior
+    function estaNoMaximo(
+        jogadorId,
+        passivaId
     ) {
 
-        if (!estado) {
+        const estado =
+            garantirEstado(
+                jogadorId,
+                passivaId
+            );
 
-            return;
+        if (!estado) {
+            return false;
+        }
+
+        if (
+            estado.maximo === null ||
+            estado.maximo === undefined
+        ) {
+
+            return false;
 
         }
 
+        return (
+            estado.valor >=
+            estado.maximo
+        );
 
-        const evento =
+    }
+
+
+    /* ======================================================
+       EMITIR EVENTO
+    ====================================================== */
+
+    function emitirAlteracao(
+        estado,
+        anterior
+    ) {
+
+        if (
+            anterior ===
+            estado.valor
+        ) {
+            return;
+        }
+
+        const percentual =
+            calcularPercentual(estado);
+
+        window.dispatchEvent(
             new CustomEvent(
                 "passiva:stacksAlterada",
                 {
-
                     detail: {
 
                         jogadorId:
@@ -674,7 +613,7 @@
                             estado.passivaId,
 
                         anterior:
-                            valorAnterior,
+                            anterior,
 
                         atual:
                             estado.valor,
@@ -686,53 +625,42 @@
                             estado.maximo,
 
                         percentual:
-                            calcularPercentual(
-                                estado
-                            )
+                            percentual,
+
+                        atingiuMaximo:
+                            estado.maximo !== null &&
+                            estado.maximo !== undefined &&
+                            estado.valor >= estado.maximo
 
                     }
-
                 }
-            );
-
-
-        document.dispatchEvent(
-            evento
-        );
-
-
-        console.log(
-            "[Passivas Stacks]",
-            estado.passivaId,
-            "→",
-            estado.valor,
-            "/",
-            estado.maximo
+            )
         );
 
     }
 
 
-
     /* ======================================================
-       EXPORTAÇÃO
-       ====================================================== */
+       API PÚBLICA
+    ====================================================== */
 
     window.PassivasStacks = {
 
-        obter,
+        obter: obter,
 
-        obterTodas,
+        obterTodas: obterTodas,
 
-        definir,
+        definir: definir,
 
-        adicionar,
+        adicionar: adicionar,
 
-        remover,
+        remover: remover,
 
-        resetar,
+        resetar: resetar,
 
-        resetarJogador
+        resetarJogador: resetarJogador,
+
+        estaNoMaximo: estaNoMaximo
 
     };
 
