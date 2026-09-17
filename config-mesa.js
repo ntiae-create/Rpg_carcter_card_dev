@@ -60,11 +60,6 @@
         registrarEventos();
 
 
-        /*
-         O botão de configurações pertence
-         a TODOS os usuários.
-        */
-
         settingsButton.hidden = false;
 
 
@@ -194,7 +189,7 @@
 
 
         /* ----------------------------------------------
-           CLIQUE FORA DO MENU — DESKTOP
+           CLIQUE FORA DO MENU
         ---------------------------------------------- */
 
         document.addEventListener(
@@ -214,7 +209,7 @@
 
 
         /* ----------------------------------------------
-           TOQUE FORA DO MENU — CELULAR
+           TOQUE / POINTER FORA DO MENU
         ---------------------------------------------- */
 
         document.addEventListener(
@@ -320,7 +315,7 @@
 
 
     /* ========================================================
-       DETECTAR CLIQUE / TOQUE FORA DO MENU
+       DETECTAR CLIQUE / TOQUE FORA DO CONTEÚDO DO MENU
     ======================================================== */
 
     function fecharSeClicouFora(
@@ -344,8 +339,32 @@
             event.target;
 
 
-        const clicouNoMenu =
-            masterMenu.contains(
+        /*
+         IMPORTANTE:
+
+         #master-menu pode ser o overlay inteiro
+         que cobre a tela.
+
+         Por isso não usamos:
+
+             masterMenu.contains(alvo)
+
+         pois isso faria qualquer toque no overlay
+         ser considerado "dentro do menu".
+
+         O conteúdo real do menu é:
+             .master-menu-content
+        */
+
+        const menuContent =
+            masterMenu.querySelector(
+                ".master-menu-content"
+            );
+
+
+        const clicouNoConteudo =
+            menuContent &&
+            menuContent.contains(
                 alvo
             );
 
@@ -357,9 +376,20 @@
             );
 
 
+        /*
+         Se tocou no conteúdo do menu:
+         mantém aberto.
+
+         Se tocou no botão:
+         mantém o comportamento do botão.
+
+         Qualquer outra área:
+         fecha.
+        */
+
         if (
 
-            !clicouNoMenu &&
+            !clicouNoConteudo &&
 
             !clicouNoBotao
 
@@ -518,19 +548,6 @@
 
         }
 
-
-        /*
-         Mestre:
-         mostra apenas as opções do Mestre.
-
-         Jogador:
-         mostra apenas as opções do Jogador.
-
-         Usuário ainda não identificado:
-         mostra o menu básico do Jogador para
-         que o botão nunca fique vazio durante
-         testes da mesa.
-        */
 
         if (ehMestre) {
 
@@ -708,22 +725,12 @@
 
         switch (acao) {
 
-
-            /* ----------------------------------------------
-               FICHA
-            ---------------------------------------------- */
-
             case "ficha":
 
                 abrirFichaJogador();
 
                 break;
 
-
-
-            /* ----------------------------------------------
-               ATUALIZAR
-            ---------------------------------------------- */
 
             case "atualizar":
 
@@ -732,17 +739,11 @@
                 break;
 
 
-
-            /* ----------------------------------------------
-               FECHAR
-            ---------------------------------------------- */
-
             case "fechar":
 
                 fecharMenuConfiguracoes();
 
                 break;
-
 
 
             default:
@@ -850,13 +851,6 @@
         acao
     ) {
 
-        /*
-         Segurança:
-
-         apenas o Mestre pode executar
-         estas ações.
-        */
-
         if (!usuarioEhMestre()) {
 
             console.warn(
@@ -873,22 +867,12 @@
 
         switch (acao) {
 
-
-            /* ----------------------------------------------
-               MAPA
-            ---------------------------------------------- */
-
             case "mapa":
 
                 abrirMapa();
 
                 break;
 
-
-
-            /* ----------------------------------------------
-               DUNGEON
-            ---------------------------------------------- */
 
             case "dungeon":
 
@@ -897,22 +881,12 @@
                 break;
 
 
-
-            /* ----------------------------------------------
-               COMBATE
-            ---------------------------------------------- */
-
             case "combate":
 
                 iniciarCombate();
 
                 break;
 
-
-
-            /* ----------------------------------------------
-               BOSS
-            ---------------------------------------------- */
 
             case "boss":
 
@@ -921,17 +895,11 @@
                 break;
 
 
-
-            /* ----------------------------------------------
-               CTE
-            ---------------------------------------------- */
-
             case "cte":
 
                 iniciarCTE();
 
                 break;
-
 
 
             default:
@@ -1113,13 +1081,6 @@
             return;
         }
 
-
-        /*
-         O botão nunca é escondido.
-
-         A permissão controla somente
-         o conteúdo disponível.
-        */
 
         settingsButton.hidden = false;
 
