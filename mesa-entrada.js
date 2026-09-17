@@ -15,7 +15,9 @@
  - Adicionar o jogador à campanha
  - Reservar um dos 8 slots
  - Salvar a mesa ativa
- - Entrar na mesa.html
+ - Atualizar a interface da campanha
+ - Entrar na mesa.html somente ao clicar
+   em "CONTINUAR CAMPANHA"
 
  Código oficial:
  campaigns.codigo_mesa
@@ -39,6 +41,16 @@
     let inputCodigo = null;
     let botaoEntrar = null;
     let mensagem = null;
+
+    let estadoInicial = null;
+    let formularioCodigo = null;
+    let estadoConectado = null;
+
+    let botaoContinuarJogador = null;
+    let botaoContinuarMestre = null;
+
+    let campanhaAtual = null;
+
 
 
     /*
@@ -106,7 +118,75 @@
         if (botaoEntrar) {
             botaoEntrar.disabled = bloquear;
         }
+
     }
+
+
+
+    /*
+    ========================================================
+     INTERFACE — ENTRADA
+    ========================================================
+    */
+
+    function mostrarFormularioCodigo() {
+
+        if (estadoInicial) {
+            estadoInicial.hidden = true;
+        }
+
+        if (formularioCodigo) {
+            formularioCodigo.hidden = false;
+        }
+
+        if (estadoConectado) {
+            estadoConectado.hidden = true;
+        }
+
+        if (inputCodigo) {
+
+            setTimeout(() => {
+
+                inputCodigo.focus();
+
+            }, 50);
+
+        }
+
+    }
+
+
+
+    /*
+    ========================================================
+     INTERFACE — CAMPANHA CONECTADA
+    ========================================================
+    */
+
+    function mostrarCampanhaConectada() {
+
+        if (estadoInicial) {
+            estadoInicial.hidden = true;
+        }
+
+        if (formularioCodigo) {
+            formularioCodigo.hidden = true;
+        }
+
+        if (estadoConectado) {
+            estadoConectado.hidden = false;
+        }
+
+        if (inputCodigo) {
+            inputCodigo.disabled = true;
+        }
+
+        if (botaoEntrar) {
+            botaoEntrar.disabled = true;
+        }
+
+    }
+
 
 
     /*
@@ -138,7 +218,9 @@
             raca &&
             classe
         );
+
     }
+
 
 
     /*
@@ -154,11 +236,16 @@
     ) {
 
         /*
+        ----------------------------------------------------
          Primeiro tenta encontrar um personagem
          já pertencente à campanha.
+        ----------------------------------------------------
         */
 
-        const { data: personagemCampanha, error: erroCampanha } =
+        const {
+            data: personagemCampanha,
+            error: erroCampanha
+        } =
             await supabase
                 .from("characters")
                 .select("*")
@@ -181,12 +268,18 @@
         }
 
 
+
         /*
+        ----------------------------------------------------
          Caso ainda não esteja associado à campanha,
          procura o personagem mais recente do usuário.
+        ----------------------------------------------------
         */
 
-        const { data: personagemUsuario, error: erroUsuario } =
+        const {
+            data: personagemUsuario,
+            error: erroUsuario
+        } =
             await supabase
                 .from("characters")
                 .select("*")
@@ -206,6 +299,7 @@
 
 
         return personagemUsuario || null;
+
     }
 
 
@@ -219,8 +313,10 @@
     async function buscarCampanha(codigo) {
 
         /*
+        ----------------------------------------------------
          Primeiro usamos o campaign.js,
          caso ele esteja disponível.
+        ----------------------------------------------------
         */
 
         if (
@@ -239,11 +335,16 @@
         }
 
 
+
         /*
+        ----------------------------------------------------
          Fallback direto no Supabase.
+        ----------------------------------------------------
         */
 
-        const supabase = obterSupabase();
+        const supabase =
+            obterSupabase();
+
 
         if (!supabase) {
 
@@ -254,7 +355,10 @@
         }
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("campaigns")
                 .select(`
@@ -276,6 +380,7 @@
 
 
         return data || null;
+
     }
 
 
@@ -292,7 +397,10 @@
         usuarioId
     ) {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("campaign_members")
                 .select("id")
@@ -309,6 +417,7 @@
 
 
         return Boolean(data);
+
     }
 
 
@@ -325,16 +434,21 @@
         usuarioId
     ) {
 
-        const { error } =
+        const {
+            error
+        } =
             await supabase
                 .from("campaign_members")
                 .insert({
 
-                    campaign_id: campanhaId,
+                    campaign_id:
+                        campanhaId,
 
-                    user_id: usuarioId,
+                    user_id:
+                        usuarioId,
 
-                    role: "player"
+                    role:
+                        "player"
 
                 });
 
@@ -342,8 +456,10 @@
         if (error) {
 
             /*
+            ------------------------------------------------
              Se já existe, não precisamos
              considerar isso um erro fatal.
+            ------------------------------------------------
             */
 
             if (
@@ -355,7 +471,9 @@
             }
 
             throw error;
+
         }
+
     }
 
 
@@ -371,7 +489,10 @@
         campanhaId
     ) {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("characters")
                 .select("slot")
@@ -387,12 +508,21 @@
 
 
         return new Set(
+
             (data || [])
-                .map(personagem => personagem.slot)
-                .filter(slot =>
-                    Number.isInteger(slot)
+
+                .map(
+                    personagem =>
+                        personagem.slot
                 )
+
+                .filter(
+                    slot =>
+                        Number.isInteger(slot)
+                )
+
         );
+
     }
 
 
@@ -425,6 +555,7 @@
 
 
         return null;
+
     }
 
 
@@ -442,18 +573,29 @@
         slot
     ) {
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("characters")
                 .update({
 
-                    campaign_id: campanhaId,
+                    campaign_id:
+                        campanhaId,
 
-                    slot: slot
+                    slot:
+                        slot
 
                 })
-                .eq("id", personagem.id)
-                .eq("user_id", personagem.user_id)
+                .eq(
+                    "id",
+                    personagem.id
+                )
+                .eq(
+                    "user_id",
+                    personagem.user_id
+                )
                 .select()
                 .single();
 
@@ -466,6 +608,7 @@
 
 
         return data;
+
     }
 
 
@@ -494,11 +637,10 @@
                 campanha.codigo_mesa,
 
             characterId:
-                personagem.id,
+                personagem?.id || null,
 
             slot:
-
-                slot,
+                slot ?? null,
 
             joinedAt:
                 new Date().toISOString()
@@ -513,6 +655,32 @@
 
 
         return mesa;
+
+    }
+
+
+
+    /*
+    ========================================================
+     ATUALIZAR AUTH
+    ========================================================
+    */
+
+    function atualizarAuth(
+        campanha,
+        isMaster
+    ) {
+
+        if (!window.rpgAuth) {
+            return;
+        }
+
+        window.rpgAuth.campaign =
+            campanha;
+
+        window.rpgAuth.isMaster =
+            Boolean(isMaster);
+
     }
 
 
@@ -531,6 +699,12 @@
             );
 
 
+        /*
+        ----------------------------------------------------
+         Código vazio
+        ----------------------------------------------------
+        */
+
         if (!codigo) {
 
             mostrarMensagem(
@@ -539,8 +713,16 @@
             );
 
             return;
+
         }
 
+
+
+        /*
+        ----------------------------------------------------
+         Usuário
+        ----------------------------------------------------
+        */
 
         const usuario =
             obterUsuario();
@@ -554,8 +736,16 @@
             );
 
             return;
+
         }
 
+
+
+        /*
+        ----------------------------------------------------
+         Supabase
+        ----------------------------------------------------
+        */
 
         const supabase =
             obterSupabase();
@@ -569,7 +759,9 @@
             );
 
             return;
+
         }
+
 
 
         bloquearEntrada(true);
@@ -578,6 +770,7 @@
             "Procurando a mesa...",
             "loading"
         );
+
 
 
         try {
@@ -589,7 +782,9 @@
             */
 
             const campanha =
-                await buscarCampanha(codigo);
+                await buscarCampanha(
+                    codigo
+                );
 
 
             if (!campanha) {
@@ -599,6 +794,11 @@
                 );
 
             }
+
+
+            campanhaAtual =
+                campanha;
+
 
 
             /*
@@ -613,28 +813,33 @@
 
                 salvarMesaAtiva(
                     campanha,
-                    {
-                        id: null
-                    },
+                    null,
                     null
                 );
 
 
+                atualizarAuth(
+                    campanha,
+                    true
+                );
+
+
                 mostrarMensagem(
-                    "Mesa encontrada. Entrando como Mestre...",
+                    "Mesa encontrada! Você é o Mestre desta campanha.",
                     "success"
                 );
 
 
-                setTimeout(() => {
+                /*
+                ------------------------------------------------
+                 Mestre não precisa digitar código novamente.
+                 ------------------------------------------------
+                */
 
-                    window.location.href =
-                        "mesa.html";
-
-                }, 300);
-
+                mostrarCampanhaConectada();
 
                 return;
+
             }
 
 
@@ -666,6 +871,7 @@
                 );
 
             }
+
 
 
             /*
@@ -731,8 +937,10 @@
 
 
             /*
+            ------------------------------------------------
              Se já possui slot nessa campanha,
              mantém o mesmo.
+            ------------------------------------------------
             */
 
             if (
@@ -793,28 +1001,23 @@
             );
 
 
+
             /*
             ==================================================
              8. ATUALIZAR AUTH
             ==================================================
             */
 
-            if (
-                window.rpgAuth
-            ) {
+            atualizarAuth(
+                campanha,
+                false
+            );
 
-                window.rpgAuth.campaign =
-                    campanha;
-
-                window.rpgAuth.isMaster =
-                    false;
-
-            }
 
 
             /*
             ==================================================
-             9. ENTRAR
+             9. MOSTRAR CAMPANHA CONECTADA
             ==================================================
             */
 
@@ -824,13 +1027,7 @@
             );
 
 
-            setTimeout(() => {
-
-                window.location.href =
-                    "mesa.html";
-
-            }, 500);
-
+            mostrarCampanhaConectada();
 
         } catch (error) {
 
@@ -867,7 +1064,9 @@
 
 
         /*
+        ----------------------------------------------------
          Primeiro tenta campanha ativa.
+        ----------------------------------------------------
         */
 
         if (
@@ -891,8 +1090,11 @@
         }
 
 
+
         /*
+        ----------------------------------------------------
          Fallback para auth.
+        ----------------------------------------------------
         */
 
         if (
@@ -911,7 +1113,9 @@
 
 
         codigo =
-            normalizarCodigo(codigo);
+            normalizarCodigo(
+                codigo
+            );
 
 
         if (!codigo) {
@@ -922,7 +1126,9 @@
             );
 
             return;
+
         }
+
 
 
         try {
@@ -937,36 +1143,49 @@
                 "success"
             );
 
-
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                error
+            );
 
 
             /*
+            ------------------------------------------------
              Fallback simples.
+            ------------------------------------------------
             */
 
             const area =
-                document.createElement("textarea");
+                document.createElement(
+                    "textarea"
+                );
 
-            area.value = codigo;
+
+            area.value =
+                codigo;
+
 
             area.style.position =
                 "fixed";
 
+
             area.style.opacity =
                 "0";
+
 
             document.body.appendChild(
                 area
             );
 
+
             area.select();
+
 
             document.execCommand(
                 "copy"
             );
+
 
             area.remove();
 
@@ -1002,11 +1221,31 @@
             );
 
             return;
+
+        }
+
+
+        const mesaSalva =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+
+        if (!mesaSalva) {
+
+            mostrarMensagem(
+                "Nenhuma campanha ativa foi encontrada.",
+                "error"
+            );
+
+            return;
+
         }
 
 
         window.location.href =
             "mesa.html";
+
     }
 
 
@@ -1072,6 +1311,65 @@
         elemento.textContent =
             codigo ||
             "------";
+
+    }
+
+
+
+    /*
+    ========================================================
+     VERIFICAR MESA JÁ SALVA
+    ========================================================
+    */
+
+    function verificarMesaAtiva() {
+
+        const usuario =
+            obterUsuario();
+
+
+        if (!usuario) {
+            return;
+        }
+
+
+        const dados =
+            localStorage.getItem(
+                STORAGE_KEY
+            );
+
+
+        if (!dados) {
+            return;
+        }
+
+
+        try {
+
+            const mesa =
+                JSON.parse(
+                    dados
+                );
+
+
+            if (
+                mesa &&
+                mesa.campaignId
+            ) {
+
+                mostrarCampanhaConectada();
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "[Mesa Entrada] Erro ao ler mesa ativa:",
+                error
+            );
+
+        }
+
     }
 
 
@@ -1083,6 +1381,12 @@
     */
 
     function inicializar() {
+
+        /*
+        ----------------------------------------------------
+         Elementos da entrada
+        ----------------------------------------------------
+        */
 
         inputCodigo =
             document.getElementById(
@@ -1101,6 +1405,66 @@
                 "campaign-join-message"
             );
 
+
+        estadoInicial =
+            document.getElementById(
+                "campaign-join-start"
+            );
+
+
+        formularioCodigo =
+            document.getElementById(
+                "campaign-join-form-container"
+            );
+
+
+        estadoConectado =
+            document.getElementById(
+                "campaign-joined-state"
+            );
+
+
+        botaoContinuarJogador =
+            document.getElementById(
+                "continue-campaign-button-player"
+            );
+
+
+        botaoContinuarMestre =
+            document.getElementById(
+                "continue-campaign-button"
+            );
+
+
+
+        /*
+        ----------------------------------------------------
+         Abrir formulário de código
+        ----------------------------------------------------
+        */
+
+        const botaoAbrirCodigo =
+            document.getElementById(
+                "open-campaign-code-button"
+            );
+
+
+        if (botaoAbrirCodigo) {
+
+            botaoAbrirCodigo.addEventListener(
+                "click",
+                mostrarFormularioCodigo
+            );
+
+        }
+
+
+
+        /*
+        ----------------------------------------------------
+         Entrar
+        ----------------------------------------------------
+        */
 
         if (
             inputCodigo &&
@@ -1146,6 +1510,13 @@
         }
 
 
+
+        /*
+        ----------------------------------------------------
+         Copiar código
+        ----------------------------------------------------
+        */
+
         const botaoCopiar =
             document.getElementById(
                 "copy-campaign-code"
@@ -1162,15 +1533,16 @@
         }
 
 
-        const botaoContinuar =
-            document.getElementById(
-                "continue-campaign-button"
-            );
 
+        /*
+        ----------------------------------------------------
+         Continuar campanha — Mestre
+        ----------------------------------------------------
+        */
 
-        if (botaoContinuar) {
+        if (botaoContinuarMestre) {
 
-            botaoContinuar.addEventListener(
+            botaoContinuarMestre.addEventListener(
                 "click",
                 continuarCampanha
             );
@@ -1178,10 +1550,28 @@
         }
 
 
+
         /*
-         Algumas funções de autenticação/campanha
-         são assíncronas. Por isso atualizamos algumas
-         vezes enquanto a página termina de carregar.
+        ----------------------------------------------------
+         Continuar campanha — Jogador
+        ----------------------------------------------------
+        */
+
+        if (botaoContinuarJogador) {
+
+            botaoContinuarJogador.addEventListener(
+                "click",
+                continuarCampanha
+            );
+
+        }
+
+
+
+        /*
+        ----------------------------------------------------
+         Código visual
+        ----------------------------------------------------
         */
 
         atualizarCodigoVisual();
@@ -1204,13 +1594,26 @@
             2000
         );
 
+
+
+        /*
+        ----------------------------------------------------
+         Verificar se já existe uma mesa salva
+        ----------------------------------------------------
+        */
+
+        setTimeout(
+            verificarMesaAtiva,
+            500
+        );
+
     }
 
 
 
     /*
     ========================================================
-     API
+     API PÚBLICA
     ========================================================
     */
 
@@ -1220,11 +1623,18 @@
 
         copiarCodigoMesa,
 
+        continuarCampanha,
+
         atualizarCodigoVisual,
+
+        mostrarFormularioCodigo,
+
+        mostrarCampanhaConectada,
 
         normalizarCodigo
 
     };
+
 
 
     /*
