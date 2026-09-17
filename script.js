@@ -175,6 +175,15 @@ function criarEstadoInicial() {
 
     return {
 
+        /*
+           ID DO PERSONAGEM NO SUPABASE
+
+           Fica vazio até o personagem ser salvo
+           pela primeira vez.
+        */
+
+        supabaseId: null,
+
         confirmed: false,
 
         name: "Personagem",
@@ -488,7 +497,7 @@ function mesclarObjetos(
 
 
 /* =========================================================
-   SALVAR
+   SALVAR LOCALMENTE
 ========================================================= */
 
 function salvarPersonagem() {
@@ -497,6 +506,341 @@ function salvarPersonagem() {
         STORAGE_KEY,
         JSON.stringify(character)
     );
+
+}
+
+
+/* =========================================================
+   SALVAR PERSONAGEM NO SUPABASE
+========================================================= */
+
+/*
+   IMPORTANTE:
+
+   salvarPersonagem() continua síncrona porque é usada
+   por várias partes do sistema.
+
+   A comunicação com o Supabase fica separada nesta
+   função assíncrona.
+*/
+
+async function salvarPersonagemSupabase() {
+
+    try {
+
+        const supabase =
+            window.supabaseClient;
+
+
+        const user =
+            window.rpgAuth?.user;
+
+
+        /* =================================================
+           VERIFICA SUPABASE
+        ================================================= */
+
+        if (!supabase) {
+
+            console.warn(
+                "⚠️ Supabase ainda não está disponível."
+            );
+
+
+            return {
+
+                sucesso: false,
+
+                erro:
+                    "Supabase ainda não está disponível."
+
+            };
+
+        }
+
+
+        /* =================================================
+           VERIFICA USUÁRIO
+        ================================================= */
+
+        if (!user) {
+
+            console.warn(
+                "⚠️ Usuário não autenticado."
+            );
+
+
+            return {
+
+                sucesso: false,
+
+                erro:
+                    "Usuário não autenticado."
+
+            };
+
+        }
+
+
+        /* =================================================
+           DADOS DO PERSONAGEM
+        ================================================= */
+
+        const dadosPersonagem = {
+
+            user_id:
+                user.id,
+
+            /*
+               O personagem nasce independente.
+
+               Ele só receberá campaign_id quando
+               entrar em uma campanha.
+            */
+
+            campaign_id:
+                null,
+
+            /*
+               Nenhum slot até entrar na mesa.
+            */
+
+            slot:
+                null,
+
+            name:
+                character.name,
+
+            race:
+                character.race,
+
+            class:
+                character.class,
+
+            affinity:
+                character.affinity,
+
+            level:
+                character.level,
+
+            xp:
+                character.xp,
+
+            crest_xp:
+                character.crestXP,
+
+            attribute_points:
+                character.attributePoints,
+
+            sanity:
+                character.resources?.sanidade ?? 100,
+
+            hp:
+                character.resources?.hp ?? 0,
+
+            mp:
+                character.resources?.mp ?? 0,
+
+            est:
+                character.resources?.est ?? 0
+
+        };
+
+
+        /* =================================================
+           ATUALIZAR PERSONAGEM EXISTENTE
+        ================================================= */
+
+        if (
+            character.supabaseId
+        ) {
+
+            console.log(
+                "🔄 Atualizando personagem existente no Supabase:",
+                character.supabaseId
+            );
+
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .from("characters")
+                    .update(
+                        dadosPersonagem
+                    )
+                    .eq(
+                        "id",
+                        character.supabaseId
+                    )
+                    .eq(
+                        "user_id",
+                        user.id
+                    )
+                    .select()
+                    .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "❌ Erro ao atualizar personagem no Supabase:",
+                    error
+                );
+
+
+                return {
+
+                    sucesso: false,
+
+                    erro:
+                        error.message
+
+                };
+
+            }
+
+
+            /*
+               Se o registro existir, mantemos
+               o ID salvo localmente.
+            */
+
+            if (data) {
+
+                character.supabaseId =
+                    data.id;
+
+
+                salvarPersonagem();
+
+
+                console.log(
+                    "✅ Personagem atualizado no Supabase:",
+                    data
+                );
+
+
+                return {
+
+                    sucesso: true,
+
+                    data
+
+                };
+
+            }
+
+
+            /*
+               Se o ID local não existir mais no
+               Supabase, tentamos criar novamente.
+            */
+
+            console.warn(
+                "⚠️ ID local não encontrou personagem no Supabase. Criando novo registro."
+            );
+
+
+            character.supabaseId =
+                null;
+
+        }
+
+
+        /* =================================================
+           CRIAR NOVO PERSONAGEM
+        ================================================= */
+
+        console.log(
+            "🆕 Criando personagem no Supabase..."
+        );
+
+
+        const {
+            data,
+            error
+        } =
+            await supabase
+                .from("characters")
+                .insert(
+                    dadosPersonagem
+                )
+                .select()
+                .single();
+
+
+        if (error) {
+
+            console.error(
+                "❌ Erro ao criar personagem no Supabase:",
+                error
+            );
+
+
+            return {
+
+                sucesso: false,
+
+                erro:
+                    error.message
+
+            };
+
+        }
+
+
+        /* =================================================
+           GUARDA O ID DO SUPABASE
+        ================================================= */
+
+        character.supabaseId =
+            data.id;
+
+
+        /*
+           Mantém o estado local sincronizado.
+        */
+
+        salvarPersonagem();
+
+
+        console.log(
+            "✅ PERSONAGEM CRIADO NO SUPABASE:",
+            data
+        );
+
+
+        return {
+
+            sucesso: true,
+
+            data
+
+        };
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "❌ Falha inesperada ao salvar personagem no Supabase:",
+            error
+        );
+
+
+        return {
+
+            sucesso: false,
+
+            erro:
+                error?.message ||
+                "Erro desconhecido ao salvar personagem."
+
+        };
+
+    }
 
 }
 
@@ -1620,7 +1964,7 @@ function irParaMesa() {
    CONFIRMAR PERSONAGEM
 ========================================================= */
 
-function confirmarPersonagem() {
+async function confirmarPersonagem() {
 
     if (
         character.confirmed === true
@@ -1643,6 +1987,97 @@ function confirmarPersonagem() {
 
     }
 
+
+    /* =====================================================
+       EVITA DUPLO CLIQUE
+    ===================================================== */
+
+    const button =
+        get(
+            "confirm-character-button"
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+        button.textContent =
+            "⏳ SALVANDO PERSONAGEM...";
+
+        button.style.opacity =
+            "0.7";
+
+        button.style.cursor =
+            "wait";
+
+    }
+
+
+    /* =====================================================
+       SALVA NO SUPABASE ANTES DE CONFIRMAR
+    ===================================================== */
+
+    const resultado =
+        await salvarPersonagemSupabase();
+
+
+    if (
+        !resultado ||
+        resultado.sucesso !== true
+    ) {
+
+        console.error(
+            "❌ Personagem não pôde ser salvo no Supabase."
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                false;
+
+            button.textContent =
+                "✓ CONFIRMAR PERSONAGEM";
+
+            button.style.opacity =
+                "";
+
+            button.style.cursor =
+                "pointer";
+
+        }
+
+
+        if (
+            typeof mostrarResultadoSupabase ===
+            "function"
+        ) {
+
+            mostrarResultadoSupabase(
+
+                "❌ NÃO FOI POSSÍVEL SALVAR O PERSONAGEM: " +
+                (
+                    resultado?.erro ||
+                    "Erro desconhecido."
+                ),
+
+                "erro"
+
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       CONFIRMA O PERSONAGEM
+    ===================================================== */
 
     character.confirmed =
         true;
@@ -2375,6 +2810,10 @@ async function testarLeituraPersonagemSupabase() {
     );
 
 
+    /* =====================================================
+       SUPABASE
+    ===================================================== */
+
     if (
         !window.supabaseClient
     ) {
@@ -2399,6 +2838,10 @@ async function testarLeituraPersonagemSupabase() {
         "✅ supabaseClient encontrado."
     );
 
+
+    /* =====================================================
+       AUTENTICAÇÃO
+    ===================================================== */
 
     if (
         !window.rpgAuth
@@ -2452,53 +2895,117 @@ async function testarLeituraPersonagemSupabase() {
     );
 
 
-    if (
-        !window.rpgAuth.campaign
-    ) {
-
-        console.warn(
-            "⚠️ Usuário encontrado, mas campanha não foi encontrada."
-        );
-
-
-        mostrarResultadoSupabase(
-            "⚠️ Usuário autenticado, mas nenhuma campanha foi encontrada.",
-            "aviso"
-        );
-
-
-        return;
-
-    }
-
-
-    console.log(
-        "✅ Campanha encontrada:",
-        window.rpgAuth.campaign
-    );
-
+    /* =====================================================
+       CONSULTA DO PERSONAGEM
+    ===================================================== */
 
     try {
 
-        const {
-            data,
-            error
-        } =
-            await window.supabaseClient
-                .from("characters")
-                .select(
-                    "id, name, race, class, affinity, level, xp, crest_xp, attribute_points, sanity, hp, mp, est"
-                )
-                .eq(
-                    "campaign_id",
-                    window.rpgAuth.campaign.id
-                )
-                .eq(
-                    "user_id",
-                    window.rpgAuth.user.id
-                )
-                .maybeSingle();
+        let data =
+            null;
 
+
+        let error =
+            null;
+
+
+        /*
+           Se o personagem já possui o ID do Supabase,
+           usamos diretamente esse ID.
+
+           Isso evita pegar outro personagem da conta.
+        */
+
+        if (
+            character.supabaseId
+        ) {
+
+            const resultado =
+                await window.supabaseClient
+                    .from("characters")
+                    .select(
+                        "id, name, race, class, affinity, level, xp, crest_xp, attribute_points, sanity, hp, mp, est"
+                    )
+                    .eq(
+                        "id",
+                        character.supabaseId
+                    )
+                    .eq(
+                        "user_id",
+                        window.rpgAuth.user.id
+                    )
+                    .maybeSingle();
+
+
+            data =
+                resultado.data;
+
+            error =
+                resultado.error;
+
+        }
+
+        else {
+
+            /*
+               Personagem ainda não possui ID local.
+
+               Procuramos somente personagens
+               independentes desta conta.
+            */
+
+            const resultado =
+                await window.supabaseClient
+                    .from("characters")
+                    .select(
+                        "id, name, race, class, affinity, level, xp, crest_xp, attribute_points, sanity, hp, mp, est"
+                    )
+                    .eq(
+                        "user_id",
+                        window.rpgAuth.user.id
+                    )
+                    .is(
+                        "campaign_id",
+                        null
+                    )
+                    .limit(1);
+
+
+            error =
+                resultado.error;
+
+
+            data =
+                resultado.data &&
+                resultado.data.length
+                    ? resultado.data[0]
+                    : null;
+
+
+            /*
+               Se encontramos o personagem, guardamos
+               o ID para as próximas operações.
+            */
+
+            if (
+                data &&
+                data.id
+            ) {
+
+                character.supabaseId =
+                    data.id;
+
+
+                salvarPersonagem();
+
+            }
+
+        }
+
+
+        /* =================================================
+           ERRO
+        ================================================= */
 
         if (error) {
 
@@ -2519,6 +3026,10 @@ async function testarLeituraPersonagemSupabase() {
         }
 
 
+        /* =================================================
+           NENHUM PERSONAGEM
+        ================================================= */
+
         if (!data) {
 
             console.warn(
@@ -2527,7 +3038,7 @@ async function testarLeituraPersonagemSupabase() {
 
 
             mostrarResultadoSupabase(
-                "⚠️ Conexão funcionando, mas nenhum personagem foi encontrado para esta conta/campanha.",
+                "⚠️ Conexão funcionando, mas nenhum personagem independente foi encontrado para esta conta.",
                 "aviso"
             );
 
@@ -2536,6 +3047,10 @@ async function testarLeituraPersonagemSupabase() {
 
         }
 
+
+        /* =================================================
+           PERSONAGEM ENCONTRADO
+        ================================================= */
 
         console.log(
             "✅ PERSONAGEM ENCONTRADO:",
@@ -2939,11 +3454,18 @@ function iniciar() {
                 );
 
 
+                /*
+                   NÃO EXIGIMOS MAIS UMA CAMPANHA
+                   PARA TESTAR O PERSONAGEM.
+
+                   O personagem agora pode existir
+                   independentemente de uma mesa.
+                */
+
                 if (
                     window.supabaseClient &&
                     window.rpgAuth &&
-                    window.rpgAuth.user &&
-                    window.rpgAuth.campaign
+                    window.rpgAuth.user
                 ) {
 
                     clearInterval(
@@ -2996,17 +3518,6 @@ function iniciar() {
 
                     }
 
-                    else if (
-                        !window.rpgAuth.campaign
-                    ) {
-
-                        mostrarResultadoSupabase(
-                            "⏳ Usuário encontrado. Aguardando campanha...",
-                            "info"
-                        );
-
-                    }
-
                 }
 
 
@@ -3052,17 +3563,6 @@ function iniciar() {
 
                         mostrarResultadoSupabase(
                             "❌ Diagnóstico: usuário não está disponível na sessão.",
-                            "erro"
-                        );
-
-                    }
-
-                    else if (
-                        !window.rpgAuth.campaign
-                    ) {
-
-                        mostrarResultadoSupabase(
-                            "❌ Diagnóstico: usuário existe, mas a campanha não foi carregada.",
                             "erro"
                         );
 
