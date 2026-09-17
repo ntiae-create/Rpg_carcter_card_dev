@@ -40,7 +40,6 @@
     ===================================================== */
 
     const MAX_JOGADORES = 8;
-
     const STORAGE_KEY = "rpg_mesa_ativa";
 
 
@@ -49,7 +48,6 @@
     ===================================================== */
 
     let elementos = {};
-
     let processandoEntrada = false;
 
 
@@ -80,7 +78,7 @@
 
 
     /* =====================================================
-       NORMALIZAÇÃO DO CÓDIGO
+       CÓDIGO
     ===================================================== */
 
     function normalizarCodigo(codigo) {
@@ -110,23 +108,22 @@
         }
 
         elemento.textContent = texto;
-
         elemento.dataset.type = tipo;
 
-        elemento.style.display = texto
-            ? "block"
-            : "none";
+        elemento.style.display =
+            texto ? "block" : "none";
 
     }
 
 
     /* =====================================================
-       ESTADO DOS BOTÕES
+       PROCESSAMENTO
     ===================================================== */
 
     function definirProcessando(valor) {
 
-        processandoEntrada = Boolean(valor);
+        processandoEntrada =
+            Boolean(valor);
 
         const botao =
             elementos.entrar ||
@@ -194,7 +191,7 @@
 
 
     /* =====================================================
-       BUSCAR CAMPANHA POR CÓDIGO
+       BUSCAR CAMPANHA
     ===================================================== */
 
     async function buscarCampanha(codigo) {
@@ -208,7 +205,7 @@
 
 
         /* -------------------------------------------------
-           PRIMEIRO: campaign.js
+           campaign.js
         ------------------------------------------------- */
 
         if (
@@ -232,7 +229,7 @@
             } catch (erro) {
 
                 console.warn(
-                    "Falha ao buscar campanha via campaign.js:",
+                    "⚠️ Falha ao buscar campanha pelo campaign.js:",
                     erro
                 );
 
@@ -242,20 +239,25 @@
 
 
         /* -------------------------------------------------
-           FALLBACK DIRETO NO SUPABASE
+           FALLBACK SUPABASE
         ------------------------------------------------- */
 
         const supabase =
             obterSupabase();
 
         if (!supabase) {
+
             throw new Error(
                 "Supabase não está disponível."
             );
+
         }
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("campaigns")
                 .select("*")
@@ -277,7 +279,7 @@
 
 
     /* =====================================================
-       PERSONAGEM DO USUÁRIO
+       ENCONTRAR PERSONAGEM DO USUÁRIO
        ===================================================== */
 
     async function encontrarPersonagem(campanha) {
@@ -288,8 +290,14 @@
         const supabase =
             obterSupabase();
 
-        if (!usuario || !supabase) {
+        if (
+            !usuario?.id ||
+            !supabase ||
+            !campanha?.id
+        ) {
+
             return null;
+
         }
 
 
@@ -297,7 +305,10 @@
            1. PERSONAGEM JÁ VINCULADO À CAMPANHA
         ------------------------------------------------- */
 
-        const { data: personagensCampanha, error: erroCampanha } =
+        const {
+            data: personagensCampanha,
+            error: erroCampanha
+        } =
             await supabase
                 .from("characters")
                 .select("*")
@@ -313,16 +324,18 @@
 
 
         if (erroCampanha) {
+
             console.warn(
-                "Erro buscando personagem da campanha:",
+                "⚠️ Erro buscando personagem da campanha:",
                 erroCampanha
             );
+
         }
 
 
         if (
             personagensCampanha &&
-            personagensCampanha.length
+            personagensCampanha.length > 0
         ) {
 
             const confirmado =
@@ -341,7 +354,10 @@
            2. PERSONAGEM INDEPENDENTE
         ------------------------------------------------- */
 
-        const { data: personagensIndependentes, error: erroIndependente } =
+        const {
+            data: personagensIndependentes,
+            error: erroIndependente
+        } =
             await supabase
                 .from("characters")
                 .select("*")
@@ -357,16 +373,18 @@
 
 
         if (erroIndependente) {
+
             console.warn(
-                "Erro buscando personagem independente:",
+                "⚠️ Erro buscando personagem independente:",
                 erroIndependente
             );
+
         }
 
 
         if (
             personagensIndependentes &&
-            personagensIndependentes.length
+            personagensIndependentes.length > 0
         ) {
 
             const confirmado =
@@ -382,7 +400,7 @@
 
 
         /* -------------------------------------------------
-           3. FALLBACK PARA rpgAuth
+           3. FALLBACK AUTH
         ------------------------------------------------- */
 
         const personagemAuth =
@@ -412,22 +430,32 @@
        VERIFICAR MEMBRO
        ===================================================== */
 
-    async function usuarioJaEhMembro(campanhaId, usuarioId) {
+    async function usuarioJaEhMembro(
+        campanhaId,
+        usuarioId
+    ) {
 
         const supabase =
             obterSupabase();
 
         if (!supabase) {
+
             throw new Error(
                 "Supabase não está disponível."
             );
+
         }
 
 
-        const { data, error } =
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("campaign_members")
-                .select("id, user_id, role")
+                .select(
+                    "id, campaign_id, user_id, role"
+                )
                 .eq(
                     "campaign_id",
                     campanhaId
@@ -474,7 +502,19 @@
             obterSupabase();
 
 
-        const { data, error } =
+        if (!supabase) {
+
+            throw new Error(
+                "Supabase não está disponível."
+            );
+
+        }
+
+
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("campaign_members")
                 .insert({
@@ -487,7 +527,25 @@
 
 
         if (error) {
+
+            /*
+             * Caso tenha ocorrido uma corrida entre
+             * duas tentativas de entrada, verificamos
+             * novamente se o membro já existe.
+             */
+
+            const novamente =
+                await usuarioJaEhMembro(
+                    campanhaId,
+                    usuarioId
+                );
+
+            if (novamente) {
+                return novamente;
+            }
+
             throw error;
+
         }
 
 
@@ -500,112 +558,75 @@
        SLOTS OCUPADOS
        ===================================================== */
 
-    async function obterSlotsOcupados(campanhaId) {
+    async function obterSlotsOcupados(
+        campanhaId
+    ) {
 
         const supabase =
             obterSupabase();
 
+        if (!supabase) {
 
-        const slots = new Set();
+            throw new Error(
+                "Supabase não está disponível."
+            );
+
+        }
 
 
-        /* -------------------------------------------------
-           PERSONAGENS
-        ------------------------------------------------- */
+        const slots =
+            new Set();
 
-        const { data: personagens, error: erroPersonagens } =
+
+        /*
+         * O SLOT OFICIAL FICA NO PERSONAGEM.
+         *
+         * Não consultamos campaign_members.slot,
+         * porque essa coluna não é necessária
+         * para o funcionamento da mesa.
+         */
+
+        const {
+            data: personagens,
+            error
+        } =
             await supabase
                 .from("characters")
-                .select("slot")
+                .select("id, user_id, slot")
                 .eq(
                     "campaign_id",
                     campanhaId
                 );
 
 
-        if (
-            !erroPersonagens &&
-            personagens
-        ) {
+        if (error) {
 
-            personagens.forEach(
-                personagem => {
-
-                    const slot =
-                        Number(
-                            personagem.slot
-                        );
-
-                    if (
-                        Number.isInteger(slot) &&
-                        slot >= 1 &&
-                        slot <= MAX_JOGADORES
-                    ) {
-
-                        slots.add(slot);
-
-                    }
-
-                }
-            );
+            throw error;
 
         }
 
 
-        /* -------------------------------------------------
-           MEMBROS
-           -------------------------------------------------
+        (personagens || []).forEach(
+            personagem => {
 
-           Alguns projetos podem não ter slot em
-           campaign_members. Por isso tratamos como
-           complemento, sem exigir essa coluna.
-        ------------------------------------------------- */
-
-        try {
-
-            const { data: membros } =
-                await supabase
-                    .from("campaign_members")
-                    .select("slot")
-                    .eq(
-                        "campaign_id",
-                        campanhaId
+                const slot =
+                    Number(
+                        personagem.slot
                     );
 
 
-            if (membros) {
+                if (
+                    Number.isInteger(slot) &&
+                    slot >= 1 &&
+                    slot <= MAX_JOGADORES
+                ) {
 
-                membros.forEach(
-                    membro => {
+                    slots.add(slot);
 
-                        const slot =
-                            Number(
-                                membro.slot
-                            );
-
-                        if (
-                            Number.isInteger(slot) &&
-                            slot >= 1 &&
-                            slot <= MAX_JOGADORES
-                        ) {
-
-                            slots.add(slot);
-
-                        }
-
-                    }
-                );
+                }
 
             }
-
-        } catch (erro) {
-
-            console.warn(
-                "Não foi possível consultar slot dos membros:",
-                erro
-            );
-
-        }
+        );
 
 
         return slots;
@@ -633,8 +654,12 @@
             slot++
         ) {
 
-            if (!ocupados.has(slot)) {
+            if (
+                !ocupados.has(slot)
+            ) {
+
                 return slot;
+
             }
 
         }
@@ -649,7 +674,9 @@
        SLOT DO PERSONAGEM
        ===================================================== */
 
-    function obterSlotPersonagem(personagem) {
+    function obterSlotPersonagem(
+        personagem
+    ) {
 
         if (!personagem) {
             return null;
@@ -679,7 +706,63 @@
 
 
     /* =====================================================
-       ASSOCIAR PERSONAGEM À CAMPANHA
+       VERIFICAR SE SLOT JÁ ESTÁ SENDO USADO
+       ===================================================== */
+
+    async function slotPertenceOutroPersonagem(
+        campanhaId,
+        slot,
+        personagemId
+    ) {
+
+        const supabase =
+            obterSupabase();
+
+        if (!supabase) {
+
+            throw new Error(
+                "Supabase não está disponível."
+            );
+
+        }
+
+
+        const {
+            data,
+            error
+        } =
+            await supabase
+                .from("characters")
+                .select("id")
+                .eq(
+                    "campaign_id",
+                    campanhaId
+                )
+                .eq(
+                    "slot",
+                    slot
+                )
+                .limit(10);
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        return (
+            data || []
+        ).some(
+            personagem =>
+                String(personagem.id) !==
+                String(personagemId)
+        );
+
+    }
+
+
+    /* =====================================================
+       ASSOCIAR PERSONAGEM
        ===================================================== */
 
     async function associarPersonagem(
@@ -692,6 +775,15 @@
             obterSupabase();
 
 
+        if (!supabase) {
+
+            throw new Error(
+                "Supabase não está disponível."
+            );
+
+        }
+
+
         if (!personagem?.id) {
 
             throw new Error(
@@ -701,19 +793,66 @@
         }
 
 
-        const atualizacao = {
-            campaign_id: campanha.id,
-            slot: slot
-        };
+        if (
+            !campanha?.id
+        ) {
+
+            throw new Error(
+                "Campanha inválida."
+            );
+
+        }
 
 
-        const { data, error } =
+        if (
+            !Number.isInteger(
+                Number(slot)
+            ) ||
+            Number(slot) < 1 ||
+            Number(slot) > MAX_JOGADORES
+        ) {
+
+            throw new Error(
+                "Slot inválido."
+            );
+
+        }
+
+
+        const slotOcupado =
+            await slotPertenceOutroPersonagem(
+                campanha.id,
+                Number(slot),
+                personagem.id
+            );
+
+
+        if (slotOcupado) {
+
+            throw new Error(
+                "Esse slot já está ocupado por outro personagem."
+            );
+
+        }
+
+
+        const {
+            data,
+            error
+        } =
             await supabase
                 .from("characters")
-                .update(atualizacao)
+                .update({
+                    campaign_id: campanha.id,
+                    slot: Number(slot)
+                })
                 .eq(
                     "id",
                     personagem.id
+                )
+                .eq(
+                    "user_id",
+                    obterUsuario()?.id
                 )
                 .select()
                 .single();
@@ -739,13 +878,13 @@
         slot = null
     ) {
 
+        if (!campanha?.id) {
+            return false;
+        }
+
+
         const usuario =
             obterUsuario();
-
-
-        if (!campanha?.id) {
-            return;
-        }
 
 
         const dados = {
@@ -780,8 +919,11 @@
                 null,
 
             slot:
-                slot ||
-                null,
+                Number.isInteger(
+                    Number(slot)
+                )
+                    ? Number(slot)
+                    : null,
 
             savedAt:
                 Date.now()
@@ -789,10 +931,25 @@
         };
 
 
-        localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify(dados)
-        );
+        try {
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(dados)
+            );
+
+            return true;
+
+        } catch (erro) {
+
+            console.error(
+                "❌ Não foi possível salvar a mesa ativa:",
+                erro
+            );
+
+            return false;
+
+        }
 
     }
 
@@ -816,14 +973,28 @@
             }
 
 
-            return JSON.parse(
-                salvo
-            );
+            const dados =
+                JSON.parse(
+                    salvo
+                );
+
+
+            if (
+                !dados ||
+                !dados.campaignId
+            ) {
+
+                return null;
+
+            }
+
+
+            return dados;
 
         } catch (erro) {
 
             console.warn(
-                "Mesa ativa local inválida:",
+                "⚠️ Mesa ativa local inválida:",
                 erro
             );
 
@@ -840,15 +1011,26 @@
 
     function limparMesaAtivaLocal() {
 
-        localStorage.removeItem(
-            STORAGE_KEY
-        );
+        try {
+
+            localStorage.removeItem(
+                STORAGE_KEY
+            );
+
+        } catch (erro) {
+
+            console.warn(
+                "⚠️ Não foi possível limpar mesa ativa:",
+                erro
+            );
+
+        }
 
     }
 
 
     /* =====================================================
-       ATUALIZAR AUTENTICAÇÃO
+       ATUALIZAR AUTH
        ===================================================== */
 
     async function atualizarAuth(
@@ -863,75 +1045,18 @@
         }
 
 
-        /* -------------------------------------------------
-           PRIMEIRO: sincronização oficial
-        ------------------------------------------------- */
-
-        if (
-            typeof window.sincronizarCampanhaAuth ===
-            "function"
-        ) {
-
-            try {
-
-                await window.sincronizarCampanhaAuth(
-                    campanha
-                );
-
-            } catch (erro) {
-
-                console.warn(
-                    "Falha na sincronização oficial da autenticação:",
-                    erro
-                );
-
-            }
-
-        }
-
-
-        /* -------------------------------------------------
-           GARANTIA LOCAL DO CONTEXTO
-        ------------------------------------------------- */
-
-        window.rpgAuth.campaign =
-            campanha;
-
-
-        window.rpgAuth.isMaster =
-            Boolean(ehMestre);
-
-
-        if (personagem) {
-
-            window.rpgAuth.campaignCharacter =
-                personagem;
-
-            window.rpgAuth.currentCharacter =
-                personagem;
-
-        }
-
-
-        if (
-            slot !== null &&
-            slot !== undefined
-        ) {
-
-            window.rpgAuth.campaignSlot =
-                slot;
-
-        }
-
-
-        /* -------------------------------------------------
-           CAMPANHA GLOBAL
-        ------------------------------------------------- */
+        /*
+         * A campanha ativa é definida pelo
+         * campaign.js + auth.js.
+         *
+         * Isso acontece antes de qualquer
+         * redirecionamento.
+         */
 
         if (
             window.rpgCampaign &&
             typeof window.rpgCampaign.definirCampanhaAtiva ===
-            "function"
+                "function"
         ) {
 
             try {
@@ -944,7 +1069,7 @@
             } catch (erro) {
 
                 console.warn(
-                    "Falha ao definir campanha ativa:",
+                    "⚠️ Falha ao definir campanha ativa:",
                     erro
                 );
 
@@ -953,9 +1078,40 @@
         }
 
 
-        /* -------------------------------------------------
-           GARANTIA FINAL DO MESTRE
-        ------------------------------------------------- */
+        /*
+         * Sincronização oficial do auth.js.
+         */
+
+        if (
+            typeof window.sincronizarCampanhaAuth ===
+                "function"
+        ) {
+
+            try {
+
+                await window.sincronizarCampanhaAuth(
+                    campanha
+                );
+
+            } catch (erro) {
+
+                console.warn(
+                    "⚠️ Falha ao sincronizar auth:",
+                    erro
+                );
+
+            }
+
+        }
+
+
+        /*
+         * Garantia local.
+         */
+
+        window.rpgAuth.campaign =
+            campanha;
+
 
         const usuario =
             obterUsuario();
@@ -967,7 +1123,56 @@
             null;
 
 
+        /*
+         * O banco é a fonte da verdade
+         * para determinar quem é o mestre.
+         */
+
+        window.rpgAuth.isMaster =
+            Boolean(
+                usuario?.id &&
+                masterId &&
+                String(usuario.id) ===
+                String(masterId)
+            );
+
+
+        /*
+         * Personagem do jogador.
+         */
+
+        if (personagem) {
+
+            window.rpgAuth.campaignCharacter =
+                personagem;
+
+            window.rpgAuth.currentCharacter =
+                personagem;
+
+        }
+
+
+        /*
+         * Slot atual.
+         */
+
         if (
+            slot !== null &&
+            slot !== undefined
+        ) {
+
+            window.rpgAuth.campaignSlot =
+                Number(slot);
+
+        }
+
+
+        /*
+         * Garantia final.
+         */
+
+        if (
+            ehMestre &&
             usuario?.id &&
             masterId
         ) {
@@ -982,17 +1187,14 @@
 
 
     /* =====================================================
-       REDIRECIONAR PARA A MESA
+       ENTRAR NA MESA
        ===================================================== */
 
     function entrarNaMesa() {
 
         /*
-         * Pequeno atraso para permitir que:
-         *
-         * - localStorage seja gravado;
-         * - eventos de campanha sejam disparados;
-         * - rpgAuth seja atualizado.
+         * O contexto já foi salvo antes desta
+         * função ser chamada.
          */
 
         setTimeout(
@@ -1091,7 +1293,7 @@
                 );
 
 
-            if (!campanha) {
+            if (!campanha?.id) {
 
                 throw new Error(
                     "Nenhuma mesa foi encontrada com esse código."
@@ -1153,7 +1355,7 @@
 
 
             /* =============================================
-               4. JOGADOR — ENCONTRAR PERSONAGEM
+               4. JOGADOR — PERSONAGEM
             ============================================= */
 
             const personagem =
@@ -1185,7 +1387,7 @@
 
 
             /* =============================================
-               5. VERIFICAR MEMBRO
+               5. MEMBRO
             ============================================= */
 
             await adicionarMembro(
@@ -1195,7 +1397,7 @@
 
 
             /* =============================================
-               6. RECUPERAR SLOT EXISTENTE
+               6. SLOT EXISTENTE
             ============================================= */
 
             let slot =
@@ -1205,7 +1407,7 @@
 
 
             /* =============================================
-               7. SE NÃO TIVER SLOT, RESERVAR
+               7. NOVO SLOT
             ============================================= */
 
             if (!slot) {
@@ -1224,10 +1426,6 @@
 
                 }
 
-
-                /* -----------------------------------------
-                   Associar personagem
-                ----------------------------------------- */
 
                 const personagemAtualizado =
                     await associarPersonagem(
@@ -1250,7 +1448,7 @@
 
 
             /* =============================================
-               8. GARANTIR CONTEXTO DO PERSONAGEM
+               8. GARANTIR DADOS LOCAIS
             ============================================= */
 
             personagem.campaign_id =
@@ -1260,11 +1458,11 @@
                 campanha.id;
 
             personagem.slot =
-                slot;
+                Number(slot);
 
 
             /* =============================================
-               9. SALVAR MESA ATIVA
+               9. SALVAR MESA
             ============================================= */
 
             salvarMesaAtiva(
@@ -1275,7 +1473,7 @@
 
 
             /* =============================================
-               10. SINCRONIZAR AUTENTICAÇÃO
+               10. SINCRONIZAR AUTH
             ============================================= */
 
             await atualizarAuth(
@@ -1287,7 +1485,7 @@
 
 
             /* =============================================
-               11. ENTRAR NA MESA
+               11. MESA
             ============================================= */
 
             mostrarMensagem(
@@ -1302,7 +1500,7 @@
         } catch (erro) {
 
             console.error(
-                "Erro ao entrar na mesa:",
+                "❌ Erro ao entrar na mesa:",
                 erro
             );
 
@@ -1312,15 +1510,15 @@
                 "Não foi possível entrar na mesa.";
 
 
-            /* ---------------------------------------------
-               Mensagens mais amigáveis
-            --------------------------------------------- */
+            const mensagemLower =
+                mensagem.toLowerCase();
+
 
             if (
-                mensagem.includes(
+                mensagemLower.includes(
                     "duplicate"
                 ) ||
-                mensagem.includes(
+                mensagemLower.includes(
                     "unique"
                 )
             ) {
@@ -1414,10 +1612,13 @@
         try {
 
             /* =============================================
-               BUSCAR CAMPANHA NOVAMENTE NO BANCO
+               1. VALIDAR CAMPANHA
             ============================================= */
 
-            const { data: campanha, error } =
+            const {
+                data: campanha,
+                error
+            } =
                 await supabase
                     .from("campaigns")
                     .select("*")
@@ -1444,6 +1645,10 @@
             }
 
 
+            /* =============================================
+               2. MESTRE
+            ============================================= */
+
             const masterId =
                 campanha.master_id ||
                 campanha.masterId ||
@@ -1457,10 +1662,6 @@
                     String(usuario.id)
                 );
 
-
-            /* =============================================
-               MESTRE
-            ============================================= */
 
             if (ehMestre) {
 
@@ -1487,15 +1688,23 @@
 
 
             /* =============================================
-               JOGADOR
+               3. JOGADOR
             ============================================= */
 
-            let personagem = null;
+            let personagem =
+                null;
 
+
+            /* -------------------------------------------------
+               Tentar personagem salvo
+            ------------------------------------------------- */
 
             if (salvo.characterId) {
 
-                const resultado =
+                const {
+                    data,
+                    error: erroPersonagem
+                } =
                     await supabase
                         .from("characters")
                         .select("*")
@@ -1510,17 +1719,22 @@
                         .maybeSingle();
 
 
-                if (!resultado.error) {
+                if (
+                    !erroPersonagem &&
+                    data
+                ) {
+
                     personagem =
-                        resultado.data;
+                        data;
+
                 }
 
             }
 
 
-            /* ---------------------------------------------
-               Fallback: procurar personagem na campanha
-            --------------------------------------------- */
+            /* -------------------------------------------------
+               Fallback
+            ------------------------------------------------- */
 
             if (!personagem) {
 
@@ -1554,6 +1768,10 @@
             }
 
 
+            /* =============================================
+               4. SLOT
+            ============================================= */
+
             let slot =
                 obterSlotPersonagem(
                     personagem
@@ -1562,19 +1780,41 @@
 
             if (!slot) {
 
-                slot =
+                const slotSalvo =
                     Number(
                         salvo.slot
                     );
 
+
+                if (
+                    Number.isInteger(
+                        slotSalvo
+                    ) &&
+                    slotSalvo >= 1 &&
+                    slotSalvo <= MAX_JOGADORES
+                ) {
+
+                    const ocupado =
+                        await slotPertenceOutroPersonagem(
+                            campanha.id,
+                            slotSalvo,
+                            personagem.id
+                        );
+
+
+                    if (!ocupado) {
+
+                        slot =
+                            slotSalvo;
+
+                    }
+
+                }
+
             }
 
 
-            if (
-                !Number.isInteger(slot) ||
-                slot < 1 ||
-                slot > MAX_JOGADORES
-            ) {
+            if (!slot) {
 
                 slot =
                     await encontrarPrimeiroSlot(
@@ -1594,18 +1834,20 @@
 
 
             /* =============================================
-               GARANTIR VÍNCULO DO PERSONAGEM
+               5. VINCULAR PERSONAGEM
             ============================================= */
 
             if (
                 String(
                     personagem.campaign_id
-                ) !== String(
+                ) !==
+                String(
                     campanha.id
                 ) ||
                 Number(
                     personagem.slot
-                ) !== Number(slot)
+                ) !==
+                Number(slot)
             ) {
 
                 personagem =
@@ -1619,7 +1861,7 @@
 
 
             /* =============================================
-               GARANTIR MEMBRO
+               6. GARANTIR MEMBRO
             ============================================= */
 
             await adicionarMembro(
@@ -1629,7 +1871,7 @@
 
 
             /* =============================================
-               SALVAR E SINCRONIZAR
+               7. SALVAR
             ============================================= */
 
             salvarMesaAtiva(
@@ -1639,6 +1881,10 @@
             );
 
 
+            /* =============================================
+               8. AUTH
+            ============================================= */
+
             await atualizarAuth(
                 campanha,
                 false,
@@ -1647,13 +1893,17 @@
             );
 
 
+            /* =============================================
+               9. MESA
+            ============================================= */
+
             entrarNaMesa();
 
 
         } catch (erro) {
 
             console.error(
-                "Erro ao continuar campanha:",
+                "❌ Erro ao continuar campanha:",
                 erro
             );
 
@@ -1673,8 +1923,8 @@
 
 
     /* =====================================================
-       MOSTRAR FORMULÁRIO DE CÓDIGO
-    ===================================================== */
+       ABRIR FORMULÁRIO
+       ===================================================== */
 
     function abrirFormularioCodigo() {
 
@@ -1690,7 +1940,8 @@
         }
 
 
-        container.hidden = false;
+        container.hidden =
+            false;
 
 
         const input =
@@ -1717,7 +1968,7 @@
 
     /* =====================================================
        ESCONDER FORMULÁRIO
-    ===================================================== */
+       ===================================================== */
 
     function esconderFormularioCodigo() {
 
@@ -1729,7 +1980,10 @@
 
 
         if (container) {
-            container.hidden = true;
+
+            container.hidden =
+                true;
+
         }
 
     }
@@ -1737,7 +1991,7 @@
 
     /* =====================================================
        COPIAR CÓDIGO
-    ===================================================== */
+       ===================================================== */
 
     async function copiarCodigoCampanha() {
 
@@ -1775,10 +2029,11 @@
                 "success"
             );
 
+
         } catch (erro) {
 
             console.warn(
-                "Não foi possível copiar:",
+                "⚠️ Não foi possível copiar:",
                 erro
             );
 
@@ -1795,7 +2050,7 @@
 
     /* =====================================================
        VERIFICAR MESA ATIVA
-    ===================================================== */
+       ===================================================== */
 
     async function verificarMesaAtiva() {
 
@@ -1828,10 +2083,22 @@
 
         try {
 
-            const { data: campanha, error } =
+            /*
+             * Aqui apenas VALIDAMOS o registro salvo.
+             *
+             * Não redirecionamos.
+             * Não escolhemos campanha.
+             */
+
+            const {
+                data: campanha,
+                error
+            } =
                 await supabase
                     .from("campaigns")
-                    .select("*")
+                    .select(
+                        "id, name, master_id, codigo_mesa, created_at"
+                    )
                     .eq(
                         "id",
                         salvo.campaignId
@@ -1851,117 +2118,10 @@
             }
 
 
-            const masterId =
-                campanha.master_id ||
-                campanha.masterId ||
-                null;
-
-
-            const ehMestre =
-                Boolean(
-                    masterId &&
-                    String(masterId) ===
-                    String(usuario.id)
-                );
-
-
-            /* =============================================
-               MESTRE
-            ============================================= */
-
-            if (ehMestre) {
-
-                await atualizarAuth(
-                    campanha,
-                    true,
-                    null,
-                    null
-                );
-
-
-                return true;
-
-            }
-
-
-            /* =============================================
-               JOGADOR
-            ============================================= */
-
-            let personagem = null;
-
-
-            if (salvo.characterId) {
-
-                const resultado =
-                    await supabase
-                        .from("characters")
-                        .select("*")
-                        .eq(
-                            "id",
-                            salvo.characterId
-                        )
-                        .eq(
-                            "user_id",
-                            usuario.id
-                        )
-                        .maybeSingle();
-
-
-                if (!resultado.error) {
-
-                    personagem =
-                        resultado.data;
-
-                }
-
-            }
-
-
-            if (!personagem) {
-
-                personagem =
-                    await encontrarPersonagem(
-                        campanha
-                    );
-
-            }
-
-
-            if (!personagem) {
-                return false;
-            }
-
-
-            const slot =
-                obterSlotPersonagem(
-                    personagem
-                ) ||
-                Number(
-                    salvo.slot
-                ) ||
-                null;
-
-
-            if (!slot) {
-                return false;
-            }
-
-
-            await atualizarAuth(
-                campanha,
-                false,
-                personagem,
-                slot
-            );
-
-
-            salvarMesaAtiva(
-                campanha,
-                personagem,
-                slot
-            );
-
+            /*
+             * Confirmamos apenas que a campanha
+             * continua existindo.
+             */
 
             return true;
 
@@ -1969,7 +2129,7 @@
         } catch (erro) {
 
             console.warn(
-                "Erro verificando mesa ativa:",
+                "⚠️ Erro verificando mesa ativa:",
                 erro
             );
 
@@ -1982,12 +2142,12 @@
 
     /* =====================================================
        REGISTRAR EVENTOS
-    ===================================================== */
+       ===================================================== */
 
     function registrarEventos() {
 
         /* -------------------------------------------------
-           ABRIR CÓDIGO
+           ABRIR FORMULÁRIO
         ------------------------------------------------- */
 
         const abrir =
@@ -2029,7 +2189,7 @@
 
 
         /* -------------------------------------------------
-           ENTER NO INPUT
+           CÓDIGO
         ------------------------------------------------- */
 
         const codigo =
@@ -2076,7 +2236,7 @@
 
 
         /* -------------------------------------------------
-           CONTINUAR CAMPANHA
+           CONTINUAR
         ------------------------------------------------- */
 
         const continuar =
@@ -2097,7 +2257,7 @@
 
 
         /* -------------------------------------------------
-           BOTÃO DE CONTINUAR DO PLAYER
+           CONTINUAR PLAYER
         ------------------------------------------------- */
 
         const continuarPlayer =
@@ -2117,7 +2277,7 @@
 
 
         /* -------------------------------------------------
-           COPIAR CÓDIGO
+           COPIAR
         ------------------------------------------------- */
 
         const copiar =
@@ -2139,8 +2299,8 @@
 
 
     /* =====================================================
-       ATUALIZAR INTERFACE INICIAL
-    ===================================================== */
+       INTERFACE INICIAL
+       ===================================================== */
 
     function atualizarInterfaceInicial() {
 
@@ -2154,11 +2314,6 @@
                 "continue-campaign-button"
             );
 
-
-        /*
-         * O botão continuar só fica disponível
-         * quando existe uma mesa salva localmente.
-         */
 
         if (continuar) {
 
@@ -2174,7 +2329,7 @@
 
     /* =====================================================
        INICIALIZAÇÃO
-    ===================================================== */
+       ===================================================== */
 
     async function inicializar() {
 
@@ -2219,12 +2374,14 @@
 
 
         /* -------------------------------------------------
-           AGUARDAR AUTENTICAÇÃO
+           AGUARDAR AUTH
         ------------------------------------------------- */
 
-        let tentativas = 0;
+        let tentativas =
+            0;
 
-        const maxTentativas = 40;
+        const maxTentativas =
+            40;
 
 
         const aguardarUsuario =
@@ -2246,11 +2403,11 @@
 
 
                         /*
-                         * Apenas verifica a mesa salva.
+                         * Apenas verifica se a mesa
+                         * salva ainda existe.
                          *
-                         * NÃO redireciona automaticamente.
-                         *
-                         * O usuário escolhe continuar.
+                         * Não ativa automaticamente.
+                         * Não redireciona.
                          */
 
                         await verificarMesaAtiva();
@@ -2282,7 +2439,7 @@
 
     /* =====================================================
        API GLOBAL
-    ===================================================== */
+       ===================================================== */
 
     window.rpgMesaEntrada = {
 
@@ -2313,7 +2470,7 @@
 
     /* =====================================================
        DOM READY
-    ===================================================== */
+       ===================================================== */
 
     if (
         document.readyState ===
