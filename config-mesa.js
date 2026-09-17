@@ -194,7 +194,7 @@
 
 
         /* ----------------------------------------------
-           CLIQUE FORA DO MENU
+           CLIQUE FORA DO MENU — DESKTOP
         ---------------------------------------------- */
 
         document.addEventListener(
@@ -203,45 +203,33 @@
 
             function (event) {
 
-                if (
-
-                    !masterMenu ||
-
-                    masterMenu.hidden
-
-                ) {
-
-                    return;
-
-                }
-
-
-                const clicouNoMenu =
-                    masterMenu.contains(
-                        event.target
-                    );
-
-
-                const clicouNoBotao =
-                    settingsButton &&
-                    settingsButton.contains(
-                        event.target
-                    );
-
-
-                if (
-
-                    !clicouNoMenu &&
-
-                    !clicouNoBotao
-
-                ) {
-
-                    fecharMenuConfiguracoes();
-
-                }
+                fecharSeClicouFora(
+                    event
+                );
 
             }
+
+        );
+
+
+
+        /* ----------------------------------------------
+           TOQUE FORA DO MENU — CELULAR
+        ---------------------------------------------- */
+
+        document.addEventListener(
+
+            "pointerdown",
+
+            function (event) {
+
+                fecharSeClicouFora(
+                    event
+                );
+
+            },
+
+            true
 
         );
 
@@ -326,6 +314,60 @@
             }
 
         );
+
+    }
+
+
+
+    /* ========================================================
+       DETECTAR CLIQUE / TOQUE FORA DO MENU
+    ======================================================== */
+
+    function fecharSeClicouFora(
+        event
+    ) {
+
+        if (
+
+            !masterMenu ||
+
+            masterMenu.hidden
+
+        ) {
+
+            return;
+
+        }
+
+
+        const alvo =
+            event.target;
+
+
+        const clicouNoMenu =
+            masterMenu.contains(
+                alvo
+            );
+
+
+        const clicouNoBotao =
+            settingsButton &&
+            settingsButton.contains(
+                alvo
+            );
+
+
+        if (
+
+            !clicouNoMenu &&
+
+            !clicouNoBotao
+
+        ) {
+
+            fecharMenuConfiguracoes();
+
+        }
 
     }
 
