@@ -17,6 +17,7 @@
  - Controlar CTE
  - Manter os 8 lugares da mesa
  - Sincronizar informações básicas da campanha
+ - Processar interações recebidas da interface
  - Conversar com mesa-jogadores.js
  - Conversar com mesa-aventura.js
 
@@ -24,7 +25,7 @@
 
  - Menu de configurações do Mestre
  - Botão de configurações
- - Botões gerais da interface
+ - Detecção direta de cliques da interface
  - HP individual
  - Inventário
  - Habilidades
@@ -34,7 +35,7 @@
  O menu do Mestre pertence ao:
      config-mesa.js
 
- Os botões gerais pertencem ao:
+ As interações da interface pertencem ao:
      button-mesa.js
 
  O CTE permanece INTEIRO neste arquivo porque
@@ -718,21 +719,12 @@ function descobrirJogadorAtual() {
 function registrarEventos() {
 
     /*
-     Seleção dos cards
+     Os cliques da interface NÃO são registrados
+     diretamente pelo CORE.
+
+     O button-mesa.js detecta as interações
+     e chama a API pública da Mesa.
     */
-
-    if (MesaUI.jogadores) {
-
-        MesaUI.jogadores.addEventListener(
-
-            "click",
-
-            tratarCliqueJogador
-
-        );
-
-    }
-
 
 
     /*
@@ -796,6 +788,156 @@ function registrarEventos() {
             );
 
         }
+
+    );
+
+}
+
+
+
+/* ============================================================
+   SELECIONAR JOGADOR
+============================================================ */
+
+/*
+ Esta função pertence ao CORE.
+
+ O button-mesa.js detecta o clique.
+
+ O mesa.js decide o que aquele clique significa.
+*/
+
+function selecionarJogador(slot) {
+
+    const numeroSlot =
+        Number(slot);
+
+
+    if (
+
+        !numeroSlot ||
+
+        numeroSlot < 1 ||
+
+        numeroSlot > MESA_CONFIG.maxJogadores
+
+    ) {
+
+        return;
+
+    }
+
+
+    const jogador =
+        mesaState.jogadores[
+            numeroSlot - 1
+        ];
+
+
+    if (!jogador) {
+
+        return;
+
+    }
+
+
+    const slotAtual =
+        Number(
+            mesaState.jogadorAtual.slot
+        );
+
+
+    const ehProprioJogador =
+        slotAtual === numeroSlot;
+
+
+    /*
+     Evento global.
+
+     Outros módulos podem utilizar:
+
+     - abrir interação
+     - abrir chat privado
+     - mostrar status público
+     - selecionar alvo
+    */
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:jogadorSelecionado",
+            {
+
+                detail: {
+
+                    slot:
+                        numeroSlot,
+
+                    jogador,
+
+                    ehProprioJogador
+
+                }
+
+            }
+
+        )
+
+    );
+
+
+    /*
+     Se for o próprio jogador,
+     podemos abrir a ficha normalmente.
+    */
+
+    if (ehProprioJogador) {
+
+        if (
+
+            typeof window.abrirFichaJogador ===
+            "function"
+
+        ) {
+
+            window.abrirFichaJogador(
+                numeroSlot
+            );
+
+        }
+
+        return;
+
+    }
+
+
+    /*
+     Jogador de outra pessoa:
+
+     Não abrimos a ficha privada.
+
+     Apenas emitimos o evento.
+    */
+
+    document.dispatchEvent(
+
+        new CustomEvent(
+            "mesa:interacaoJogador",
+            {
+
+                detail: {
+
+                    origem:
+                        slotAtual,
+
+                    alvo:
+                        numeroSlot
+
+                }
+
+            }
+
+        )
 
     );
 
@@ -983,6 +1125,7 @@ function abrirAventura(
                 }
 
             }
+
         )
 
     );
@@ -1101,6 +1244,7 @@ function iniciarBatalha(
                 }
 
             }
+
         )
 
     );
@@ -1166,6 +1310,7 @@ function finalizarBatalha(
                 }
 
             }
+
         )
 
     );
@@ -1235,6 +1380,7 @@ function iniciarBoss(
                 }
 
             }
+
         )
 
     );
@@ -1370,6 +1516,7 @@ function iniciarCTE(
                 }
 
             }
+
         )
 
     );
@@ -1701,6 +1848,7 @@ function mostrarResultadoCTE() {
                 }
 
             }
+
         )
 
     );
@@ -1755,6 +1903,7 @@ function limparCTE() {
                 }
 
             }
+
         )
 
     );
@@ -2010,162 +2159,6 @@ function atualizarAssento(
         "vazio",
 
         !assento.ocupado
-
-    );
-
-}
-
-
-
-/* ============================================================
-   CLIQUE NO JOGADOR
-============================================================ */
-
-function tratarCliqueJogador(
-    event
-) {
-
-    const card =
-        event.target.closest(
-            "[data-player]"
-        );
-
-
-    if (!card) {
-
-        return;
-
-    }
-
-
-    const slot =
-        Number(
-            card.dataset.player
-        );
-
-
-    if (
-
-        !slot ||
-
-        slot < 1 ||
-
-        slot > 8
-
-    ) {
-
-        return;
-
-    }
-
-
-    const jogador =
-        mesaState.jogadores[
-            slot - 1
-        ];
-
-
-    /*
-     Evento global.
-
-     Outros módulos podem utilizar:
-
-     - abrir interação
-     - abrir chat privado
-     - mostrar status público
-     - selecionar alvo
-    */
-
-    document.dispatchEvent(
-
-        new CustomEvent(
-            "mesa:jogadorSelecionado",
-            {
-
-                detail: {
-
-                    slot,
-
-                    jogador,
-
-                    ehProprioJogador:
-
-                        Number(
-                            mesaState
-                                .jogadorAtual
-                                .slot
-                        ) === slot
-
-                }
-
-            }
-        )
-
-    );
-
-
-    /*
-     Se for o próprio jogador,
-     podemos abrir a ficha normalmente.
-    */
-
-    if (
-
-        Number(
-            mesaState
-                .jogadorAtual
-                .slot
-        ) === slot
-
-    ) {
-
-        if (
-
-            typeof window.abrirFichaJogador ===
-            "function"
-
-        ) {
-
-            window.abrirFichaJogador(
-                slot
-            );
-
-        }
-
-        return;
-
-    }
-
-
-    /*
-     Jogador de outra pessoa:
-
-     Não abrimos a ficha privada.
-
-     Apenas emitimos o evento.
-    */
-
-    document.dispatchEvent(
-
-        new CustomEvent(
-            "mesa:interacaoJogador",
-            {
-
-                detail: {
-
-                    origem:
-
-                        mesaState
-                            .jogadorAtual
-                            .slot,
-
-                    alvo:
-                        slot
-
-                }
-
-            }
-        )
 
     );
 
@@ -2529,6 +2522,8 @@ window.MesaRPG = {
     */
 
     obterSlotAtual,
+
+    selecionarJogador,
 
 
     /*
