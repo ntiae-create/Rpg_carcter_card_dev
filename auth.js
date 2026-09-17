@@ -13,8 +13,18 @@
     window.rpgAuth = {
         user: null,
         session: null,
+
+        // Campanha atualmente ativa.
+        // IMPORTANTE:
+        // Nunca escolher automaticamente a primeira campanha.
         campaign: null,
+
+        // Todas as campanhas que pertencem
+        // ou estão vinculadas ao usuário.
         campaigns: [],
+
+        // Verdadeiro somente quando a campanha
+        // ativa pertence ao usuário como mestre.
         isMaster: false,
 
         campaignMembers: [],
@@ -35,8 +45,7 @@
 
         if (!mensagem) return;
 
-        mensagem.textContent =
-            texto;
+        mensagem.textContent = texto;
 
         mensagem.style.color =
             sucesso
@@ -52,9 +61,7 @@
     function mostrarDiagnostico(texto, tipo = "info") {
 
         let elemento =
-            document.getElementById(
-                "auth-diagnostic"
-            );
+            document.getElementById("auth-diagnostic");
 
 
         if (!elemento) {
@@ -198,6 +205,181 @@
 
 
     // ==========================================
+    // ATUALIZAR STATUS DE MESTRE
+    // ==========================================
+
+    function atualizarStatusMestre() {
+
+        const usuario =
+            window.rpgAuth.user;
+
+        const campanha =
+            window.rpgAuth.campaign;
+
+
+        if (
+            !usuario ||
+            !campanha ||
+            !campanha.master_id
+        ) {
+
+            window.rpgAuth.isMaster =
+                false;
+
+            return false;
+
+        }
+
+
+        const usuarioId =
+            String(usuario.id);
+
+
+        const mestreId =
+            String(campanha.master_id);
+
+
+        window.rpgAuth.isMaster =
+            usuarioId === mestreId;
+
+
+        console.log(
+            "🎲 RPG AUTH — Verificação de Mestre:",
+            {
+                usuarioId,
+                mestreId,
+                campanha:
+                    campanha.name ||
+                    campanha.nome ||
+                    campanha.id,
+                isMaster:
+                    window.rpgAuth.isMaster
+            }
+        );
+
+
+        return window.rpgAuth.isMaster;
+
+    }
+
+
+    // ==========================================
+    // SINCRONIZAR CAMPANHA ATIVA
+    // ==========================================
+    //
+    // Esta função é usada pelo campaign.js.
+    //
+    // Quando campaign.js define uma campanha,
+    // o auth.js recebe essa campanha e recalcula
+    // imediatamente se o usuário é o mestre.
+    // ==========================================
+
+    async function sincronizarCampanhaAtiva(
+        campanha
+    ) {
+
+        if (!campanha || !campanha.id) {
+
+            window.rpgAuth.campaign =
+                null;
+
+            window.rpgAuth.isMaster =
+                false;
+
+            window.rpgAuth.campaignMembers =
+                [];
+
+            window.rpgAuth.campaignCharacters =
+                [];
+
+            return false;
+        }
+
+
+        const campanhaEncontrada =
+            (window.rpgAuth.campaigns || [])
+                .find(
+                    item =>
+                        item &&
+                        String(item.id) ===
+                        String(campanha.id)
+                );
+
+
+        if (campanhaEncontrada) {
+
+            window.rpgAuth.campaign =
+                campanhaEncontrada;
+
+        }
+
+        else {
+
+            /*
+             * A campanha pode ter acabado de ser
+             * criada ou carregada pelo campaign.js.
+             *
+             * Nesse caso preservamos os dados
+             * recebidos, desde que exista ID.
+             */
+
+            window.rpgAuth.campaign =
+                campanha;
+
+        }
+
+
+        atualizarStatusMestre();
+
+
+        /*
+         * Carrega os membros/personagens somente
+         * depois de definir a campanha ativa.
+         */
+
+        await carregarDadosCampanha();
+
+
+        /*
+         * Informa ao restante do sistema que o
+         * contexto de autenticação foi atualizado.
+         */
+
+        try {
+
+            window.dispatchEvent(
+                new CustomEvent(
+                    "rpgAuth:campanhaSincronizada",
+                    {
+                        detail: {
+                            campanha:
+                                window.rpgAuth.campaign,
+
+                            isMaster:
+                                window.rpgAuth.isMaster
+                        }
+                    }
+                )
+            );
+
+        }
+
+        catch (error) {
+
+            console.warn(
+                "⚠️ Não foi possível disparar evento de sincronização:",
+                error
+            );
+
+        }
+
+
+        return true;
+
+    }
+
+
+    // ==========================================
     // LIMPAR DADOS DA CAMPANHA
     // ==========================================
 
@@ -250,8 +432,13 @@
             } =
                 await window.supabaseClient
                     .from("profiles")
-                    .select("id, username, created_at")
-                    .eq("id", user.id)
+                    .select(
+                        "id, username, created_at"
+                    )
+                    .eq(
+                        "id",
+                        user.id
+                    )
                     .maybeSingle();
 
 
@@ -297,7 +484,10 @@
     // CRIAR PERFIL
     // ==========================================
 
-    async function criarPerfil(user, username) {
+    async function criarPerfil(
+        user,
+        username
+    ) {
 
         if (!window.supabaseClient) {
 
@@ -378,7 +568,9 @@
     // REENVIAR CONFIRMAÇÃO DE E-MAIL
     // ==========================================
 
-    async function reenviarConfirmacaoEmail(email) {
+    async function reenviarConfirmacaoEmail(
+        email
+    ) {
 
         if (!window.supabaseClient) {
 
@@ -417,7 +609,8 @@
                 await window.supabaseClient.auth
                     .resend({
 
-                        type: "signup",
+                        type:
+                            "signup",
 
                         email:
                             email
@@ -487,7 +680,9 @@
     // MOSTRAR BOTÃO DE CONFIRMAÇÃO
     // ==========================================
 
-    function mostrarBotaoConfirmacao(email) {
+    function mostrarBotaoConfirmacao(
+        email
+    ) {
 
         const container =
             document.getElementById(
@@ -502,11 +697,14 @@
         }
 
 
-        container.innerHTML = "";
+        container.innerHTML =
+            "";
 
 
         const botao =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
 
 
         botao.type =
@@ -693,19 +891,36 @@
                 );
 
 
-        if (
-            window.rpgAuth.campaign &&
-            window.rpgAuth.campaign.master_id
-        ) {
+        /*
+         * O mestre pode não estar na tabela
+         * campaign_members.
+         *
+         * Por isso garantimos que o master_id
+         * também seja consultado.
+         */
 
-            if (
-                !userIds.includes(
-                    window.rpgAuth.campaign.master_id
-                )
-            ) {
+        const masterId =
+            window.rpgAuth.campaign?.master_id;
+
+
+        if (masterId) {
+
+            const masterIdString =
+                String(masterId);
+
+
+            const mestreJaExiste =
+                userIds.some(
+                    id =>
+                        String(id) ===
+                        masterIdString
+                );
+
+
+            if (!mestreJaExiste) {
 
                 userIds.push(
-                    window.rpgAuth.campaign.master_id
+                    masterId
                 );
 
             }
@@ -813,6 +1028,18 @@
             window.rpgAuth.campaign.id;
 
 
+        if (!campaignId) {
+
+            window.rpgAuth.campaignMembers =
+                [];
+
+            window.rpgAuth.campaignCharacters =
+                [];
+
+            return false;
+        }
+
+
         const membrosCarregados =
             await carregarMembrosCampanha(
                 campaignId
@@ -839,7 +1066,9 @@
     // CARREGAR CAMPANHAS DO USUÁRIO
     // ==========================================
 
-    async function carregarCampanhas(user) {
+    async function carregarCampanhas(
+        user
+    ) {
 
         if (!window.supabaseClient) {
 
@@ -997,6 +1226,10 @@
             }
 
 
+            // ==================================
+            // JUNTAR CAMPANHAS
+            // ==================================
+
             const todasCampanhas = [
                 ...(campanhasMestre || []),
                 ...(campanhasMembro || [])
@@ -1029,9 +1262,15 @@
                 }
 
 
+                const idString =
+                    String(
+                        campanha.id
+                    );
+
+
                 if (
                     idsAdicionados.has(
-                        campanha.id
+                        idString
                     )
                 ) {
 
@@ -1040,7 +1279,7 @@
 
 
                 idsAdicionados.add(
-                    campanha.id
+                    idString
                 );
 
 
@@ -1050,6 +1289,13 @@
 
             }
 
+
+            /*
+             * IMPORTANTE:
+             *
+             * Aqui armazenamos todas as campanhas,
+             * mas NÃO ativamos nenhuma.
+             */
 
             window.rpgAuth.campaigns =
                 campanhasUnicas;
@@ -1066,6 +1312,16 @@
                 limparDadosCampanha();
 
 
+                /*
+                 * limparDadosCampanha também limpa
+                 * campaigns, então restauramos o
+                 * array vazio explicitamente.
+                 */
+
+                window.rpgAuth.campaigns =
+                    [];
+
+
                 mostrarDiagnostico(
                     "ℹ️ Conta autenticada. Nenhuma campanha vinculada ainda.",
                     "info"
@@ -1077,21 +1333,7 @@
 
 
             // ==================================
-            // CAMPANHA ATIVA
-            // ==================================
-            //
-            // IMPORTANTE:
-            //
-            // NÃO escolher mais:
-            //
-            //     campaigns[0]
-            //
-            // Ter campanhas cadastradas não
-            // significa estar dentro de uma delas.
-            //
-            // A campanha ativa é responsabilidade
-            // do sistema de campanhas / entrada
-            // da mesa.
+            // RECUPERAR CAMPANHA QUE JÁ ESTAVA ATIVA
             // ==================================
 
             let campanhaAtiva =
@@ -1105,9 +1347,25 @@
                     "function"
             ) {
 
-                campanhaAtiva =
-                    window.rpgCampaign
-                        .obterCampanhaAtiva();
+                try {
+
+                    campanhaAtiva =
+                        window.rpgCampaign
+                            .obterCampanhaAtiva();
+
+                }
+
+                catch (error) {
+
+                    console.warn(
+                        "⚠️ Não foi possível obter campanha ativa pelo campaign.js:",
+                        error
+                    );
+
+                    campanhaAtiva =
+                        null;
+
+                }
 
             }
 
@@ -1144,6 +1402,11 @@
 
                 else {
 
+                    /*
+                     * A campanha salva anteriormente
+                     * não pertence mais ao usuário.
+                     */
+
                     window.rpgAuth.campaign =
                         null;
 
@@ -1153,6 +1416,12 @@
 
             else {
 
+                /*
+                 * NÃO EXISTE campanha ativa.
+                 *
+                 * Isso é intencional.
+                 */
+
                 window.rpgAuth.campaign =
                     null;
 
@@ -1160,24 +1429,14 @@
 
 
             // ==================================
-            // DEFINIR MESTRE
+            // ATUALIZAR MESTRE
             // ==================================
 
-            window.rpgAuth.isMaster =
-                Boolean(
-                    window.rpgAuth.campaign &&
-                    String(
-                        window.rpgAuth.campaign.master_id
-                    ) ===
-                    String(
-                        user.id
-                    )
-                );
+            atualizarStatusMestre();
 
 
             // ==================================
-            // CARREGAR DADOS SOMENTE SE HOUVER
-            // CAMPANHA ATIVA
+            // CARREGAR DADOS DA CAMPANHA ATIVA
             // ==================================
 
             if (
@@ -1252,7 +1511,9 @@
     // ATUALIZAR ESTADO DA SESSÃO
     // ==========================================
 
-    async function atualizarEstadoSessao(session) {
+    async function atualizarEstadoSessao(
+        session
+    ) {
 
         window.rpgAuth.session =
             session || null;
@@ -1281,6 +1542,15 @@
         await carregarCampanhas(
             session.user
         );
+
+
+        /*
+         * Garantia adicional:
+         * se já existir campanha ativa,
+         * recalculamos o status do mestre.
+         */
+
+        atualizarStatusMestre();
 
     }
 
@@ -1363,11 +1633,9 @@
                 );
 
 
-                /*
-                 * =================================
-                 * E-MAIL NÃO CONFIRMADO
-                 * =================================
-                 */
+                // ==============================
+                // E-MAIL NÃO CONFIRMADO
+                // ==============================
 
                 if (
                     error.code ===
@@ -1401,11 +1669,9 @@
                 }
 
 
-                /*
-                 * =================================
-                 * CREDENCIAIS INVÁLIDAS
-                 * =================================
-                 */
+                // ==============================
+                // CREDENCIAIS INVÁLIDAS
+                // ==============================
 
                 if (
                     error.code ===
@@ -1428,11 +1694,9 @@
                 }
 
 
-                /*
-                 * =================================
-                 * OUTROS ERROS
-                 * =================================
-                 */
+                // ==============================
+                // OUTROS ERROS
+                // ==============================
 
                 mostrarMensagem(
                     "Não foi possível entrar."
@@ -1522,7 +1786,11 @@
             email?.trim();
 
 
-        if (!username || !email || !senha) {
+        if (
+            !username ||
+            !email ||
+            !senha
+        ) {
 
             mostrarMensagem(
                 "Preencha nome de usuário, e-mail e senha."
@@ -1532,7 +1800,9 @@
         }
 
 
-        if (username.length < 3) {
+        if (
+            username.length < 3
+        ) {
 
             mostrarMensagem(
                 "O nome de usuário precisa ter pelo menos 3 caracteres."
@@ -1542,7 +1812,9 @@
         }
 
 
-        if (senha.length < 6) {
+        if (
+            senha.length < 6
+        ) {
 
             mostrarMensagem(
                 "A senha precisa ter pelo menos 6 caracteres."
@@ -1699,6 +1971,15 @@
         reenviarConfirmacaoEmail;
 
 
+    /*
+     * Disponibiliza a sincronização para
+     * campaign.js.
+     */
+
+    window.sincronizarCampanhaAuth =
+        sincronizarCampanhaAtiva;
+
+
     // ==========================================
     // PAINEL DE LOGIN
     // ==========================================
@@ -1716,7 +1997,9 @@
 
 
         const painel =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
 
         painel.id =
@@ -1755,7 +2038,6 @@
                 ">
                     Entre na sua conta
                 </p>
-
 
                 <div id="auth-login-fields">
 
@@ -2310,6 +2592,65 @@
 
 
     // ==========================================
+    // OBSERVAR ALTERAÇÃO DA CAMPANHA
+    // ==========================================
+    //
+    // O campaign.js dispara:
+    //
+    // mesa:campanhaAlterada
+    //
+    // quando a campanha ativa muda.
+    //
+    // Aqui sincronizamos o auth.js novamente.
+    // ==========================================
+
+    window.addEventListener(
+        "mesa:campanhaAlterada",
+        async function (event) {
+
+            const campanha =
+                event?.detail?.campanha ||
+                event?.detail ||
+                null;
+
+
+            if (
+                campanha &&
+                campanha.id
+            ) {
+
+                await sincronizarCampanhaAtiva(
+                    campanha
+                );
+
+            }
+
+            else {
+
+                /*
+                 * Se a campanha foi removida/desativada,
+                 * limpamos apenas o contexto ativo.
+                 */
+
+                window.rpgAuth.campaign =
+                    null;
+
+                window.rpgAuth.isMaster =
+                    false;
+
+                window.rpgAuth.campaignMembers =
+                    [];
+
+                window.rpgAuth.campaignCharacters =
+                    [];
+
+            }
+
+        }
+    );
+
+
+    // ==========================================
     // FUNÇÕES PÚBLICAS
     // ==========================================
 
@@ -2349,10 +2690,44 @@
     window.usuarioEhMestre =
         function () {
 
-            return (
-                window.rpgAuth
-                    .isMaster === true
-            );
+            /*
+             * Fazemos uma verificação direta também,
+             * para evitar depender exclusivamente
+             * de uma variável antiga.
+             */
+
+            const usuario =
+                window.rpgAuth.user;
+
+            const campanha =
+                window.rpgAuth.campaign;
+
+
+            if (
+                !usuario ||
+                !campanha ||
+                !campanha.master_id
+            ) {
+
+                return false;
+
+            }
+
+
+            const resultado =
+                String(usuario.id) ===
+                String(campanha.master_id);
+
+
+            /*
+             * Mantém o estado sincronizado.
+             */
+
+            window.rpgAuth.isMaster =
+                resultado;
+
+
+            return resultado;
 
         };
 
