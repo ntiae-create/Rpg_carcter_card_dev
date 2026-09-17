@@ -1077,25 +1077,151 @@
 
 
             // ==================================
-            // CAMPANHA ATUAL
+            // CAMPANHA ATIVA
+            // ==================================
+            //
+            // IMPORTANTE:
+            //
+            // NÃO escolher mais:
+            //
+            //     campaigns[0]
+            //
+            // Ter campanhas cadastradas não
+            // significa estar dentro de uma delas.
+            //
+            // A campanha ativa é responsabilidade
+            // do sistema de campanhas / entrada
+            // da mesa.
             // ==================================
 
-            window.rpgAuth.campaign =
-                window.rpgAuth.campaigns[0];
+            let campanhaAtiva =
+                null;
 
+
+            if (
+                window.rpgCampaign &&
+                typeof window.rpgCampaign
+                    .obterCampanhaAtiva ===
+                    "function"
+            ) {
+
+                campanhaAtiva =
+                    window.rpgCampaign
+                        .obterCampanhaAtiva();
+
+            }
+
+
+            // ==================================
+            // VALIDAR CAMPANHA ATIVA
+            // ==================================
+
+            if (
+                campanhaAtiva &&
+                campanhaAtiva.id
+            ) {
+
+                const campanhaEncontrada =
+                    window.rpgAuth.campaigns.find(
+                        campanha =>
+                            String(
+                                campanha.id
+                            ) ===
+                            String(
+                                campanhaAtiva.id
+                            )
+                    );
+
+
+                if (
+                    campanhaEncontrada
+                ) {
+
+                    window.rpgAuth.campaign =
+                        campanhaEncontrada;
+
+                }
+
+                else {
+
+                    window.rpgAuth.campaign =
+                        null;
+
+                }
+
+            }
+
+            else {
+
+                window.rpgAuth.campaign =
+                    null;
+
+            }
+
+
+            // ==================================
+            // DEFINIR MESTRE
+            // ==================================
 
             window.rpgAuth.isMaster =
-                window.rpgAuth.campaign.master_id ===
-                user.id;
+                Boolean(
+                    window.rpgAuth.campaign &&
+                    String(
+                        window.rpgAuth.campaign.master_id
+                    ) ===
+                    String(
+                        user.id
+                    )
+                );
 
 
-            await carregarDadosCampanha();
+            // ==================================
+            // CARREGAR DADOS SOMENTE SE HOUVER
+            // CAMPANHA ATIVA
+            // ==================================
+
+            if (
+                window.rpgAuth.campaign
+            ) {
+
+                await carregarDadosCampanha();
+
+            }
+
+            else {
+
+                window.rpgAuth.campaignMembers =
+                    [];
+
+                window.rpgAuth.campaignCharacters =
+                    [];
+
+            }
 
 
-            mostrarDiagnostico(
-                `✅ Campanha encontrada: ${window.rpgAuth.campaign.name}`,
-                "sucesso"
-            );
+            // ==================================
+            // DIAGNÓSTICO
+            // ==================================
+
+            if (
+                window.rpgAuth.campaign
+            ) {
+
+                mostrarDiagnostico(
+                    `✅ Campanha ativa: ${window.rpgAuth.campaign.name}`,
+                    "sucesso"
+                );
+
+            }
+
+            else {
+
+                mostrarDiagnostico(
+                    "ℹ️ Conta autenticada. Nenhuma campanha ativa.",
+                    "info"
+                );
+
+            }
 
 
             return true;
