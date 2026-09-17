@@ -99,7 +99,9 @@
         class="campaign-panel">
 
 
-        <!-- CABEÇALHO -->
+        <!-- =================================================
+             CABEÇALHO DA CAMPANHA
+        ================================================== -->
 
         <div class="campaign-panel-header">
 
@@ -212,7 +214,7 @@
 
 
         <!-- =================================================
-             ENTRAR EM UMA MESA
+             ÁREA DO JOGADOR
         ================================================== -->
 
         <div
@@ -220,24 +222,50 @@
             class="campaign-area campaign-join-area">
 
 
-            <div class="campaign-area-heading">
+            <!-- =================================================
+                 ESTADO INICIAL
+            ================================================== -->
 
-                <span class="campaign-area-icon">
-                    🗝️
-                </span>
-
-
-                <div>
-
-                    <h3>
-                        Entrar em uma Mesa
-                    </h3>
+            <div
+                id="campaign-join-start"
+                class="campaign-join-state">
 
 
-                    <p>
-                        Digite o código fornecido pelo Mestre
-                        para entrar na campanha.
-                    </p>
+                <div class="campaign-area-heading">
+
+                    <span class="campaign-area-icon">
+                        🗝️
+                    </span>
+
+
+                    <div>
+
+                        <h3>
+                            Entrar em uma Mesa
+                        </h3>
+
+
+                        <p>
+                            Você precisa do código fornecido
+                            pelo Mestre para entrar na campanha.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="campaign-actions">
+
+                    <button
+                        id="open-campaign-code-button"
+                        class="campaign-button campaign-primary-button"
+                        type="button">
+
+                        ⚔️ ENTRAR NA MESA
+
+                    </button>
 
                 </div>
 
@@ -245,37 +273,123 @@
 
 
 
-            <!-- CAMPO DO CÓDIGO -->
+            <!-- =================================================
+                 FORMULÁRIO DO CÓDIGO
+            ================================================== -->
 
-            <div class="campaign-join-form">
-
-                <input
-                    id="campaign-code-input"
-                    type="text"
-                    maxlength="20"
-                    placeholder="Digite o código da mesa"
-                    autocomplete="off"
-                    inputmode="text"
-                    aria-label="Código da Mesa">
+            <div
+                id="campaign-join-form-container"
+                class="campaign-join-state"
+                hidden>
 
 
-                <button
-                    id="join-campaign-button"
-                    class="campaign-button campaign-primary-button"
-                    type="button">
+                <div class="campaign-area-heading">
 
-                    ⚔️ ENTRAR NA MESA
+                    <span class="campaign-area-icon">
+                        🔐
+                    </span>
 
-                </button>
+
+                    <div>
+
+                        <h3>
+                            Código da Mesa
+                        </h3>
+
+
+                        <p>
+                            Digite o código fornecido pelo Mestre.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="campaign-join-form">
+
+                    <input
+                        id="campaign-code-input"
+                        type="text"
+                        maxlength="20"
+                        placeholder="Digite o código da mesa"
+                        autocomplete="off"
+                        inputmode="text"
+                        aria-label="Código da Mesa">
+
+
+                    <button
+                        id="join-campaign-button"
+                        class="campaign-button campaign-primary-button"
+                        type="button">
+
+                        ⚔️ ENTRAR
+
+                    </button>
+
+                </div>
+
+
+
+                <p
+                    id="campaign-join-message"
+                    class="campaign-message">
+                </p>
+
 
             </div>
 
 
 
-            <p
-                id="campaign-join-message"
-                class="campaign-message">
-            </p>
+            <!-- =================================================
+                 CAMPANHA CONECTADA
+            ================================================== -->
+
+            <div
+                id="campaign-joined-state"
+                class="campaign-join-state"
+                hidden>
+
+
+                <div class="campaign-area-heading">
+
+                    <span class="campaign-area-icon">
+                        ✅
+                    </span>
+
+
+                    <div>
+
+                        <h3>
+                            Campanha conectada
+                        </h3>
+
+
+                        <p>
+                            Você já está conectado a esta mesa.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="campaign-actions">
+
+                    <button
+                        id="continue-campaign-button-player"
+                        class="campaign-button campaign-primary-button"
+                        type="button">
+
+                        🎲 CONTINUAR CAMPANHA
+
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -2020,6 +2134,49 @@
 <script src="script.js"></script>
 
 <script src="mesa-entrada.js"></script>
+
+
+
+<!-- =========================================================
+     CONTROLE VISUAL DA ENTRADA NA MESA
+========================================================= -->
+
+<script>
+
+(() => {
+
+    const abrirCodigo =
+        document.getElementById("open-campaign-code-button");
+
+    const estadoInicial =
+        document.getElementById("campaign-join-start");
+
+    const formulario =
+        document.getElementById("campaign-join-form-container");
+
+    const input =
+        document.getElementById("campaign-code-input");
+
+    if (!abrirCodigo || !estadoInicial || !formulario) {
+        return;
+    }
+
+
+    abrirCodigo.addEventListener("click", () => {
+
+        estadoInicial.hidden = true;
+
+        formulario.hidden = false;
+
+        if (input) {
+            setTimeout(() => input.focus(), 50);
+        }
+
+    });
+
+})();
+
+</script>
 
 
 </body>
