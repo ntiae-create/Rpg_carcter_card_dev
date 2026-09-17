@@ -7,279 +7,64 @@
 (function () {
 
     /*
-     * Este módulo controla SOMENTE a representação
+     * Este arquivo controla APENAS a representação
      * visual das passivas.
      *
-     * NÃO altera o valor das Stacks.
-     * NÃO executa regras de combate.
-     * NÃO calcula dano.
+     * Ele NÃO executa as regras das passivas.
+     * Ele NÃO causa dano, cura, buff ou debuff.
      *
-     * Ele recebe o estado da passiva e transforma
-     * esse estado em elementos visuais.
-     *
-     * Exemplo:
-     *
-     * 0 stacks → nenhum efeito
-     * 1 stack  → 1 núcleo
-     * 2 stacks → 2 núcleos
-     * 3 stacks → aura
-     * 4 stacks → partículas
-     * 5 stacks → efeito máximo
-     *
-     * O sistema também funciona para passivas
-     * que possuam comportamentos visuais próprios.
+     * As regras ficam no sistema principal.
      */
 
 
     const efeitosAtivos = {};
 
 
-
     /* ======================================================
-       CONFIGURAÇÃO VISUAL PADRÃO
-       ====================================================== */
+       CONFIGURAÇÃO VISUAL
+    ====================================================== */
 
     const EFEITO_PADRAO = {
 
-        classeBase:
-            "passiva-visual",
+        classeBase: "passiva-visual",
 
-        classeStack:
-            "passiva-stack",
+        icone: "✦",
 
-        classeAtiva:
-            "passiva-ativa",
+        mostrarStacks: true,
 
-        classeInativa:
-            "passiva-inativa",
+        mostrarAura: true,
 
-        seletorAssento:
-            "[data-player]"
+        mostrarParticulas: true
 
     };
 
 
-
     /* ======================================================
-       LOCALIZAR ASSENTO
-       ====================================================== */
+       UTILITÁRIOS
+    ====================================================== */
 
-    function obterAssento(
-        jogadorId
-    ) {
+    function normalizarId(id) {
 
         if (
-            jogadorId === null ||
-            jogadorId === undefined
+            id === null ||
+            id === undefined
         ) {
-
             return null;
-
         }
 
-
-        const id =
-            String(jogadorId);
-
-
-        /*
-         * Primeiro tentamos encontrar um assento
-         * cujo data-user-id corresponda ao jogador.
-         */
-
-        const porUsuario =
-            document.querySelector(
-                `[data-user-id="${CSS.escape(id)}"]`
-            );
-
-
-        if (porUsuario) {
-
-            return porUsuario;
-
-        }
-
-
-
-        /*
-         * Depois tentamos data-character-id.
-         */
-
-        const porPersonagem =
-            document.querySelector(
-                `[data-character-id="${CSS.escape(id)}"]`
-            );
-
-
-        if (porPersonagem) {
-
-            return porPersonagem;
-
-        }
-
-
-
-        /*
-         * Por último, se o ID for numérico,
-         * tratamos como slot.
-         */
-
-        const numero =
-            Number(jogadorId);
-
-
-        if (
-            Number.isInteger(numero) &&
-            numero >= 1 &&
-            numero <= 8
-        ) {
-
-            return document.querySelector(
-                `[data-player="${numero}"]`
-            );
-
-        }
-
-
-        return null;
+        return String(id);
 
     }
 
 
-
-    /* ======================================================
-       OBTER/CRIAR CONTAINER VISUAL
-       ====================================================== */
-
-    function obterContainer(
-        assento,
-        passivaId
-    ) {
-
-        if (!assento) {
-
-            return null;
-
-        }
-
-
-        let container =
-            assento.querySelector(
-                `[data-passiva-visual="${CSS.escape(passivaId)}"]`
-            );
-
-
-        if (container) {
-
-            return container;
-
-        }
-
-
-        container =
-            document.createElement(
-                "div"
-            );
-
-
-        container.className =
-            EFEITO_PADRAO.classeBase;
-
-
-        container.dataset.passivaVisual =
-            passivaId;
-
-
-        container.innerHTML = `
-
-            <div class="passiva-visual-header">
-
-                <span
-                    class="passiva-visual-icon"
-                    aria-hidden="true"
-                >
-                    ✦
-                </span>
-
-                <span class="passiva-visual-name"></span>
-
-            </div>
-
-
-            <div
-                class="passiva-visual-stacks"
-                aria-label="Stacks da passiva"
-            ></div>
-
-
-            <div
-                class="passiva-visual-aura"
-                aria-hidden="true"
-            ></div>
-
-
-            <div
-                class="passiva-visual-particles"
-                aria-hidden="true"
-            ></div>
-
-        `;
-
-
-        /*
-         * Tentamos colocar o efeito em uma área própria
-         * do card, caso ela exista.
-         */
-
-        const area =
-            assento.querySelector(
-                ".player-card-content"
-            );
-
-
-        if (area) {
-
-            area.appendChild(
-                container
-            );
-
-        } else {
-
-            assento.appendChild(
-                container
-            );
-
-        }
-
-
-        return container;
-
-    }
-
-
-
-    /* ======================================================
-       OBTER DADOS DA PASSIVA
-       ====================================================== */
-
-    function obterPassiva(
-        passivaId
-    ) {
+    function obterPassiva(passivaId) {
 
         if (
             !window.PassivasDados ||
-            typeof window.PassivasDados.obter !==
-            "function"
+            typeof window.PassivasDados.obter !== "function"
         ) {
-
-            console.warn(
-                "[Passivas Efeitos] PassivasDados não disponível."
-            );
-
             return null;
-
         }
-
 
         return window.PassivasDados.obter(
             passivaId
@@ -288,85 +73,430 @@
     }
 
 
+    function passivaPossuiStacks(passiva) {
 
-    /* ======================================================
-       LIMPAR EFEITO
-       ====================================================== */
-
-    function limpar(
-        jogadorId,
-        passivaId
-    ) {
-
-        const assento =
-            obterAssento(
-                jogadorId
-            );
-
-
-        if (!assento) {
-
-            return;
-
+        if (!passiva) {
+            return false;
         }
-
-
-        const container =
-            assento.querySelector(
-                `[data-passiva-visual="${CSS.escape(passivaId)}"]`
-            );
-
-
-        if (!container) {
-
-            return;
-
-        }
-
-
-        container.remove();
-
-
-        const chave =
-            criarChave(
-                jogadorId,
-                passivaId
-            );
-
-
-        delete efeitosAtivos[chave];
-
-    }
-
-
-
-    /* ======================================================
-       CRIAR CHAVE
-       ====================================================== */
-
-    function criarChave(
-        jogadorId,
-        passivaId
-    ) {
 
         return (
-            String(jogadorId) +
-            "::" +
-            String(passivaId)
+            passiva.tipo === "stack" ||
+            passiva.tipo === "stack_alvo"
         );
 
     }
 
 
+    /* ======================================================
+       LOCALIZAR ASSENTO DO JOGADOR
+    ====================================================== */
+
+    function obterAssento(jogadorId) {
+
+        jogadorId =
+            normalizarId(jogadorId);
+
+        if (!jogadorId) {
+            return null;
+        }
+
+
+        /*
+         * Tentativa 1:
+         * ID do usuário
+         */
+
+        let assento =
+            document.querySelector(
+                '[data-user-id="' +
+                jogadorId +
+                '"]'
+            );
+
+        if (assento) {
+            return assento;
+        }
+
+
+        /*
+         * Tentativa 2:
+         * ID do personagem
+         */
+
+        assento =
+            document.querySelector(
+                '[data-character-id="' +
+                jogadorId +
+                '"]'
+            );
+
+        if (assento) {
+            return assento;
+        }
+
+
+        /*
+         * Tentativa 3:
+         * data-player
+         */
+
+        for (let i = 1; i <= 8; i++) {
+
+            assento =
+                document.querySelector(
+                    '[data-player="' +
+                    i +
+                    '"]'
+                );
+
+            if (
+                assento &&
+                (
+                    assento.dataset.userId === jogadorId ||
+                    assento.dataset.characterId === jogadorId
+                )
+            ) {
+
+                return assento;
+
+            }
+
+        }
+
+
+        /*
+         * Tentativa 4:
+         * Caso o card tenha o ID diretamente.
+         */
+
+        assento =
+            document.getElementById(
+                "player-" + jogadorId
+            );
+
+        if (assento) {
+            return assento;
+        }
+
+
+        return null;
+
+    }
+
+
+    /* ======================================================
+       OBTER CONTAINER DE PASSIVAS
+    ====================================================== */
+
+    function obterContainer(
+        assento,
+        passiva
+    ) {
+
+        if (!assento || !passiva) {
+            return null;
+        }
+
+
+        let container =
+            assento.querySelector(
+                '[data-passiva-id="' +
+                passiva.id +
+                '"]'
+            );
+
+
+        if (container) {
+            return container;
+        }
+
+
+        /*
+         * Container principal
+         */
+
+        container =
+            document.createElement(
+                "div"
+            );
+
+        container.className =
+            EFEITO_PADRAO.classeBase;
+
+        container.dataset.passivaId =
+            passiva.id;
+
+
+        /*
+         * HEADER
+         */
+
+        const header =
+            document.createElement(
+                "div"
+            );
+
+        header.className =
+            "passiva-visual-header";
+
+
+        const icone =
+            document.createElement(
+                "span"
+            );
+
+        icone.className =
+            "passiva-visual-icone";
+
+        icone.textContent =
+            obterIcone(passiva);
+
+
+        const nome =
+            document.createElement(
+                "span"
+            );
+
+        nome.className =
+            "passiva-visual-nome";
+
+        nome.textContent =
+            passiva.nome;
+
+
+        header.appendChild(
+            icone
+        );
+
+        header.appendChild(
+            nome
+        );
+
+
+        /*
+         * ÁREA DE STACKS
+         */
+
+        const stacks =
+            document.createElement(
+                "div"
+            );
+
+        stacks.className =
+            "passiva-visual-stacks";
+
+
+        /*
+         * ÁREA DE AURA
+         */
+
+        const aura =
+            document.createElement(
+                "div"
+            );
+
+        aura.className =
+            "passiva-visual-aura";
+
+
+        /*
+         * PARTÍCULAS
+         */
+
+        const particulas =
+            document.createElement(
+                "div"
+            );
+
+        particulas.className =
+            "passiva-visual-particulas";
+
+
+        container.appendChild(
+            header
+        );
+
+        container.appendChild(
+            stacks
+        );
+
+        container.appendChild(
+            aura
+        );
+
+        container.appendChild(
+            particulas
+        );
+
+
+        /*
+         * Guardamos referência.
+         */
+
+        if (!efeitosAtivos[assento]) {
+
+            efeitosAtivos[assento] = {};
+
+        }
+
+        efeitosAtivos[assento][passiva.id] =
+            container;
+
+
+        /*
+         * Adicionamos ao card.
+         */
+
+        let areaPassivas =
+            assento.querySelector(
+                ".passivas-area"
+            );
+
+
+        if (!areaPassivas) {
+
+            areaPassivas =
+                document.createElement(
+                    "div"
+                );
+
+            areaPassivas.className =
+                "passivas-area";
+
+
+            assento.appendChild(
+                areaPassivas
+            );
+
+        }
+
+
+        areaPassivas.appendChild(
+            container
+        );
+
+
+        return container;
+
+    }
+
+
+    /* ======================================================
+       ÍCONES
+    ====================================================== */
+
+    function obterIcone(passiva) {
+
+        if (!passiva) {
+            return "✦";
+        }
+
+
+        const icones = {
+
+            ponto_cego: "🗡️",
+
+            furia_crescente: "🔥",
+
+            postura_de_combate: "⚔️",
+
+            guarda_compartilhada: "🛡️",
+
+            dominio_da_distancia: "🗡️",
+
+            fluxo_interior: "🥋",
+
+            controle_monstruoso: "🧘",
+
+            colheita_das_almas: "☠️",
+
+            ultima_ceifa: "⚰️",
+
+            precisao: "🏹",
+
+            tiro_certeiro: "🎯",
+
+            marca_da_presa: "🐺",
+
+            rastreio_de_sangue: "🩸",
+
+            carta_do_louco: "🃏",
+
+            extremista: "🃏",
+
+            reacao_em_cadeia: "⚗️",
+
+            poison: "☠️",
+
+            stacks_de_reacao: "🧪",
+
+            engenharia_de_combate: "⚙️",
+
+            overload: "💥",
+
+            sobrecarga_arcana: "🔥",
+
+            sobrecarga: "💥",
+
+            instabilidade_magica: "⚡",
+
+            sete_grimorios: "📖",
+
+            grimorio_da_perdicao: "💀",
+
+            almas_dos_mortos: "💀",
+
+            ressurreicao: "✨",
+
+            reanimacao: "👻",
+
+            vinculo_de_invocacao: "👻",
+
+            pacto_supremo: "👑",
+
+            ciclo_natural: "🌿",
+
+            equilibrio_natural: "🌱",
+
+            graca_divina: "✨",
+
+            milagre: "🌟",
+
+            harmonia_crescente: "🎵",
+
+            danca: "💃",
+
+            sinfonia_suprema: "🎶",
+
+            visao_do_destino: "🔮",
+
+            profecia: "👁️",
+
+            preparacao: "🕯️",
+
+            lago_da_vida: "💫",
+
+            cura_milagrosa: "✨"
+
+        };
+
+
+        return (
+            icones[passiva.id] ||
+            "✦"
+        );
+
+    }
+
 
     /* ======================================================
        DESENHAR STACKS
-       ====================================================== */
+    ====================================================== */
 
     function desenharStacks(
         container,
-        valor,
-        maximo
+        passiva,
+        estado
     ) {
 
         const area =
@@ -374,242 +504,242 @@
                 ".passiva-visual-stacks"
             );
 
-
         if (!area) {
-
             return;
-
         }
 
 
         area.innerHTML = "";
 
 
-        const quantidadeMaxima =
-            Math.max(
-                0,
-                Number(maximo) || 0
-            );
-
-
-        const quantidadeAtual =
-            Math.max(
-                0,
-                Math.min(
-                    Number(valor) || 0,
-                    quantidadeMaxima
-                )
-            );
-
-
         /*
-         * Se a passiva não possuir limite,
-         * usamos apenas a quantidade atual.
+         * Se não for uma passiva de Stack,
+         * não mostramos contador.
          */
 
-        const quantidadeRenderizada =
-            quantidadeMaxima > 0
-                ? quantidadeMaxima
-                : quantidadeAtual;
-
-
-        for (
-            let i = 1;
-            i <= quantidadeRenderizada;
-            i++
+        if (
+            !passivaPossuiStacks(passiva)
         ) {
 
-            const stack =
-                document.createElement(
-                    "span"
-                );
+            area.style.display =
+                "none";
 
-
-            stack.className =
-                "passiva-stack";
-
-
-            stack.dataset.stack =
-                String(i);
-
-
-            stack.classList.toggle(
-                "ativo",
-                i <= quantidadeAtual
-            );
-
-
-            stack.classList.toggle(
-                "inativo",
-                i > quantidadeAtual
-            );
-
-
-            stack.textContent =
-                i <= quantidadeAtual
-                    ? "◆"
-                    : "◇";
-
-
-            area.appendChild(
-                stack
-            );
+            return;
 
         }
 
 
-        area.dataset.stacks =
-            String(quantidadeAtual);
+        area.style.display =
+            "";
 
 
-        area.dataset.maxStacks =
-            String(quantidadeMaxima);
+        const valor =
+            estado &&
+            Number.isFinite(
+                estado.valor
+            )
+                ? estado.valor
+                : 0;
+
+
+        const maximo =
+            estado
+                ? estado.maximo
+                : (
+                    passiva.stacks
+                        ? passiva.stacks.maximo
+                        : null
+                );
+
+
+        /*
+         * Caso exista máximo definido,
+         * desenhamos cada Stack.
+         */
+
+        if (
+            maximo !== null &&
+            maximo !== undefined &&
+            Number.isFinite(Number(maximo))
+        ) {
+
+            const quantidade =
+                Number(maximo);
+
+
+            for (
+                let i = 1;
+                i <= quantidade;
+                i++
+            ) {
+
+                const stack =
+                    document.createElement(
+                        "span"
+                    );
+
+                stack.className =
+                    i <= valor
+                        ? "passiva-stack-ativo"
+                        : "passiva-stack-inativo";
+
+                stack.dataset.stack =
+                    i;
+
+                stack.textContent =
+                    i <= valor
+                        ? "◆"
+                        : "◇";
+
+
+                area.appendChild(
+                    stack
+                );
+
+            }
+
+        }
+
+
+        /*
+         * Contador textual.
+         */
+
+        const contador =
+            document.createElement(
+                "span"
+            );
+
+        contador.className =
+            "passiva-stack-contador";
+
+
+        if (
+            maximo !== null &&
+            maximo !== undefined
+        ) {
+
+            contador.textContent =
+                valor +
+                "/" +
+                maximo;
+
+        } else {
+
+            contador.textContent =
+                String(valor);
+
+        }
+
+
+        area.appendChild(
+            contador
+        );
 
     }
-
 
 
     /* ======================================================
        APLICAR NÍVEL VISUAL
-       ====================================================== */
+    ====================================================== */
 
     function aplicarNivelVisual(
         container,
-        valor,
-        maximo
+        passiva,
+        estado
     ) {
 
         /*
-         * Remove níveis anteriores.
+         * Remove níveis antigos.
          */
 
-        for (
-            let i = 0;
-            i <= 20;
-            i++
-        ) {
+        for (let i = 0; i <= 10; i++) {
 
             container.classList.remove(
-                `stack-${i}`
+                "stack-" + i
             );
 
         }
 
 
-        const atual =
-            Math.max(
-                0,
-                Number(valor) || 0
+        container.classList.remove(
+            "passiva-inativa"
+        );
+
+        container.classList.remove(
+            "passiva-ativa"
+        );
+
+        container.classList.remove(
+            "passiva-maxima"
+        );
+
+
+        if (
+            !passivaPossuiStacks(passiva)
+        ) {
+
+            container.classList.add(
+                "passiva-ativa"
             );
 
+            return;
 
-        /*
-         * A classe permite ao CSS decidir
-         * qual efeito deve aparecer.
-         */
+        }
+
+
+        const valor =
+            estado &&
+            Number.isFinite(
+                estado.valor
+            )
+                ? estado.valor
+                : 0;
+
 
         container.classList.add(
-            `stack-${atual}`
+            "stack-" +
+            Math.min(
+                valor,
+                10
+            )
         );
 
 
-        container.dataset.stacks =
-            String(atual);
+        if (valor <= 0) {
 
-
-        container.dataset.maxStacks =
-            String(
-                Number(maximo) || 0
+            container.classList.add(
+                "passiva-inativa"
             );
 
+        } else {
 
-        /*
-         * Estado geral.
-         */
+            container.classList.add(
+                "passiva-ativa"
+            );
 
-        container.classList.toggle(
-            "passiva-ativa",
-            atual > 0
-        );
+        }
 
 
-        container.classList.toggle(
-            "passiva-inativa",
-            atual <= 0
-        );
+        if (
+            estado &&
+            estado.maximo !== null &&
+            estado.maximo !== undefined &&
+            valor >= estado.maximo
+        ) {
 
+            container.classList.add(
+                "passiva-maxima"
+            );
 
-        /*
-         * Intensidade em percentual.
-         */
-
-        const percentual =
-            maximo > 0
-
-                ?
-
-            Math.max(
-                0,
-                Math.min(
-                    100,
-                    (atual / maximo) * 100
-                )
-            )
-
-                :
-
-            0;
-
-
-        container.style.setProperty(
-            "--passiva-progresso",
-            `${percentual}%`
-        );
-
-
-        container.style.setProperty(
-            "--passiva-stacks",
-            atual
-        );
-
-
-        /*
-         * Classes especiais por intensidade.
-         */
-
-        container.classList.toggle(
-            "passiva-nivel-baixo",
-            atual >= 1 &&
-            atual < maximo * 0.4
-        );
-
-
-        container.classList.toggle(
-            "passiva-nivel-medio",
-            atual >= maximo * 0.4 &&
-            atual < maximo * 0.8
-        );
-
-
-        container.classList.toggle(
-            "passiva-nivel-alto",
-            atual >= maximo * 0.8
-        );
-
-
-        container.classList.toggle(
-            "passiva-maxima",
-            maximo > 0 &&
-            atual >= maximo
-        );
+        }
 
     }
 
 
-
     /* ======================================================
-       NOME DA PASSIVA
-       ====================================================== */
+       ATUALIZAR NOME
+    ====================================================== */
 
     function atualizarNome(
         container,
@@ -618,34 +748,65 @@
 
         const nome =
             container.querySelector(
-                ".passiva-visual-name"
+                ".passiva-visual-nome"
             );
 
-
         if (!nome) {
-
             return;
-
         }
 
-
         nome.textContent =
-            passiva?.nome ||
-            passiva?.id ||
-            "Passiva";
+            passiva.nome;
 
     }
 
 
+    /* ======================================================
+       ATUALIZAR DESCRIÇÃO
+    ====================================================== */
+
+    function atualizarDescricao(
+        container,
+        passiva
+    ) {
+
+        let descricao =
+            container.querySelector(
+                ".passiva-visual-descricao"
+            );
+
+
+        if (!descricao) {
+
+            descricao =
+                document.createElement(
+                    "div"
+                );
+
+            descricao.className =
+                "passiva-visual-descricao";
+
+            container.appendChild(
+                descricao
+            );
+
+        }
+
+
+        descricao.textContent =
+            passiva.descricao || "";
+
+    }
+
 
     /* ======================================================
-       ATUALIZAR EFEITO
-       ====================================================== */
+       ATUALIZAR VISUAL
+    ====================================================== */
 
     function atualizar(
         jogadorId,
         passivaId,
-        estado = null
+        estado
     ) {
 
         const passiva =
@@ -653,24 +814,50 @@
                 passivaId
             );
 
-
         if (!passiva) {
+            return null;
+        }
+
+
+        const assento =
+            obterAssento(
+                jogadorId
+            );
+
+        if (!assento) {
+
+            /*
+             * O jogador pode ainda não ter
+             * sido renderizado na Mesa.
+             */
 
             return null;
 
         }
 
 
+        const container =
+            obterContainer(
+                assento,
+                passiva
+            );
+
+        if (!container) {
+            return null;
+        }
+
+
         /*
-         * Se o estado não foi fornecido,
-         * tentamos buscar no sistema de Stacks.
+         * Se for Stack e nenhum estado tiver
+         * sido fornecido, tentamos obter o estado.
          */
 
         if (
+            passivaPossuiStacks(passiva) &&
             !estado &&
             window.PassivasStacks &&
             typeof window.PassivasStacks.obter ===
-            "function"
+                "function"
         ) {
 
             estado =
@@ -682,62 +869,18 @@
         }
 
 
-        if (!estado) {
-
-            return null;
-
-        }
-
-
-        const assento =
-            obterAssento(
-                jogadorId
-            );
+        desenharStacks(
+            container,
+            passiva,
+            estado
+        );
 
 
-        if (!assento) {
-
-            /*
-             * O jogador pode ainda não ter
-             * seu card renderizado.
-             *
-             * Guardamos o estado para aplicar
-             * quando o assento aparecer.
-             */
-
-            efeitosAtivos[
-                criarChave(
-                    jogadorId,
-                    passivaId
-                )
-            ] = {
-
-                jogadorId,
-
-                passivaId,
-
-                estado
-
-            };
-
-
-            return estado;
-
-        }
-
-
-        const container =
-            obterContainer(
-                assento,
-                passivaId
-            );
-
-
-        if (!container) {
-
-            return null;
-
-        }
+        aplicarNivelVisual(
+            container,
+            passiva,
+            estado
+        );
 
 
         atualizarNome(
@@ -746,343 +889,374 @@
         );
 
 
-        const valor =
-            Number(
-                estado.valor
-            ) || 0;
-
-
-        const maximo =
-            Number(
-                estado.maximo ??
-                passiva.stacks?.maximo ??
-                0
-            ) || 0;
-
-
-        desenharStacks(
+        atualizarDescricao(
             container,
-            valor,
-            maximo
-        );
-
-
-        aplicarNivelVisual(
-            container,
-            valor,
-            maximo
+            passiva
         );
 
 
         /*
-         * Guarda o estado atual.
+         * Informações auxiliares.
          */
 
-        efeitosAtivos[
-            criarChave(
-                jogadorId,
-                passivaId
-            )
-        ] = {
+        if (estado) {
 
-            jogadorId,
+            container.dataset.stacks =
+                estado.valor;
 
-            passivaId,
+            if (
+                estado.maximo !== null &&
+                estado.maximo !== undefined
+            ) {
 
-            estado: {
-
-                ...estado
+                container.dataset.maxStacks =
+                    estado.maximo;
 
             }
-
-        };
-
-
-        /*
-         * Pequena animação de alteração.
-         */
-
-        container.classList.remove(
-            "passiva-stack-alterada"
-        );
-
-
-        /*
-         * Força a animação a reiniciar.
-         */
-
-        void container.offsetWidth;
-
-
-        container.classList.add(
-            "passiva-stack-alterada"
-        );
-
-
-        /*
-         * Evento para outros sistemas.
-         */
-
-        document.dispatchEvent(
-
-            new CustomEvent(
-                "passiva:efeitoVisualAtualizado",
-                {
-
-                    detail: {
-
-                        jogadorId,
-
-                        passivaId,
-
-                        valor,
-
-                        maximo,
-
-                        container
-
-                    }
-
-                }
-
-            )
-
-        );
-
-
-        return estado;
-
-    }
-
-
-
-    /* ======================================================
-       EVENTO DE STACK ALTERADA
-       ====================================================== */
-
-    function tratarAlteracaoStacks(
-        event
-    ) {
-
-        const detalhe =
-            event.detail;
-
-
-        if (!detalhe) {
-
-            return;
 
         }
 
 
-        atualizar(
+        /*
+         * Evento visual.
+         */
 
-            detalhe.jogadorId,
+        window.dispatchEvent(
+            new CustomEvent(
+                "passiva:efeitoVisualAtualizado",
+                {
+                    detail: {
 
-            detalhe.passivaId,
+                        jogadorId:
+                            normalizarId(jogadorId),
 
-            {
+                        passivaId:
+                            passivaId,
 
-                jogadorId:
-                    detalhe.jogadorId,
+                        estado:
+                            estado || null,
 
-                passivaId:
-                    detalhe.passivaId,
+                        elemento:
+                            container
 
-                valor:
-                    detalhe.atual,
-
-                minimo:
-                    detalhe.minimo,
-
-                maximo:
-                    detalhe.maximo,
-
-                percentual:
-                    detalhe.percentual
-
-            }
-
-        );
-
-    }
-
-
-
-    /* ======================================================
-       REAPLICAR EFEITOS
-       ====================================================== */
-
-    function reaplicarTodos() {
-
-        Object.keys(
-            efeitosAtivos
-        ).forEach(
-
-            function (chave) {
-
-                const efeito =
-                    efeitosAtivos[chave];
-
-
-                if (!efeito) {
-
-                    return;
-
+                    }
                 }
-
-
-                atualizar(
-
-                    efeito.jogadorId,
-
-                    efeito.passivaId,
-
-                    efeito.estado
-
-                );
-
-            }
-
+            )
         );
+
+
+        return container;
 
     }
 
 
+    /* ======================================================
+       LIMPAR PASSIVA
+    ====================================================== */
+
+    function limpar(
+        jogadorId,
+        passivaId
+    ) {
+
+        const assento =
+            obterAssento(
+                jogadorId
+            );
+
+        if (!assento) {
+            return;
+        }
+
+
+        const container =
+            assento.querySelector(
+                '[data-passiva-id="' +
+                passivaId +
+                '"]'
+            );
+
+
+        if (container) {
+            container.remove();
+        }
+
+
+        const id =
+            normalizarId(
+                jogadorId
+            );
+
+
+        if (
+            efeitosAtivos[id] &&
+            efeitosAtivos[id][passivaId]
+        ) {
+
+            delete efeitosAtivos[id][passivaId];
+
+        }
+
+    }
+
 
     /* ======================================================
-       LIMPAR TODAS AS PASSIVAS DE UM JOGADOR
-       ====================================================== */
+       LIMPAR TODAS AS PASSIVAS DO JOGADOR
+    ====================================================== */
 
     function limparJogador(
         jogadorId
     ) {
 
-        const prefixo =
-            String(jogadorId) +
-            "::";
+        const assento =
+            obterAssento(
+                jogadorId
+            );
+
+        if (!assento) {
+            return;
+        }
 
 
-        Object.keys(
-            efeitosAtivos
-        ).forEach(
+        const elementos =
+            assento.querySelectorAll(
+                "[data-passiva-id]"
+            );
 
-            function (chave) {
 
-                if (
-                    !chave.startsWith(
-                        prefixo
-                    )
-                ) {
+        elementos.forEach(
+            function (elemento) {
 
-                    return;
+                elemento.remove();
+
+            }
+        );
+
+
+        const id =
+            normalizarId(
+                jogadorId
+            );
+
+
+        if (efeitosAtivos[id]) {
+
+            delete efeitosAtivos[id];
+
+        }
+
+    }
+
+
+    /* ======================================================
+       REAPLICAR TODAS
+    ====================================================== */
+
+    function reaplicarTodos() {
+
+        if (
+            !window.PassivasDados ||
+            typeof window.PassivasDados.listar !==
+                "function"
+        ) {
+            return;
+        }
+
+
+        /*
+         * Não tentamos criar passivas para todos
+         * os jogadores cegamente.
+         *
+         * O sistema de jogadores informa quais
+         * personagens estão presentes.
+         */
+
+        if (
+            window.PassivasStacks &&
+            typeof window.PassivasStacks.obterTodas ===
+                "function"
+        ) {
+
+            /*
+             * Procuramos cards da Mesa.
+             */
+
+            const jogadores =
+                document.querySelectorAll(
+                    "[data-user-id], [data-character-id]"
+                );
+
+
+            jogadores.forEach(
+                function (assento) {
+
+                    const jogadorId =
+                        assento.dataset.userId ||
+                        assento.dataset.characterId;
+
+
+                    if (!jogadorId) {
+                        return;
+                    }
+
+
+                    const estados =
+                        window.PassivasStacks.obterTodas(
+                            jogadorId
+                        );
+
+
+                    Object.keys(
+                        estados
+                    ).forEach(
+                        function (passivaId) {
+
+                            atualizar(
+                                jogadorId,
+                                passivaId,
+                                estados[passivaId]
+                            );
+
+                        }
+                    );
 
                 }
+            );
+
+        }
+
+    }
 
 
-                const efeito =
-                    efeitosAtivos[chave];
+    /* ======================================================
+       EVENTO — STACK ALTERADA
+    ====================================================== */
+
+    window.addEventListener(
+        "passiva:stacksAlterada",
+        function (evento) {
+
+            const dados =
+                evento.detail;
+
+            if (!dados) {
+                return;
+            }
 
 
-                limpar(
+            atualizar(
+                dados.jogadorId,
+                dados.passivaId,
+                dados
+            );
 
-                    efeito.jogadorId,
+        }
+    );
 
-                    efeito.passivaId
 
+    /* ======================================================
+       EVENTO — JOGADORES ATUALIZADOS
+    ====================================================== */
+
+    window.addEventListener(
+        "mesa:jogadoresAtualizados",
+        function () {
+
+            setTimeout(
+                function () {
+
+                    reaplicarTodos();
+
+                },
+                0
+            );
+
+        }
+    );
+
+
+    /* ======================================================
+       EVENTO — JOGADOR ATUALIZADO
+    ====================================================== */
+
+    window.addEventListener(
+        "mesa:jogadorAtualizado",
+        function (evento) {
+
+            const dados =
+                evento.detail;
+
+            if (!dados) {
+                return;
+            }
+
+
+            const jogadorId =
+                dados.jogadorId ||
+                dados.userId ||
+                dados.characterId ||
+                dados.id;
+
+
+            if (!jogadorId) {
+                return;
+            }
+
+
+            if (
+                window.PassivasStacks &&
+                typeof window.PassivasStacks.obterTodas ===
+                    "function"
+            ) {
+
+                const estados =
+                    window.PassivasStacks.obterTodas(
+                        jogadorId
+                    );
+
+
+                Object.keys(
+                    estados
+                ).forEach(
+                    function (passivaId) {
+
+                        atualizar(
+                            jogadorId,
+                            passivaId,
+                            estados[passivaId]
+                        );
+
+                    }
                 );
 
             }
 
-        );
-
-    }
-
-
-
-    /* ======================================================
-       INICIALIZAÇÃO
-       ====================================================== */
-
-    function inicializar() {
-
-        /*
-         * Escuta alterações produzidas pelo
-         * passivas-stacks.js.
-         */
-
-        document.addEventListener(
-
-            "passiva:stacksAlterada",
-
-            tratarAlteracaoStacks
-
-        );
-
-
-        /*
-         * Quando os jogadores/cards forem
-         * atualizados, tentamos reaplicar
-         * os efeitos existentes.
-         */
-
-        document.addEventListener(
-
-            "mesa:jogadoresAtualizados",
-
-            function () {
-
-                reaplicarTodos();
-
-            }
-
-        );
-
-
-        document.addEventListener(
-
-            "mesa:jogadorAtualizado",
-
-            function () {
-
-                reaplicarTodos();
-
-            }
-
-        );
-
-
-        console.log(
-            "[Passivas] Sistema de efeitos visuais carregado."
-        );
-
-    }
-
+        }
+    );
 
 
     /* ======================================================
        API PÚBLICA
-       ====================================================== */
+    ====================================================== */
 
     window.PassivasEfeitos = {
 
-        atualizar,
+        atualizar: atualizar,
 
-        limpar,
+        limpar: limpar,
 
-        limparJogador,
+        limparJogador: limparJogador,
 
-        reaplicarTodos,
+        reaplicarTodos: reaplicarTodos,
 
-        obterAssento
+        obterAssento: obterAssento
 
     };
 
 
-
     /* ======================================================
-       DOM READY
-       ====================================================== */
+       INICIALIZAÇÃO
+    ====================================================== */
 
     if (
         document.readyState ===
@@ -1091,13 +1265,28 @@
 
         document.addEventListener(
             "DOMContentLoaded",
-            inicializar
+            function () {
+
+                setTimeout(
+                    reaplicarTodos,
+                    0
+                );
+
+            }
         );
 
     } else {
 
-        inicializar();
+        setTimeout(
+            reaplicarTodos,
+            0
+        );
 
     }
+
+
+    console.log(
+        "[Passivas] Efeitos visuais carregados."
+    );
 
 })();
