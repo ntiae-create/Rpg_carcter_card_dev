@@ -10,6 +10,7 @@
     let settingsButton = null;
     let masterMenu = null;
     let masterButtons = [];
+    let jogadorMenu = null;
 
 
     /* ========================================================
@@ -43,7 +44,6 @@
             );
 
             return;
-
         }
 
 
@@ -54,7 +54,6 @@
             );
 
             return;
-
         }
 
 
@@ -62,11 +61,8 @@
 
 
         /*
-         O botão de configurações aparece
-         para QUALQUER usuário.
-
-         A diferença acontece no conteúdo
-         do menu.
+         O botão de configurações pertence
+         a TODOS os usuários.
         */
 
         settingsButton.hidden = false;
@@ -98,7 +94,7 @@
 
         ) {
 
-            return window.MesaRPG.usuarioEhMestre();
+            return !!window.MesaRPG.usuarioEhMestre();
 
         }
 
@@ -119,7 +115,7 @@
 
         ) {
 
-            return window.MesaRPG.usuarioEhJogador();
+            return !!window.MesaRPG.usuarioEhJogador();
 
         }
 
@@ -285,11 +281,6 @@
 
             function () {
 
-                /*
-                 Agora que o mesa.js já carregou
-                 o usuário, atualizamos o menu.
-                */
-
                 settingsButton.hidden = false;
 
                 atualizarMenuPorUsuario();
@@ -318,6 +309,24 @@
 
         );
 
+
+
+        /* ----------------------------------------------
+           JOGADORES ATUALIZADOS
+        ---------------------------------------------- */
+
+        document.addEventListener(
+
+            "mesa:jogadoresAtualizados",
+
+            function () {
+
+                atualizarMenuPorUsuario();
+
+            }
+
+        );
+
     }
 
 
@@ -329,9 +338,7 @@
     function abrirMenuConfiguracoes() {
 
         if (!masterMenu) {
-
             return;
-
         }
 
 
@@ -346,9 +353,7 @@
     function fecharMenuConfiguracoes() {
 
         if (!masterMenu) {
-
             return;
-
         }
 
 
@@ -360,9 +365,7 @@
     function alternarMenuConfiguracoes() {
 
         if (!masterMenu) {
-
             return;
-
         }
 
 
@@ -387,9 +390,7 @@
     function abrirMenuMestre() {
 
         if (!usuarioEhMestre()) {
-
             return;
-
         }
 
 
@@ -408,9 +409,7 @@
     function alternarMenuMestre() {
 
         if (!usuarioEhMestre()) {
-
             return;
-
         }
 
 
@@ -421,15 +420,13 @@
 
 
     /* ========================================================
-       ATUALIZAR CONTEÚDO DO MENU
+       ATUALIZAR MENU POR USUÁRIO
     ======================================================== */
 
     function atualizarMenuPorUsuario() {
 
         if (!masterMenu) {
-
             return;
-
         }
 
 
@@ -441,15 +438,9 @@
             usuarioEhJogador();
 
 
-        /*
-         ------------------------------------------------------
-         MESTRE
-         ------------------------------------------------------
-
-         Mantemos os botões que já existem no HTML.
-
-         Não precisamos recriá-los.
-        */
+        /* ----------------------------------------------
+           BOTÕES DO MESTRE
+        ---------------------------------------------- */
 
         masterButtons.forEach(
 
@@ -463,19 +454,19 @@
         );
 
 
-        /*
-         ------------------------------------------------------
-         JOGADOR
-         ------------------------------------------------------
 
-         Criamos uma área própria para as opções
-         do jogador caso ela ainda não exista.
-        */
+        /* ----------------------------------------------
+           MENU DO JOGADOR
+        ---------------------------------------------- */
 
-        let jogadorMenu =
-            document.getElementById(
-                "config-jogador"
-            );
+        if (!jogadorMenu) {
+
+            jogadorMenu =
+                document.getElementById(
+                    "config-jogador"
+                );
+
+        }
 
 
         if (!jogadorMenu) {
@@ -486,15 +477,34 @@
         }
 
 
-        jogadorMenu.hidden =
-            ehMestre || !ehJogador;
-
-
         /*
-         ------------------------------------------------------
-         TÍTULO
-         ------------------------------------------------------
+         Mestre:
+         mostra apenas as opções do Mestre.
+
+         Jogador:
+         mostra apenas as opções do Jogador.
+
+         Usuário ainda não identificado:
+         mostra o menu básico do Jogador para
+         que o botão nunca fique vazio durante
+         testes da mesa.
         */
+
+        if (ehMestre) {
+
+            jogadorMenu.hidden = true;
+
+        } else {
+
+            jogadorMenu.hidden = false;
+
+        }
+
+
+
+        /* ----------------------------------------------
+           TÍTULO
+        ---------------------------------------------- */
 
         const titulo =
             masterMenu.querySelector(
@@ -507,7 +517,12 @@
             if (ehMestre) {
 
                 titulo.textContent =
-                    "⚙️ Mestre";
+                    "⚙️ Configurações do Mestre";
+
+            } else if (ehJogador) {
+
+                titulo.textContent =
+                    "⚙️ Configurações do Jogador";
 
             } else {
 
@@ -534,21 +549,21 @@
             );
 
 
-        const jogadorMenu =
+        const novoMenu =
             document.createElement(
                 "div"
             );
 
 
-        jogadorMenu.id =
+        novoMenu.id =
             "config-jogador";
 
 
-        jogadorMenu.className =
+        novoMenu.className =
             "config-jogador";
 
 
-        jogadorMenu.innerHTML = `
+        novoMenu.innerHTML = `
 
             <div class="config-jogador-title">
                 👤 Jogador
@@ -585,20 +600,20 @@
         if (menuContent) {
 
             menuContent.appendChild(
-                jogadorMenu
+                novoMenu
             );
 
         } else {
 
             masterMenu.appendChild(
-                jogadorMenu
+                novoMenu
             );
 
         }
 
 
         const buttons =
-            jogadorMenu.querySelectorAll(
+            novoMenu.querySelectorAll(
                 "[data-player-config-action]"
             );
 
@@ -635,7 +650,7 @@
         );
 
 
-        return jogadorMenu;
+        return novoMenu;
 
     }
 
@@ -710,11 +725,6 @@
         fecharMenuConfiguracoes();
 
 
-        /*
-         O sistema de personagem já existente
-         pode fornecer esta função.
-        */
-
         if (
 
             typeof window.abrirFichaJogador ===
@@ -746,11 +756,6 @@
 
         }
 
-
-        /*
-         Caso a ficha ainda não esteja
-         disponível, apenas avisamos.
-        */
 
         console.warn(
             "[Config Mesa] Função abrirFichaJogador() não está disponível."
@@ -804,14 +809,17 @@
     ) {
 
         /*
-         Proteção real.
+         Segurança:
 
-         Mesmo que alguém tente executar
-         manualmente a função, as ações
-         do Mestre continuam protegidas.
+         apenas o Mestre pode executar
+         estas ações.
         */
 
         if (!usuarioEhMestre()) {
+
+            console.warn(
+                "[Config Mesa] Ação bloqueada: usuário não é Mestre."
+            );
 
             return;
 
@@ -1059,23 +1067,17 @@
 
     function atualizarPermissaoMestre() {
 
-        /*
-         Mantemos esta função por compatibilidade
-         com qualquer outro código que já a utilize.
-
-         IMPORTANTE:
-
-         Ela NÃO esconde mais o botão.
-
-         O botão pertence a todos.
-        */
-
         if (!settingsButton) {
-
             return;
-
         }
 
+
+        /*
+         O botão nunca é escondido.
+
+         A permissão controla somente
+         o conteúdo disponível.
+        */
 
         settingsButton.hidden = false;
 
@@ -1092,20 +1094,11 @@
 
     window.ConfigMesa = {
 
-        /*
-         Menu geral
-        */
-
         abrirMenuConfiguracoes,
 
         fecharMenuConfiguracoes,
 
         alternarMenuConfiguracoes,
-
-
-        /*
-         Compatibilidade antiga
-        */
 
         abrirMenuMestre,
 
@@ -1113,17 +1106,7 @@
 
         alternarMenuMestre,
 
-
-        /*
-         Permissões
-        */
-
         atualizarPermissaoMestre,
-
-
-        /*
-         Ações
-        */
 
         executarAcaoMestre,
 
