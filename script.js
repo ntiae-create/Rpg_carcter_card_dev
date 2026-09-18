@@ -1,4 +1,3 @@
-<script>
 /* =========================================================
    RPG CHARACTER CARD
    MÓDULO: SISTEMA PRINCIPAL / ORQUESTRADOR
@@ -4092,4 +4091,4 @@ document.addEventListener(
     "DOMContentLoaded",
     iniciar
 );
-</script>
+
