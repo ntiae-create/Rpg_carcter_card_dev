@@ -1,3 +1,4 @@
+<script>
 /* =========================================================
    RPG CHARACTER CARD
    MÓDULO: SISTEMA PRINCIPAL / ORQUESTRADOR
@@ -9,6 +10,17 @@
 ========================================================= */
 
 const STORAGE_KEY = "rpg_character_card";
+
+
+/* =========================================================
+   CONTROLE DE SINCRONIZAÇÃO SUPABASE
+========================================================= */
+
+let salvarSupabaseTimer = null;
+
+let salvamentoSupabaseEmAndamento = false;
+
+let salvamentoSupabasePendente = false;
 
 
 /* =========================================================
@@ -183,6 +195,19 @@ function criarEstadoInicial() {
         */
 
         supabaseId: null,
+
+
+        /*
+           O personagem começa independente.
+
+           campaign_id e slot somente serão preenchidos
+           quando o personagem entrar em uma campanha.
+        */
+
+        campaign_id: null,
+
+        slot: null,
+
 
         confirmed: false,
 
@@ -435,6 +460,44 @@ function carregarPersonagem() {
             );
 
 
+        /*
+           Compatibilidade com personagens antigos
+           que ainda não possuem esses campos.
+        */
+
+        if (
+            typeof personagem.supabaseId ===
+            "undefined"
+        ) {
+
+            personagem.supabaseId =
+                null;
+
+        }
+
+
+        if (
+            typeof personagem.campaign_id ===
+            "undefined"
+        ) {
+
+            personagem.campaign_id =
+                null;
+
+        }
+
+
+        if (
+            typeof personagem.slot ===
+            "undefined"
+        ) {
+
+            personagem.slot =
+                null;
+
+        }
+
+
         return personagem;
 
     }
@@ -502,10 +565,184 @@ function mesclarObjetos(
 
 function salvarPersonagem() {
 
+    /*
+       PRIMEIRO:
+       mantém o funcionamento local exatamente como antes.
+    */
+
     localStorage.setItem(
         STORAGE_KEY,
         JSON.stringify(character)
     );
+
+
+    /*
+       DEPOIS:
+       agenda uma sincronização com o Supabase.
+
+       Não fazemos await aqui porque esta função é usada
+       de forma síncrona por vários módulos.
+    */
+
+    agendarSalvamentoSupabase();
+
+}
+
+
+/* =========================================================
+   AGENDAR SALVAMENTO NO SUPABASE
+========================================================= */
+
+function agendarSalvamentoSupabase() {
+
+    /*
+       Se a autenticação ainda não estiver pronta,
+       simplesmente aguardamos.
+
+       O iniciar() fará uma nova sincronização quando
+       o usuário estiver autenticado.
+    */
+
+    if (
+        !window.supabaseClient ||
+        !window.rpgAuth ||
+        !window.rpgAuth.user
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        salvarSupabaseTimer
+    ) {
+
+        clearTimeout(
+            salvarSupabaseTimer
+        );
+
+    }
+
+
+    /*
+       Pequeno debounce.
+
+       Isso evita dezenas de INSERT/UPDATE quando
+       várias partes da interface alteram o personagem
+       quase ao mesmo tempo.
+    */
+
+    salvarSupabaseTimer =
+        setTimeout(
+            function () {
+
+                salvarSupabaseTimer =
+                    null;
+
+                executarSalvamentoSupabase();
+
+            },
+            400
+        );
+
+}
+
+
+/* =========================================================
+   EXECUTAR SALVAMENTO SUPABASE
+========================================================= */
+
+async function executarSalvamentoSupabase() {
+
+    /*
+       Se já existe um salvamento em andamento,
+       marcamos que existe outro pendente.
+
+       Assim evitamos duas operações simultâneas
+       mexendo no mesmo personagem.
+    */
+
+    if (
+        salvamentoSupabaseEmAndamento
+    ) {
+
+        salvamentoSupabasePendente =
+            true;
+
+        return;
+
+    }
+
+
+    salvamentoSupabaseEmAndamento =
+        true;
+
+
+    try {
+
+        const resultado =
+            await salvarPersonagemSupabase();
+
+
+        if (
+            resultado &&
+            resultado.sucesso === true
+        ) {
+
+            console.log(
+                "☁️ Sincronização automática concluída."
+            );
+
+        }
+
+        else if (
+            resultado &&
+            !resultado.ignorado
+        ) {
+
+            console.warn(
+                "⚠️ Sincronização automática não concluída:",
+                resultado?.erro
+            );
+
+        }
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "❌ Erro na sincronização automática:",
+            error
+        );
+
+    }
+
+    finally {
+
+        salvamentoSupabaseEmAndamento =
+            false;
+
+
+        /*
+           Se alguma alteração aconteceu enquanto
+           estávamos salvando, executamos novamente.
+        */
+
+        if (
+            salvamentoSupabasePendente
+        ) {
+
+            salvamentoSupabasePendente =
+                false;
+
+
+            agendarSalvamentoSupabase();
+
+        }
+
+    }
 
 }
 
@@ -513,16 +750,6 @@ function salvarPersonagem() {
 /* =========================================================
    SALVAR PERSONAGEM NO SUPABASE
 ========================================================= */
-
-/*
-   IMPORTANTE:
-
-   salvarPersonagem() continua síncrona porque é usada
-   por várias partes do sistema.
-
-   A comunicação com o Supabase fica separada nesta
-   função assíncrona.
-*/
 
 async function salvarPersonagemSupabase() {
 
@@ -551,6 +778,8 @@ async function salvarPersonagemSupabase() {
 
                 sucesso: false,
 
+                ignorado: true,
+
                 erro:
                     "Supabase ainda não está disponível."
 
@@ -574,6 +803,8 @@ async function salvarPersonagemSupabase() {
 
                 sucesso: false,
 
+                ignorado: true,
+
                 erro:
                     "Usuário não autenticado."
 
@@ -591,64 +822,91 @@ async function salvarPersonagemSupabase() {
             user_id:
                 user.id,
 
-            /*
-               O personagem nasce independente.
 
-               Ele só receberá campaign_id quando
-               entrar em uma campanha.
+            /*
+               IMPORTANTE:
+
+               Personagem independente permanece com
+               campaign_id NULL.
+
+               Se futuramente mesa-entrada.js preencher
+               character.campaign_id, o valor será usado.
             */
 
             campaign_id:
+                character.campaign_id ||
                 null,
 
+
             /*
-               Nenhum slot até entrar na mesa.
+               Nenhum slot enquanto não estiver em uma mesa.
             */
 
             slot:
+                character.slot ??
                 null,
+
 
             name:
                 character.name,
 
+
             race:
                 character.race,
+
 
             class:
                 character.class,
 
+
             affinity:
                 character.affinity,
 
+
             level:
-                character.level,
+                Number(character.level) || 1,
+
 
             xp:
-                character.xp,
+                Number(character.xp) || 0,
+
 
             crest_xp:
-                character.crestXP,
+                Number(character.crestXP) || 0,
+
 
             attribute_points:
-                character.attributePoints,
+                Number(character.attributePoints) || 0,
+
 
             sanity:
-                character.resources?.sanidade ?? 100,
+                Number(
+                    character.resources?.sanidade
+                ) || 0,
+
 
             hp:
-                character.resources?.hp ?? 0,
+                Number(
+                    character.resources?.hp
+                ) || 0,
+
 
             mp:
-                character.resources?.mp ?? 0,
+                Number(
+                    character.resources?.mp
+                ) || 0,
+
 
             est:
-                character.resources?.est ?? 0
+                Number(
+                    character.resources?.est
+                ) || 0
 
         };
 
 
         /* =================================================
-           ATUALIZAR PERSONAGEM EXISTENTE
+           ATUALIZAR PELO ID LOCAL
         ================================================= */
 
         if (
@@ -678,7 +936,7 @@ async function salvarPersonagemSupabase() {
                         "user_id",
                         user.id
                     )
-                    .select()
+                    .select("id")
                     .maybeSingle();
 
 
@@ -703,8 +961,7 @@ async function salvarPersonagemSupabase() {
 
 
             /*
-               Se o registro existir, mantemos
-               o ID salvo localmente.
+               Registro encontrado e atualizado.
             */
 
             if (data) {
@@ -713,7 +970,17 @@ async function salvarPersonagemSupabase() {
                     data.id;
 
 
-                salvarPersonagem();
+                /*
+                   Salva SOMENTE localmente.
+
+                   Não chamamos salvarPersonagem() aqui,
+                   pois ele agendaria outro salvamento.
+                */
+
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(character)
+                );
 
 
                 console.log(
@@ -734,17 +1001,172 @@ async function salvarPersonagemSupabase() {
 
 
             /*
-               Se o ID local não existir mais no
-               Supabase, tentamos criar novamente.
+               O ID existia no navegador, mas o registro
+               não existe mais no banco.
+
+               Limpamos o ID e tentamos localizar um
+               personagem independente existente antes
+               de criar outro.
             */
 
             console.warn(
-                "⚠️ ID local não encontrou personagem no Supabase. Criando novo registro."
+                "⚠️ ID local não encontrou personagem no Supabase."
             );
 
 
             character.supabaseId =
                 null;
+
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(character)
+            );
+
+        }
+
+
+        /* =================================================
+           PROCURAR PERSONAGEM INDEPENDENTE EXISTENTE
+        ================================================= */
+
+        console.log(
+            "🔎 Procurando personagem independente existente..."
+        );
+
+
+        const {
+            data: personagensExistentes,
+            error: erroBusca
+        } =
+            await supabase
+                .from("characters")
+                .select("id")
+                .eq(
+                    "user_id",
+                    user.id
+                )
+                .is(
+                    "campaign_id",
+                    null
+                )
+                .limit(1);
+
+
+        if (erroBusca) {
+
+            console.error(
+                "❌ Erro ao procurar personagem existente:",
+                erroBusca
+            );
+
+
+            return {
+
+                sucesso: false,
+
+                erro:
+                    erroBusca.message
+
+            };
+
+        }
+
+
+        const personagemExistente =
+            personagensExistentes &&
+            personagensExistentes.length
+                ? personagensExistentes[0]
+                : null;
+
+
+        /* =================================================
+           PERSONAGEM JÁ EXISTE
+        ================================================= */
+
+        if (
+            personagemExistente &&
+            personagemExistente.id
+        ) {
+
+            console.log(
+                "♻️ Personagem independente encontrado. Atualizando:",
+                personagemExistente.id
+            );
+
+
+            character.supabaseId =
+                personagemExistente.id;
+
+
+            const {
+                data,
+                error
+            } =
+                await supabase
+                    .from("characters")
+                    .update(
+                        dadosPersonagem
+                    )
+                    .eq(
+                        "id",
+                        personagemExistente.id
+                    )
+                    .eq(
+                        "user_id",
+                        user.id
+                    )
+                    .select("id")
+                    .maybeSingle();
+
+
+            if (error) {
+
+                console.error(
+                    "❌ Erro ao sincronizar personagem existente:",
+                    error
+                );
+
+
+                return {
+
+                    sucesso: false,
+
+                    erro:
+                        error.message
+
+                };
+
+            }
+
+
+            if (data) {
+
+                character.supabaseId =
+                    data.id;
+
+            }
+
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(character)
+            );
+
+
+            console.log(
+                "✅ Personagem existente sincronizado:",
+                data
+            );
+
+
+            return {
+
+                sucesso: true,
+
+                data
+
+            };
 
         }
 
@@ -754,7 +1176,7 @@ async function salvarPersonagemSupabase() {
         ================================================= */
 
         console.log(
-            "🆕 Criando personagem no Supabase..."
+            "🆕 Nenhum personagem independente encontrado. Criando registro..."
         );
 
 
@@ -767,7 +1189,7 @@ async function salvarPersonagemSupabase() {
                 .insert(
                     dadosPersonagem
                 )
-                .select()
+                .select("id")
                 .single();
 
 
@@ -792,7 +1214,7 @@ async function salvarPersonagemSupabase() {
 
 
         /* =================================================
-           GUARDA O ID DO SUPABASE
+           GUARDA O ID
         ================================================= */
 
         character.supabaseId =
@@ -800,10 +1222,14 @@ async function salvarPersonagemSupabase() {
 
 
         /*
-           Mantém o estado local sincronizado.
+           Salva somente no localStorage para guardar
+           o ID recém-criado.
         */
 
-        salvarPersonagem();
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(character)
+        );
 
 
         console.log(
@@ -2083,6 +2509,16 @@ async function confirmarPersonagem() {
         true;
 
 
+    /*
+       IMPORTANTE:
+
+       Aqui usamos somente localStorage.
+
+       salvarPersonagem() também agenda sincronização,
+       mas o personagem já foi salvo imediatamente
+       acima.
+    */
+
     salvarPersonagem();
 
 
@@ -2910,10 +3346,8 @@ async function testarLeituraPersonagemSupabase() {
 
 
         /*
-           Se o personagem já possui o ID do Supabase,
-           usamos diretamente esse ID.
-
-           Isso evita pegar outro personagem da conta.
+           Se o personagem já possui ID do Supabase,
+           usamos diretamente esse registro.
         */
 
         if (
@@ -2950,8 +3384,8 @@ async function testarLeituraPersonagemSupabase() {
             /*
                Personagem ainda não possui ID local.
 
-               Procuramos somente personagens
-               independentes desta conta.
+               Procuramos um personagem independente
+               desta conta.
             */
 
             const resultado =
@@ -2982,11 +3416,6 @@ async function testarLeituraPersonagemSupabase() {
                     : null;
 
 
-            /*
-               Se encontramos o personagem, guardamos
-               o ID para as próximas operações.
-            */
-
             if (
                 data &&
                 data.id
@@ -2996,7 +3425,10 @@ async function testarLeituraPersonagemSupabase() {
                     data.id;
 
 
-                salvarPersonagem();
+                localStorage.setItem(
+                    STORAGE_KEY,
+                    JSON.stringify(character)
+                );
 
             }
 
@@ -3037,8 +3469,37 @@ async function testarLeituraPersonagemSupabase() {
             );
 
 
+            /*
+               Aqui fazemos uma última tentativa de
+               sincronização.
+
+               Isso é importante para personagens antigos:
+               se eles existem somente no localStorage,
+               serão enviados ao Supabase.
+            */
+
+            const salvamento =
+                await salvarPersonagemSupabase();
+
+
+            if (
+                salvamento &&
+                salvamento.sucesso === true
+            ) {
+
+                mostrarResultadoSupabase(
+                    `✅ PERSONAGEM SINCRONIZADO — ${character.name} | LV. ${character.level}`,
+                    "sucesso"
+                );
+
+
+                return;
+
+            }
+
+
             mostrarResultadoSupabase(
-                "⚠️ Conexão funcionando, mas nenhum personagem independente foi encontrado para esta conta.",
+                "⚠️ Conexão funcionando, mas o personagem ainda não pôde ser encontrado ou salvo.",
                 "aviso"
             );
 
@@ -3056,6 +3517,28 @@ async function testarLeituraPersonagemSupabase() {
             "✅ PERSONAGEM ENCONTRADO:",
             data
         );
+
+
+        /*
+           Garante que o ID encontrado fique guardado
+           localmente.
+        */
+
+        if (
+            data.id &&
+            !character.supabaseId
+        ) {
+
+            character.supabaseId =
+                data.id;
+
+
+            localStorage.setItem(
+                STORAGE_KEY,
+                JSON.stringify(character)
+            );
+
+        }
 
 
         mostrarResultadoSupabase(
@@ -3449,17 +3932,23 @@ function iniciar() {
                             !!(
                                 window.rpgAuth &&
                                 window.rpgAuth.campaign
-                            )
+                            ),
+
+                        personagemLocal:
+                            !!character,
+
+                        personagemSupabaseId:
+                            character?.supabaseId ||
+                            null
                     }
                 );
 
 
                 /*
-                   NÃO EXIGIMOS MAIS UMA CAMPANHA
-                   PARA TESTAR O PERSONAGEM.
+                   NÃO EXIGIMOS CAMPANHA.
 
-                   O personagem agora pode existir
-                   independentemente de uma mesa.
+                   O personagem pode existir sozinho
+                   antes de entrar em uma mesa.
                 */
 
                 if (
@@ -3472,6 +3961,24 @@ function iniciar() {
                         verificarSupabase
                     );
 
+
+                    /*
+                       PRIMEIRO:
+
+                       sincroniza o personagem que já está
+                       no localStorage.
+
+                       Isso é justamente o que recupera
+                       personagens antigos que nunca chegaram
+                       ao Supabase.
+                    */
+
+                    salvarPersonagem();
+
+
+                    /*
+                       Depois fazemos o diagnóstico.
+                    */
 
                     testarLeituraPersonagemSupabase();
 
@@ -3585,3 +4092,4 @@ document.addEventListener(
     "DOMContentLoaded",
     iniciar
 );
+</script>
