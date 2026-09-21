@@ -995,9 +995,9 @@ const CombatModule = (() => {
 
 
         definirTexto(
-            "class-passive-name",
-            passive.name
-        );
+    "class-passive-class-name",   // ← era "class-passive-class"
+    passive.className || obterClasseAtual()
+);
 
 
         definirTexto(
