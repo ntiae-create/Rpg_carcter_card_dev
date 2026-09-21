@@ -32,24 +32,15 @@
 
     function registrarEventos() {
 
+        /*
+         Cliques ficam a cargo do mesa-cliques.js
+         (evita vários listeners brigando no mesmo toque).
+         As funções tratarCliqueGeral / tratarCliqueCardJogador
+         continuam disponíveis se outro módulo chamar.
+        */
 
-        /* ----------------------------------------------
-           CLIQUES GERAIS
-        ---------------------------------------------- */
-
-        document.addEventListener(
-            "click",
-            tratarCliqueGeral
-        );
-
-
-        /* ----------------------------------------------
-           CLIQUE NOS CARDS DOS JOGADORES
-        ---------------------------------------------- */
-
-        document.addEventListener(
-            "click",
-            tratarCliqueCardJogador
+        console.log(
+            "[Button Mesa] Listeners de document desativados — use mesa-cliques.js"
         );
 
     }
@@ -86,14 +77,8 @@
             "click",
             function (event) {
 
-                /*
-                 Impede que o clique continue sendo tratado
-                 por outros sistemas da mesa.
-                */
-
                 event.preventDefault();
-
-                event.stopPropagation();
+                /* sem stopPropagation — deixa mesa-cliques também ver o clique */
 
                 abrirDiagnostico();
 
