@@ -1104,99 +1104,42 @@
 
 <!-- =====================================================
      JAVASCRIPT
-====================================================== -->
-<!-- =====================================================
-     0. SUPABASE
-====================================================== -->
-
-<!-- =====================================================
-     JAVASCRIPT
+     Ordem importante:
+       1) UI e cliques (sem Supabase)
+       2) Supabase + auth
+       3) Passivas / diagnóstico / ficha
+       4) mesa-cliques.js só se o Teste A falhar
 ====================================================== -->
 
-<!-- SUPABASE -->
-<!-- 1. UI / cliques -->
+<!-- 1. NÚCLEO DA MESA + CLIQUES (button-mesa é o dono dos cliques) -->
 <script src="mesa.js"></script>
 <script src="button-mesa.js"></script>
 <script src="mesa-jogadores.js"></script>
 <script src="mesa-aventura.js"></script>
+<script src="config-mesa.js"></script>
 
-<!-- 2. Supabase por último -->
+<!-- 2. SUPABASE + AUTH (depois da UI, para não matar cliques na carga) -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase.js"></script>
-    <script src="auth.js"></script>
+<script src="auth.js"></script>
 <script src="supabase-mesa.js"></script>
 
-<!-- =====================================================
-     2. CONFIGURAÇÕES
-====================================================== -->
+<!-- 3. PASSIVAS (opcional na mesa) -->
+<script src="passivas-dados.js"></script>
+<script src="passivas-stacks.js"></script>
+<script src="passivas-efeitos.js"></script>
+<script src="passivas.js"></script>
 
-<script
-    src="config-mesa.js"
-    defer
-></script>
-
-
-<!-- =====================================================
-     3. JOGADORES / CARDS
-====================================================== -->
-
-
-<!-- =====================================================
-     5. DADOS DAS PASSIVAS
-====================================================== -->
-
-<script
-    src="passivas-dados.js"
-    defer
-></script>
-
-
-<!-- =====================================================
-     6. CONTROLE DOS STACKS
-====================================================== -->
-
-<script
-    src="passivas-stacks.js"
-    defer
-></script>
-
-
-<!-- =====================================================
-     7. EFEITOS VISUAIS DAS PASSIVAS
-====================================================== -->
-
-<script
-    src="passivas-efeitos.js"
-    defer
-></script>
-
-
-<!-- =====================================================
-     8. CONTROLADOR CENTRAL DAS PASSIVAS
-====================================================== -->
-
-<script
-    src="passivas.js"
-    defer
-></script>
-
-
-<!-- =====================================================
-     9. DIAGNÓSTICO
-====================================================== -->
-
-<script
-    src="mesa-diagnostico.js"
-    defer
-></script>
-
-
-<!-- =====================================================
-     10. INTERAÇÕES / CLIQUES
-====================================================== -->
-
+<!-- 4. DIAGNÓSTICO + FICHA -->
+<script src="mesa-diagnostico.js"></script>
 <script src="mesa-ficha-modal.js"></script>
-<script src="mesa-cliques.js"></script>
+
+<!--
+  5. EMERGÊNCIA DE CLIQUES
+  Deixe COMENTADO no Teste A (só button-mesa).
+  Se os cliques ainda falharem, descomente a linha abaixo.
+-->
+<!-- <script src="mesa-cliques.js"></script> -->
 
 </body>
 </html>
