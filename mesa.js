@@ -686,20 +686,28 @@ async function iniciarRealtimeMesa() {
                 },
 
                 payload => {
-    try {
-        console.log(
-            "[Mesa Realtime] Alteração recebida:",
-            payload
-        );
 
-        carregarJogadoresDaCampanha();
-    } catch (erro) {
-        console.error(
-            "[Mesa Realtime] Erro no callback (não deve matar a UI):",
-            erro
-        );
-    }
-}
+                    try {
+
+                        console.log(
+                            "[Mesa Realtime] Alteração recebida:",
+                            payload
+                        );
+
+                        carregarJogadoresDaCampanha();
+
+                    } catch (erro) {
+
+                        console.error(
+                            "[Mesa Realtime] Erro no callback (não deve matar a UI):",
+                            erro
+                        );
+
+                    }
+
+                }
+
+            )
 
             .subscribe(
 
@@ -1157,6 +1165,33 @@ function carregarContextoUsuario() {
     }
 
 
+    /*
+     Fallback do localStorage para campanha
+     quando rpgAuth/campaign.js não existem na mesa.
+    */
+
+    if (
+        !mesaState.campanha.id &&
+        salvo?.campaignId
+    ) {
+
+        mesaState.campanha.id =
+            salvo.campaignId;
+
+        mesaState.campanha.nome =
+            salvo.campaignName ||
+            salvo.name ||
+            mesaState.campanha.nome ||
+            "Campanha";
+
+        mesaState.campanha.codigoMesa =
+            salvo.campaignCode ||
+            salvo.codigoMesa ||
+            mesaState.campanha.codigoMesa;
+
+    }
+
+
     if (
         !mesaState.campanha.masterId &&
         salvo?.masterId
@@ -1172,6 +1207,145 @@ function carregarContextoUsuario() {
 
     descobrirJogadorAtual();
 
+
+    /*
+     Se o UID ainda não veio, tenta a sessão Supabase
+     (comum quando auth.js carrega depois / async).
+    */
+
+    if (
+        !mesaState.usuario.id &&
+        window.supabaseClient &&
+        window.supabaseClient.auth &&
+        typeof window.supabaseClient.auth.getSession ===
+            "function"
+    ) {
+
+        window.supabaseClient.auth
+            .getSession()
+            .then(function (resposta) {
+
+                const uid =
+                    resposta?.data?.session?.user?.id ||
+                    null;
+
+                if (!uid) {
+                    return;
+                }
+
+                mesaState.usuario.id =
+                    uid;
+
+                if (
+                    !mesaState.usuario.nome ||
+                    mesaState.usuario.nome ===
+                        "Jogador"
+                ) {
+
+                    const user =
+                        resposta.data.session.user;
+
+                    mesaState.usuario.nome =
+
+                        user.user_metadata?.name ||
+
+                        user.user_metadata?.full_name ||
+
+                        user.email ||
+
+                        mesaState.usuario.nome;
+
+                    mesaState.usuario.email =
+                        user.email ||
+                        mesaState.usuario.email;
+
+                }
+
+
+                /*
+                 Atualiza também o localStorage
+                 para próximas entradas.
+                */
+
+                try {
+
+                    const bruto =
+                        localStorage.getItem(
+                            "rpg_mesa_ativa"
+                        );
+
+                    if (bruto) {
+
+                        const dados =
+                            JSON.parse(
+                                bruto
+                            );
+
+                        dados.userId =
+                            uid;
+
+                        if (
+                            !dados.userEmail &&
+                            mesaState.usuario.email
+                        ) {
+
+                            dados.userEmail =
+                                mesaState.usuario.email;
+
+                        }
+
+                        localStorage.setItem(
+                            "rpg_mesa_ativa",
+                            JSON.stringify(
+                                dados
+                            )
+                        );
+
+                    }
+
+                } catch (erroStorage) {
+
+                    console.warn(
+                        "[Mesa] Não foi possível atualizar userId no localStorage:",
+                        erroStorage
+                    );
+
+                }
+
+
+                atualizarPermissaoUsuario();
+
+                descobrirJogadorAtual();
+
+
+                if (
+                    mesaState.campanha.id
+                ) {
+
+                    sincronizarRealtimeCampanha();
+
+                }
+
+
+                console.log(
+                    "[Mesa] Usuário recuperado da sessão Supabase:",
+                    uid,
+                    "isMaster=",
+                    mesaState.usuario.isMaster
+                );
+
+            })
+            .catch(function (erro) {
+
+                console.warn(
+                    "[Mesa] Falha ao ler sessão Supabase:",
+                    erro
+                );
+
+            });
+
+    }
+
 }
 
 
@@ -1181,12 +1355,52 @@ function carregarContextoUsuario() {
 
 function atualizarPermissaoUsuario() {
 
+    const salvo =
+        obterMesaSalva();
+
+
     const usuarioId =
-        mesaState.usuario.id;
+
+        mesaState.usuario.id ||
+
+        salvo?.userId ||
+
+        null;
 
 
     const masterId =
-        mesaState.campanha.masterId;
+
+        mesaState.campanha.masterId ||
+
+        salvo?.masterId ||
+
+        null;
+
+
+    /*
+     Mantém o estado sincronizado se veio do storage.
+    */
+
+    if (
+        !mesaState.usuario.id &&
+        usuarioId
+    ) {
+
+        mesaState.usuario.id =
+            usuarioId;
+
+    }
+
+
+    if (
+        !mesaState.campanha.masterId &&
+        masterId
+    ) {
+
+        mesaState.campanha.masterId =
+            masterId;
+
+    }
 
 
     const mestrePorCampanha =
@@ -1199,6 +1413,20 @@ function atualizarPermissaoUsuario() {
             String(usuarioId).trim().toLowerCase() ===
 
             String(masterId).trim().toLowerCase()
+
+        );
+
+
+    const mestrePorStorage =
+        Boolean(
+
+            salvo?.userId &&
+
+            salvo?.masterId &&
+
+            String(salvo.userId).trim().toLowerCase() ===
+
+            String(salvo.masterId).trim().toLowerCase()
 
         );
 
@@ -1240,6 +1468,8 @@ function atualizarPermissaoUsuario() {
 
         mestrePorCampanha ||
 
+        mestrePorStorage ||
+
         mestrePorAuth ||
 
         mestrePorInterface;
@@ -1273,6 +1503,8 @@ function atualizarPermissaoUsuario() {
             masterId,
 
             mestrePorCampanha,
+
+            mestrePorStorage,
 
             mestrePorAuth,
 
