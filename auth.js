@@ -2354,25 +2354,43 @@
         // ==================================
 
         botaoLogin.addEventListener(
-            "click",
-            async function () {
+    "click",
+    async function () {
 
-                const sucesso =
-                    await entrarComEmailSenha(
-                        email.value,
-                        senha.value
-                    );
+        const sucesso =
+            await entrarComEmailSenha(
+                email.value,
+                senha.value
+            );
 
 
-                if (sucesso) {
+        if (sucesso) {
 
-                    painel.remove();
+            painel.remove();
 
-                }
-
+            // Avisa o resto do sistema que o login foi confirmado
+            try {
+                window.dispatchEvent(
+                    new CustomEvent(
+                        "rpgAuth:loginConfirmado",
+                        {
+                            detail: {
+                                user: window.rpgAuth.user,
+                                session: window.rpgAuth.session
+                            }
+                        }
+                    )
+                );
+            } catch (e) {
+                console.warn(
+                    "Não foi possível disparar rpgAuth:loginConfirmado",
+                    e
+                );
             }
-        );
+        }
 
+    }
+);
 
         senha.addEventListener(
             "keydown",
