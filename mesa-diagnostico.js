@@ -195,52 +195,65 @@
         return [];
     }
 
+function obterCampanha() {
+    try {
+        const auth = obterAuth();
 
-    function obterCampanha() {
-
-        try {
-
-            const auth = obterAuth();
-
-            if (
-                auth &&
-                auth.campaign
-            ) {
-                return auth.campaign;
-            }
-
-            if (
-                window.rpgCampaign &&
-                typeof window.rpgCampaign === "object"
-            ) {
-                return window.rpgCampaign;
-            }
-
-            if (
-                window.MesaRPG &&
-                window.MesaRPG.campanha
-            ) {
-                return window.MesaRPG.campanha;
-            }
-
-            if (
-                window.MesaRPG &&
-                window.MesaRPG.campaign
-            ) {
-                return window.MesaRPG.campaign;
-            }
-
-        } catch (erro) {
-
-            console.warn(
-                "[MESA DIAGNÓSTICO] Erro ao obter campanha:",
-                erro
-            );
-
+        if (auth && auth.campaign) {
+            return auth.campaign;
         }
 
-        return null;
+        if (
+            window.rpgCampaign &&
+            window.rpgCampaign.activeCampaign
+        ) {
+            return window.rpgCampaign.activeCampaign;
+        }
+
+        // MesaRPG.campanha é FUNÇÃO
+        if (
+            window.MesaRPG &&
+            typeof window.MesaRPG.campanha === "function"
+        ) {
+            const c = window.MesaRPG.campanha();
+            if (c && (c.id || c.campaignId)) {
+                return c;
+            }
+        }
+
+        if (
+            window.MesaRPG &&
+            window.MesaRPG.estado
+        ) {
+            const estado =
+                typeof window.MesaRPG.estado === "function"
+                    ? window.MesaRPG.estado()
+                    : window.MesaRPG.estado;
+
+            if (estado && estado.campanha && estado.campanha.id) {
+                return estado.campanha;
+            }
+        }
+
+        // Fallback: localStorage
+        const salvo = localStorage.getItem("rpg_mesa_ativa");
+        if (salvo) {
+            const dados = JSON.parse(salvo);
+            if (dados && dados.campaignId) {
+                return {
+                    id: dados.campaignId,
+                    name: dados.campaignName || "Campanha",
+                    codigo_mesa: dados.campaignCode || null,
+                    master_id: dados.masterId || null
+                };
+            }
+        }
+    } catch (erro) {
+        console.warn("[MESA DIAGNÓSTICO] Erro ao obter campanha:", erro);
     }
+
+    return null;
+}
 
 
     function obterMensagemErro(erro) {
