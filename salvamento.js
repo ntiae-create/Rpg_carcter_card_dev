@@ -127,7 +127,9 @@ async function salvarPersonagemSupabase() {
             est:
                 Number(
                     character.resources?.est
-                ) || 0
+                ) || 0,
+            image_url:
+                character.imageURL || null
 
         };
 
@@ -591,3 +593,82 @@ window.RPGSalvamento = {
         executarSalvamentoSupabase
 
 };
+
+
+/* =========================================================
+   INTEGRAÇÃO AUTOMÁTICA — INTERCEPTA SALVAMENTO
+========================================================= */
+/*
+ * Este bloco faz com que o sistema de salvamento
+ * se conecte AUTOMATICAMENTE ao script principal,
+ * SEM precisar alterar o script.js.
+ *
+ * Ele "envolve" a função salvarPersonagem original:
+ *   1. Executa o salvamento normal (localStorage)
+ *   2. Agenda a sincronização com o Supabase
+ */
+(function integrarComSistemaPrincipal() {
+
+    function tentarIntegrar() {
+
+        const salvarOriginal = window.salvarPersonagem;
+
+        if (typeof salvarOriginal !== "function") {
+            return false;
+        }
+
+        /*
+           Evita integrar duas vezes caso este script
+           seja carregado mais de uma vez.
+        */
+        if (salvarOriginal._integracaoSupabase === true) {
+            return true;
+        }
+
+        window.salvarPersonagem = function () {
+
+            // 1. Executa o salvamento original (localStorage)
+            const resultado = salvarOriginal.apply(this, arguments);
+
+            // 2. Agenda sincronização com o Supabase
+            agendarSalvamentoSupabase();
+
+            return resultado;
+        };
+
+        window.salvarPersonagem._integracaoSupabase = true;
+
+        console.log(
+            "[Salvamento] Integrado automaticamente ao sistema principal."
+        );
+
+        return true;
+    }
+
+    /*
+       Tenta integrar imediatamente.
+       Se a função ainda não existir, tenta novamente em intervalos.
+    */
+    if (!tentarIntegrar()) {
+
+        let tentativas = 0;
+        const limite = 40;
+        const intervalo = setInterval(
+            function () {
+                tentativas++;
+                if (tentarIntegrar()) {
+                    clearInterval(intervalo);
+                    return;
+                }
+                if (tentativas >= limite) {
+                    clearInterval(intervalo);
+                    console.warn(
+                        "[Salvamento] Não foi possível integrar automaticamente."
+                    );
+                }
+            },
+            250
+        );
+    }
+
+})();

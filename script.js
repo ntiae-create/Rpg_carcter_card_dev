@@ -181,7 +181,7 @@ function criarEstadoInicial() {
 
         race: "Humano",
 
-        class: "Saber",
+        class: "Guerreiro",
 
         affinity: null,
 
@@ -425,6 +425,19 @@ function carregarPersonagem() {
                 )
             );
 
+        /*
+           Compatibilidade: classes antigas no estilo
+           Fate (Saber, Archer, etc.) não existem mais.
+           Se a classe salva não for reconhecida pelo
+           módulo classe.js, volta para Guerreiro.
+        */
+        if (
+            typeof window.RPGClasses !== "undefined" &&
+            window.RPGClasses &&
+            !window.RPGClasses[personagem.class]
+        ) {
+            personagem.class = "Guerreiro";
+        }
 
         return personagem;
 
@@ -493,14 +506,20 @@ function mesclarObjetos(
 
 function salvarPersonagem() {
 
-    localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(character)
-    );
+    try {
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(character)
+        );
+    } catch (erro) {
+        console.error(
+            "[salvarPersonagem] Falha ao salvar (cota cheia?):",
+            erro
+        );
+    }
+
 
 }
-
-
 /* =========================================================
    UTILIDADES
 ========================================================= */
@@ -1669,17 +1688,24 @@ function confirmarPersonagem() {
     ) {
 
         mostrarResultadoSupabase(
-            "✓ PERSONAGEM CONFIRMADO — PREPARANDO A MESA...",
+            "✓ PERSONAGEM CONFIRMADO! Digite o código da campanha para entrar na mesa.",
             "sucesso"
         );
 
     }
 
+    // NÃO redireciona mais para a mesa automaticamente.
+    // Exibe o painel de código da campanha; o jogador só
+    // entra na mesa após digitar um código válido (que
+    // salva o campaignId e permite "continuar campanha").
+    if (
+        typeof mostrarMesaComoTela ===
+        "function"
+    ) {
 
-    setTimeout(
-        irParaMesa,
-        250
-    );
+        mostrarMesaComoTela();
+
+    }
 
 }
 

@@ -273,7 +273,7 @@
             !window.rpgPermissoes.roleKnown
         ) {
 
-            esconderModoMestre();
+            mostrarModoMestre();
 
             return false;
 
@@ -587,7 +587,7 @@
                 conectado.
             */
 
-            esconderModoMestre();
+            mostrarModoMestre();
 
 
             esperarAutenticacao();

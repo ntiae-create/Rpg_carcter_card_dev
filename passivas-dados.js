@@ -1115,8 +1115,29 @@
                 alvo: "aliados"
             }
 
-        }
+        },
 
+
+        /* ==================================================
+           DUELISTA
+        ================================================== */
+        dominio_do_duelo: {
+            id: "dominio_do_duelo",
+            classe: "Duelista",
+            nome: "Domínio do Duelo",
+            descricao:
+                "A cada acerto, o Duelista recebe 1 Stack de Duelo. Ao alcançar 3 Stacks, ele leva o inimigo atingido para seu Domínio, onde o combate ocorre separadamente em um confronto individual. Dentro do Domínio, o Duelista pode criar 1 Clone com 50% de seus atributos. Ao derrotar o inimigo no Domínio, os Stacks são reiniciados.",
+            tipo: "stack",
+            stacks: {
+                minimo: 0,
+                maximo: 3,
+                inicial: 0
+            },
+            efeitoPorStack: {
+                duelo: 1
+            },
+            aoAtingirMaximo: "ativar_dominio"
+        }
     };
 
 
@@ -1142,10 +1163,17 @@
 
         listarPorClasse: function (classe) {
 
+            const normalizar = function (s) {
+                return String(s || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+            };
+
             return Object.values(PASSIVAS)
                 .filter(function (passiva) {
 
-                    return passiva.classe === classe;
+                    return normalizar(passiva.classe) === normalizar(classe);
 
                 });
 

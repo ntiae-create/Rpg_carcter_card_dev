@@ -476,7 +476,9 @@
 
             lago_da_vida: "💫",
 
-            cura_milagrosa: "✨"
+            cura_milagrosa: "✨",
+
+            dominio_do_duelo: "🗡️"
 
         };
 

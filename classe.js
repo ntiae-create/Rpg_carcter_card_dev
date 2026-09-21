@@ -674,39 +674,28 @@ das classes. Ele apenas informa qual classe foi escolhida.
     ================================= */
 
     function obterClasses() {
-
         return RPGClasses;
-
     }
 
-
     function obterClasse(nomeClasse) {
-
         if (!nomeClasse) {
-
             return null;
-
         }
 
         return RPGClasses[nomeClasse] || null;
-
     }
 
 
     function obterNomesClasses() {
-
         return Object.keys(RPGClasses);
-
     }
 
 
     function classeExiste(nomeClasse) {
-
         return Object.prototype.hasOwnProperty.call(
             RPGClasses,
             nomeClasse
         );
-
     }
 
 
@@ -717,175 +706,45 @@ das classes. Ele apenas informa qual classe foi escolhida.
     function carregarClassesNoSelect() {
 
         const select =
-            document.getElementById(
-                "character-class-select"
-            );
+            document.getElementById("character-class-select");
 
         if (!select) {
-
-            return false;
-
+            return;
         }
 
 
-        const valorAtual =
-            select.value;
+        const valorAtual = select.value;
 
-
-        /*
-           Impede que o sistema recrie o select
-           desnecessariamente se ele já possui
-           exatamente as 20 classes.
-        */
-
-        const quantidadeClasses =
-            select.querySelectorAll(
-                "option[data-rpg-class]"
-            ).length;
-
-
-        if (
-            quantidadeClasses ===
-            Object.keys(RPGClasses).length
-        ) {
-
-            if (
-                classeExiste(valorAtual)
-            ) {
-
-                select.value =
-                    valorAtual;
-
-            }
-
-            return true;
-
-        }
-
-
-        /*
-           Limpa qualquer lista antiga.
-           Isso remove também as 8 classes
-           antigas que estavam no index.html.
-        */
 
         select.innerHTML = "";
 
 
-        /*
-           Placeholder
-        */
-
         const placeholder =
-            document.createElement(
-                "option"
-            );
+            document.createElement("option");
 
         placeholder.value = "";
+        placeholder.textContent = "Selecione uma classe";
 
-        placeholder.textContent =
-            "Selecione uma classe";
-
-        select.appendChild(
-            placeholder
-        );
+        select.appendChild(placeholder);
 
 
-        /*
-           Adiciona as 20 classes
-        */
+        Object.keys(RPGClasses).forEach(function (chave) {
 
-        Object.keys(
-            RPGClasses
-        ).forEach(
-            function (chave) {
+            const classe = RPGClasses[chave];
 
-                const classe =
-                    RPGClasses[chave];
+            const option =
+                document.createElement("option");
 
+            option.value = chave;
+            option.textContent = classe.nome;
 
-                const option =
-                    document.createElement(
-                        "option"
-                    );
+            select.appendChild(option);
+
+        });
 
 
-                option.value =
-                    chave;
-
-                option.textContent =
-                    classe.nome;
-
-                option.dataset.rpgClass =
-                    "true";
-
-
-                select.appendChild(
-                    option
-                );
-
-            }
-        );
-
-
-        /*
-           Restaura a classe anteriormente
-           selecionada somente se ela existir
-           entre as 20 classes atuais.
-        */
-
-        if (
-            classeExiste(valorAtual)
-        ) {
-
-            select.value =
-                valorAtual;
-
-        }
-
-
-        console.log(
-            "✅ Classes carregadas:",
-            Object.keys(RPGClasses).length
-        );
-
-
-        return true;
-
-    }
-
-
-    /* =================================
-       GARANTIR AS 20 CLASSES
-    ================================= */
-
-    function garantirClassesNoSelect() {
-
-        const select =
-            document.getElementById(
-                "character-class-select"
-            );
-
-        if (!select) {
-
-            return;
-
-        }
-
-
-        const quantidade =
-            select.querySelectorAll(
-                "option[data-rpg-class]"
-            ).length;
-
-
-        if (
-            quantidade !==
-            Object.keys(RPGClasses).length
-        ) {
-
-            carregarClassesNoSelect();
-
+        if (classeExiste(valorAtual)) {
+            select.value = valorAtual;
         }
 
     }
@@ -899,68 +758,10 @@ das classes. Ele apenas informa qual classe foi escolhida.
 
         carregarClassesNoSelect();
 
-
-        /*
-           Uma pequena verificação posterior
-           garante que nenhum outro código
-           tenha recolocado a lista antiga.
-        */
-
-        setTimeout(
-            garantirClassesNoSelect,
-            100
-        );
-
-        setTimeout(
-            garantirClassesNoSelect,
-            500
-        );
-
-        setTimeout(
-            garantirClassesNoSelect,
-            1000
-        );
-
     }
 
 
-    /* =================================
-       EXPORTAÇÃO GLOBAL
-    ================================= */
-
-    /*
-       Exportamos ANTES da inicialização.
-       Assim outros arquivos podem acessar
-       RPGClasses imediatamente.
-    */
-
-    window.RPGClasses =
-        RPGClasses;
-
-    window.obterClasses =
-        obterClasses;
-
-    window.obterClasse =
-        obterClasse;
-
-    window.obterNomesClasses =
-        obterNomesClasses;
-
-    window.classeExiste =
-        classeExiste;
-
-    window.carregarClassesNoSelect =
-        carregarClassesNoSelect;
-
-
-    /* =================================
-       INICIAR
-    ================================= */
-
-    if (
-        document.readyState ===
-        "loading"
-    ) {
+    if (document.readyState === "loading") {
 
         document.addEventListener(
             "DOMContentLoaded",
@@ -972,6 +773,24 @@ das classes. Ele apenas informa qual classe foi escolhida.
         inicializarClasses();
 
     }
+
+
+    /* =================================
+       EXPORTAÇÃO GLOBAL
+    ================================= */
+
+    window.RPGClasses = RPGClasses;
+
+    window.obterClasses = obterClasses;
+
+    window.obterClasse = obterClasse;
+
+    window.obterNomesClasses = obterNomesClasses;
+
+    window.classeExiste = classeExiste;
+
+    window.carregarClassesNoSelect =
+        carregarClassesNoSelect;
 
 
 })();
