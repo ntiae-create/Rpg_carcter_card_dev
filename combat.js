@@ -138,13 +138,10 @@ const CombatModule = (() => {
         },
 
         Duelista: {
-            name: "Ritmo do Duelo",
-            description:
-                "nome: 
-
- "A cada acerto, o Duelista recebe 1 Stack de Duelo. Ao alcançar 4 Stacks, ele leva o inimigo atingido para seu Domínio, onde o combate ocorre separadamente em um confronto individual. Dentro do Domínio, o Duelista pode criar 1 Clone com 50% de seus atributos reduzindo 50% dos seus proprios, permitindo combates de 2x1, 2x2 ou 3x1. Se o Original ou o Clone for derrotado, o sobrevivente assume a condição de Original e recupera seus atributos normais. Ao derrotar o inimigo no Domínio, os Stacks são reiniciados e, no próximo acionamento, o Duelista pode levar até 2 personagens atingidos por seu golpe. Caso perca o duelo, sua EST é reduzida a 0 e ele fica fora de combate, tornando-se vulnerável aos demais inimigos. O Duelista não possui Ataque Mágico, e todas as suas habilidades utilizam EST, salvo ataques mágicos obtidos através de combos."
-        },
-
+    name: "Ritmo do Duelo",
+    description:
+        "A cada acerto, o Duelista recebe 1 Stack de Duelo. Ao alcançar 4 Stacks, ele leva o inimigo atingido para seu Domínio, onde o combate ocorre separadamente em um confronto individual. Dentro do Domínio, o Duelista pode criar 1 Clone com 50% de seus atributos reduzindo 50% dos seus próprios, permitindo combates de 2x1, 2x2 ou 3x1. Se o Original ou o Clone for derrotado, o sobrevivente assume a condição de Original e recupera seus atributos normais. Ao derrotar o inimigo no Domínio, os Stacks são reiniciados e, no próximo acionamento, o Duelista pode levar até 2 personagens atingidos por seu golpe. Caso perca o duelo, sua EST é reduzida a 0 e ele fica fora de combate, tornando-se vulnerável aos demais inimigos. O Duelista não possui Ataque Mágico, e todas as suas habilidades utilizam EST, salvo ataques mágicos obtidos através de combos."
+},
         /* -------------------------------------------------
            ALIAS / FUNÇÃO DE BUFFER-HEALER
         ------------------------------------------------- */
