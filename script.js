@@ -1715,88 +1715,43 @@ function confirmarPersonagem() {
 ========================================================= */
 
 function configurarNavegacao() {
+    // Evita registrar mais de uma vez
+    if (document.body.dataset.navDelegated === "true") {
+        return;
+    }
+    document.body.dataset.navDelegated = "true";
 
-    const buttons =
-        document.querySelectorAll(
-            ".dimension-button"
+    document.addEventListener("click", (event) => {
+        const button = event.target.closest(".dimension-button");
+        if (!button) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        const dimension = button.dataset.dimension;
+        if (!dimension) return;
+
+        // Remove active de todos os botões
+        document.querySelectorAll(".dimension-button").forEach((btn) => {
+            btn.classList.remove("active");
+        });
+
+        // Remove active de todas as seções
+        document.querySelectorAll("[data-dimension-content]").forEach((section) => {
+            section.classList.remove("active");
+        });
+
+        // Ativa o botão clicado
+        button.classList.add("active");
+
+        // Ativa a seção correspondente
+        const target = document.querySelector(
+            `[data-dimension-content="${dimension}"]`
         );
-
-
-    const sections =
-        document.querySelectorAll(
-            "[data-dimension-content]"
-        );
-
-
-    buttons.forEach(button => {
-
-        if (
-            button.dataset.navigationConfigured ===
-            "true"
-        ) {
-
-            return;
-
+        if (target) {
+            target.classList.add("active");
         }
-
-
-        button.dataset.navigationConfigured =
-            "true";
-
-
-        button.addEventListener(
-            "click",
-            event => {
-
-                event.stopPropagation();
-
-
-                const dimension =
-                    button.dataset.dimension;
-
-
-                buttons.forEach(item => {
-
-                    item.classList.remove(
-                        "active"
-                    );
-
-                });
-
-
-                sections.forEach(section => {
-
-                    section.classList.remove(
-                        "active"
-                    );
-
-                });
-
-
-                button.classList.add(
-                    "active"
-                );
-
-
-                const target =
-                    document.querySelector(
-                        `[data-dimension-content="${dimension}"]`
-                    );
-
-
-                if (target) {
-
-                    target.classList.add(
-                        "active"
-                    );
-
-                }
-
-            }
-        );
-
     });
-
 }
 
 
