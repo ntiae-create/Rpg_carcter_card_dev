@@ -686,18 +686,20 @@ async function iniciarRealtimeMesa() {
                 },
 
                 payload => {
+    try {
+        console.log(
+            "[Mesa Realtime] Alteração recebida:",
+            payload
+        );
 
-                    console.log(
-                        "[Mesa Realtime] Alteração recebida:",
-                        payload
-                    );
-
-
-                    carregarJogadoresDaCampanha();
-
-                }
-
-            )
+        carregarJogadoresDaCampanha();
+    } catch (erro) {
+        console.error(
+            "[Mesa Realtime] Erro no callback (não deve matar a UI):",
+            erro
+        );
+    }
+}
 
             .subscribe(
 
