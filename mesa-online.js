@@ -1707,41 +1707,76 @@
     );
 
 
-    /* =====================================================
-       API PÚBLICA
-       
-       Mantemos os mesmos nomes básicos que o restante
-       do projeto pode estar utilizando.
-    ===================================================== */
+    /* =========================================================
+   API PÚBLICA
+========================================================= */
 
-    window.mesaOnline = {
+window.mesaOnline = {
 
-        conectar:
-            conectarSupabaseRealtime,
+    conectar:
+        conectarSupabaseRealtime,
 
-        desconectar:
-            desconectarSupabase,
+    desconectar:
+        desconectarSupabase,
 
-        sincronizar:
-            sincronizar,
+    sincronizar:
+        sincronizar,
 
-        enviar:
-            enviarEvento,
+    enviar:
+        enviarEvento,
 
-        obterDados:
-            obterDadosMesa,
+    obterDados:
+        obterDadosMesa,
 
-        estado:
-            estado,
+    obterCanal:
+        () => canal,
 
-        canal:
-            () => canal,
+    obterCliente:
+        () => clienteSupabase,
 
-        cliente:
-            () => clienteSupabase
+    estado:
+        estado
 
-    };
+};
 
+
+/*
+ * Mantém compatibilidade com códigos
+ * que acessam diretamente:
+ *
+ * window.mesaOnline.canal
+ *
+ * e:
+ *
+ * window.mesaOnline.cliente
+ */
+
+Object.defineProperty(
+    window.mesaOnline,
+    "canal",
+    {
+        configurable: true,
+        enumerable: true,
+
+        get() {
+            return canal;
+        }
+    }
+);
+
+
+Object.defineProperty(
+    window.mesaOnline,
+    "cliente",
+    {
+        configurable: true,
+        enumerable: true,
+
+        get() {
+            return clienteSupabase;
+        }
+    }
+);
 
     /* =====================================================
        INICIALIZAÇÃO
