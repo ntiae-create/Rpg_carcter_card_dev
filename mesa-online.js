@@ -1,5 +1,5 @@
 /* =========================================================
-   MESA ONLINE — ABLY (CÓDIGO COMPLETO CORRIGIDO)
+   MESA ONLINE — ABLY (VERSÃO FINAL)
 ========================================================= */
 
 (function () {
@@ -45,9 +45,7 @@
         diagnosticoMultiplayer.motivo = detalhe || null;
         diagnosticoMultiplayer.ultimaAtualizacao = new Date().toISOString();
 
-        console.groupCollapsed(
-            "[MESA ONLINE DIAGNÓSTICO] " + estadoConexao
-        );
+        console.groupCollapsed("[MESA ONLINE DIAGNÓSTICO] " + estadoConexao);
         console.log("Mensagem:", mensagem);
         console.log("Motivo:", detalhe || "Sem motivo informado.");
         console.log("Campanha:", estado.campanhaId);
@@ -134,36 +132,74 @@
         if (elemento) elemento.textContent = status;
     }
 
-    async function obterTokenAbly() {
-        diagnostico("Solicitando token do Ably...");
+    // ✅ DETECÇÃO MELHORADA DO TOKEN
+    async function obterTokenSessao() {
+        const tentativas = [];
 
-        let accessToken = null;
-        const clientesSupabase = [
-            window.supabaseClient,
-            window.sb,
-            window.supabaseMesa?.client,
-            window.SupabaseMesa?.client
-        ];
-
-        for (const cliente of clientesSupabase) {
-            if (!cliente || typeof cliente.auth?.getSession !== "function") continue;
+        if (window.supabase?.auth?.getSession) {
             try {
-                const resultado = await cliente.auth.getSession();
-                accessToken = resultado?.data?.session?.access_token || null;
-                if (accessToken) break;
-            } catch (erro) {
-                console.warn("[MESA ONLINE] Falha ao obter sessão:", erro);
+                const { data } = await window.supabase.auth.getSession();
+                if (data?.session?.access_token) {
+                    tentativas.push(["window.supabase", data.session.access_token]);
+                }
+            } catch (e) { tentativas.push(["window.supabase", null]); }
+        }
+
+        if (window.supabaseClient?.auth?.getSession) {
+            try {
+                const { data } = await window.supabaseClient.auth.getSession();
+                if (data?.session?.access_token) {
+                    tentativas.push(["window.supabaseClient", data.session.access_token]);
+                }
+            } catch (e) { tentativas.push(["window.supabaseClient", null]); }
+        }
+
+        if (window.sb?.auth?.getSession) {
+            try {
+                const { data } = await window.sb.auth.getSession();
+                if (data?.session?.access_token) {
+                    tentativas.push(["window.sb", data.session.access_token]);
+                }
+            } catch (e) { tentativas.push(["window.sb", null]); }
+        }
+
+        if (window.supabaseMesa?.client?.auth?.getSession) {
+            try {
+                const { data } = await window.supabaseMesa.client.auth.getSession();
+                if (data?.session?.access_token) {
+                    tentativas.push(["window.supabaseMesa", data.session.access_token]);
+                }
+            } catch (e) { tentativas.push(["window.supabaseMesa", null]); }
+        }
+
+        if (window.rpgAuth?.session?.access_token) {
+            tentativas.push(["window.rpgAuth.session", window.rpgAuth.session.access_token]);
+        }
+
+        console.log("[MESA ONLINE] Fontes testadas:", tentativas);
+
+        for (const [fonte, token] of tentativas) {
+            if (token) {
+                console.log("✅ Token encontrado via:", fonte);
+                return token;
             }
         }
 
-        if (!accessToken) accessToken = window.rpgAuth?.session?.access_token || null;
+        return null;
+    }
+
+    async function obterTokenAbly() {
+        diagnostico("Solicitando chave do Ably...");
+
+        const accessToken = await obterTokenSessao();
+
         if (!accessToken) {
             registrarDiagnosticoMultiplayer(
                 "auth-error",
                 "Sessão Supabase não encontrada.",
-                "Não foi possível obter access_token."
+                "Faça login antes de abrir a mesa."
             );
-            throw new Error("Sessão Supabase não encontrada.");
+            throw new Error("Sessão Supabase não encontrada — faça login primeiro.");
         }
 
         const resposta = await fetch(ABLY_TOKEN_URL, {
@@ -182,37 +218,31 @@
         try { dados = texto ? JSON.parse(texto) : null; } catch {}
 
         if (!resposta.ok) {
-            const detalhe = dados?.details || dados?.error || texto || "Sem resposta detalhada.";
+            const detalhe = dados?.error || texto || "Sem resposta detalhada.";
             registrarDiagnosticoMultiplayer(
                 "token-error",
-                `Edge Function recusou o token (HTTP ${resposta.status}).`,
-                textoErro(detalhe)
+                `Edge Function recusou (HTTP ${resposta.status}).`,
+                detalhe
             );
-            throw new Error(textoErro(detalhe));
+            throw new Error(detalhe);
         }
 
         if (!dados) {
-            registrarDiagnosticoMultiplayer(
-                "token-error",
-                "Resposta inválida da Edge Function.",
-                texto || "Resposta vazia."
-            );
-            throw new Error("Resposta inválida da autenticação Ably.");
+            throw new Error("Resposta vazia da função.");
         }
 
-        // ✅ CORRIGIDO: Pega a chave no formato correto
-        const chave = dados.token || dados.key || dados.ablyKey;
+        const chave = dados.key || dados.token || dados.ablyKey;
         if (!chave) {
             registrarDiagnosticoMultiplayer(
                 "token-error",
-                "Token não encontrado na resposta.",
+                "Chave não recebida.",
                 JSON.stringify(dados)
             );
-            throw new Error("Token não encontrado na resposta");
+            throw new Error("Chave não encontrada na resposta.");
         }
 
-        diagnostico("Token Ably recebido.");
-        return { key: chave }; // Formato exato que o Ably precisa
+        console.log("✅ Chave recebida! Tamanho:", chave.length);
+        return { key: chave };
     }
 
     async function atualizarPresenca() {
@@ -226,13 +256,9 @@
                 isMaster: estado.isMaster,
                 role: estado.isMaster ? "master" : "player"
             });
-            diagnostico("Presença registrada na Mesa.");
+            diagnostico("Presença registrada ✅");
         } catch (erro) {
-            registrarDiagnosticoMultiplayer(
-                "presence-error",
-                "Erro ao registrar presença.",
-                textoErro(erro)
-            );
+            registrarDiagnosticoMultiplayer("presence-error", "Erro ao registrar presença.", textoErro(erro));
             throw erro;
         }
     }
@@ -247,11 +273,7 @@
                 detail: { jogadores }
             }));
         } catch (erro) {
-            registrarDiagnosticoMultiplayer(
-                "presence-get-error",
-                "Erro ao consultar presença.",
-                textoErro(erro)
-            );
+            registrarDiagnosticoMultiplayer("presence-get-error", "Erro ao consultar presença.", textoErro(erro));
         }
     }
 
@@ -281,93 +303,66 @@
             }
 
             if (ably && estado.conectado) {
-                diagnostico("Multiplayer já está conectado.");
+                diagnostico("Já conectado ✅");
                 return;
             }
 
-            diagnostico("Campanha encontrada: " + estado.campanhaId);
-            diagnostico("Usuário encontrado: " + estado.usuarioId);
+            diagnostico("Campanha: " + estado.campanhaId);
+            diagnostico("Usuário: " + estado.usuarioId);
             diagnostico("Perfil: " + (estado.isMaster ? "Mestre" : "Jogador"));
-            diagnostico("Preparando autenticação Ably...");
-            atualizarRealtime("Autenticando Ably...");
-            registrarDiagnosticoMultiplayer("connecting", "Iniciando conexão Ably.");
+            atualizarRealtime("Autenticando...");
+            registrarDiagnosticoMultiplayer("connecting", "Conectando ao Ably...");
 
             ably = new window.Ably.Realtime({
-                authCallback: async function (_params, callback) {
+                authCallback: async (params, callback) => {
                     try {
                         callback(null, await obterTokenAbly());
                     } catch (erro) {
-                        registrarDiagnosticoMultiplayer(
-                            "auth-error",
-                            "Falha no authCallback do Ably.",
-                            textoErro(erro)
-                        );
                         callback(erro, null);
                     }
                 }
             });
 
-            ably.connection.on(function (evento) {
+            ably.connection.on((evento) => {
                 const estadoAtual = evento?.current || evento?.state || "unknown";
                 const motivo = evento?.reason ? textoErro(evento.reason) : "";
-                console.log("[MESA ONLINE] Evento Ably:", evento);
+                console.log("📡 Estado Ably:", estadoAtual, motivo || "");
 
                 if (estadoAtual === "connected") {
                     estado.conectado = true;
-                    atualizarRealtime("Conectado ✅");
+                    atualizarRealtime("CONECTADO ✅");
                     registrarDiagnosticoMultiplayer(
                         "connected",
-                        "Multiplayer conectado com sucesso! 🎉",
-                        `Canal: ${estado.canal}`
+                        "Multiplayer funcionando! 🎉",
+                        `Canal: rpg:mesa:${estado.campanhaId}`
                     );
-                    window.dispatchEvent(new CustomEvent("mesa:multiplayerConectado", {
-                        detail: { estado }
-                    }));
+                    estado.canal = "rpg:mesa:" + estado.campanhaId;
+                    canal = ably.channels.get(estado.canal);
+
+                    canal.presence.subscribe("enter", atualizarJogadoresOnline);
+                    canal.presence.subscribe("leave", atualizarJogadoresOnline);
+                    canal.presence.subscribe("update", atualizarJogadoresOnline);
+
+                    atualizarPresenca().then(atualizarJogadoresOnline);
                     return;
                 }
 
                 if (["initialized", "connecting", "disconnected", "suspended"].includes(estadoAtual)) {
                     estado.conectado = false;
                     atualizarRealtime(estadoAtual);
-                    registrarDiagnosticoMultiplayer(
-                        estadoAtual,
-                        `Ably está em estado "${estadoAtual}".`,
-                        motivo || "Sem motivo informado."
-                    );
                     return;
                 }
 
                 if (estadoAtual === "failed") {
                     estado.conectado = false;
-                    atualizarRealtime("Falha ❌");
-                    registrarDiagnosticoMultiplayer(
-                        "failed",
-                        "A conexão Ably falhou.",
-                        motivo || "Sem motivo informado."
-                    );
+                    atualizarRealtime("FALHA ❌");
+                    registrarDiagnosticoMultiplayer("failed", "Conexão recusada.", motivo);
                 }
             });
-
-            estado.canal = "rpg:mesa:" + estado.campanhaId;
-            diagnostico("Entrando no canal: " + estado.canal);
-            canal = ably.channels.get(estado.canal);
-
-            canal.presence.subscribe("enter", atualizarJogadoresOnline);
-            canal.presence.subscribe("leave", atualizarJogadoresOnline);
-            canal.presence.subscribe("update", atualizarJogadoresOnline);
-
-            await atualizarPresenca();
-            await atualizarJogadoresOnline();
-            diagnostico("Canal multiplayer preparado ✅");
         } catch (erro) {
-            console.error("[MESA ONLINE] Erro ao conectar:", erro);
+            console.error("[MESA ONLINE] ERRO:", erro);
             estado.conectado = false;
             atualizarRealtime("Erro ❌");
-            registrarDiagnosticoMultiplayer(
-                "error",
-                "Erro ao iniciar multiplayer.",
-                textoErro(erro)
-            );
         } finally {
             tentativaConexao = false;
         }
@@ -375,46 +370,33 @@
 
     async function desconectarAbly() {
         try {
-            if (canal) {
-                try { await canal.presence.leave(); } catch (erro) {
-                    console.warn("[MESA ONLINE] Erro ao sair da presença:", erro);
-                }
-            }
+            if (canal) { try { await canal.presence.leave(); } catch {} }
             if (ably) ably.close();
         } finally {
-            ably = null;
-            canal = null;
-            estado.conectado = false;
-            estado.canal = null;
+            ably = null; canal = null; estado.conectado = false;
             atualizarRealtime("Desconectado");
-            registrarDiagnosticoMultiplayer("closed", "Conexão encerrada.");
         }
     }
 
-    window.addEventListener("mesa:campanhaAlterada", async function () {
+    window.addEventListener("mesa:campanhaAlterada", async () => {
         await desconectarAbly();
         await conectarAbly();
     });
 
-    window.addEventListener("beforeunload", function () {
+    window.addEventListener("beforeunload", () => {
         try { canal?.presence?.leave(); } catch {}
         try { ably?.close(); } catch {}
     });
 
     window.mesaOnline = {
         estado,
-        diagnostico: diagnosticoMultiplayer,
         conectar: conectarAbly,
         desconectar: desconectarAbly,
-        obterDados: obterDadosMesa,
-        atualizarJogadores: atualizarJogadoresOnline,
-        get canal() { return canal; },
-        get channel() { return canal; },
-        get ably() { return ably; }
+        obterDados: obterDadosMesa
     };
 
     function iniciar() {
-        console.log("[MESA ONLINE] Camada multiplayer carregada ✅");
+        console.log("[MESA ONLINE] Carregado ✅");
         conectarAbly();
     }
 
