@@ -174,9 +174,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -192,9 +190,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -254,9 +250,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -272,9 +266,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -334,9 +326,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -352,9 +342,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -414,9 +402,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -432,9 +418,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -494,9 +478,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -512,9 +494,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -574,9 +554,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -592,9 +570,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -654,9 +630,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -672,9 +646,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -734,9 +706,7 @@
                         </div>
 
                         <div class="status-bar hp-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                         <div class="status-values">
@@ -752,9 +722,7 @@
                         </div>
 
                         <div class="status-bar mana-bar">
-
                             <span style="width:100%"></span>
-
                         </div>
 
                     </div>
@@ -921,47 +889,70 @@
                 >
 
                     <div class="diagnostico-item">
-                        <span>Supabase</span>
+
+                        <span>
+                            Supabase
+                        </span>
 
                         <strong data-diagnostico="supabase">
                             ⏳
                         </strong>
+
                     </div>
 
                     <div class="diagnostico-item">
-                        <span>Campanha</span>
+
+                        <span>
+                            Campanha
+                        </span>
 
                         <strong data-diagnostico="campanha">
                             ⏳
                         </strong>
+
                     </div>
 
                     <div class="diagnostico-item">
-                        <span>Usuário</span>
+
+                        <span>
+                            Usuário
+                        </span>
 
                         <strong data-diagnostico="usuario">
                             ⏳
                         </strong>
+
                     </div>
 
                     <div class="diagnostico-item">
-                        <span>Realtime</span>
+
+                        <span>
+                            Realtime
+                        </span>
 
                         <strong data-diagnostico="realtime">
                             ⏳
                         </strong>
+
                     </div>
 
                     <div class="diagnostico-item">
-                        <span>Personagens</span>
+
+                        <span>
+                            Personagens
+                        </span>
 
                         <strong data-diagnostico="personagens">
                             0
                         </strong>
+
                     </div>
 
                     <div class="diagnostico-item">
-                        <span>Slots ocupados</span>
+
+                        <span>
+                            Slots ocupados
+                        </span>
 
                         <strong data-diagnostico="slots">
                             0/8
@@ -987,7 +978,9 @@
 
                     <div>
 
-                        <span>ID</span>
+                        <span>
+                            ID
+                        </span>
 
                         <strong id="diagnostico-campanha-id">
                             —
@@ -997,7 +990,9 @@
 
                     <div>
 
-                        <span>Nome</span>
+                        <span>
+                            Nome
+                        </span>
 
                         <strong id="diagnostico-campanha-nome">
                             —
@@ -1007,7 +1002,9 @@
 
                     <div>
 
-                        <span>Master</span>
+                        <span>
+                            Master
+                        </span>
 
                         <strong id="diagnostico-master-id">
                             —
@@ -1104,34 +1101,79 @@
 
 <!-- =====================================================
      JAVASCRIPT
-     Ordem importante:
-       1) UI e cliques (sem Supabase)
-       2) Supabase + auth
-       3) Passivas / diagnóstico / ficha
-       4) mesa-cliques.js só se o Teste A falhar
+     
+     ORDEM:
+       1) Supabase
+       2) Supabase + autenticação
+       3) Núcleo da Mesa
+       4) Multiplayer Supabase
+       5) Diagnóstico
+       6) Cliques
+       7) Configurações
+
+     A ABLY FOI REMOVIDA.
 ====================================================== -->
 
-<!-- 1. NÚCLEO DA MESA + CLIQUES (button-mesa é o dono dos cliques) -->
-<!-- Bibliotecas externas -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
 
-<!-- Supabase e autenticação -->
+<!-- =====================================================
+     1. BIBLIOTECA SUPABASE
+====================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+></script>
+
+
+<!-- =====================================================
+     2. SUPABASE E AUTENTICAÇÃO
+====================================================== -->
+
 <script src="supabase.js"></script>
+
 <script src="auth.js"></script>
 
-<!-- Núcleo da mesa -->
+
+<!-- =====================================================
+     3. NÚCLEO DA MESA
+====================================================== -->
+
 <script src="mesa.js"></script>
+
 <script src="mesa-jogadores.js"></script>
 
-<!-- Multiplayer Ably -->
+
+<!-- =====================================================
+     4. MULTIPLAYER
+     
+     Este arquivo será responsável pela comunicação
+     em tempo real usando Supabase Realtime.
+====================================================== -->
+
 <script src="mesa-online.js"></script>
 
-<!-- Diagnóstico e controles -->
+
+<!-- =====================================================
+     5. DIAGNÓSTICO
+====================================================== -->
+
 <script src="mesa-diagnostico.js"></script>
+
+
+<!-- =====================================================
+     6. BOTÕES DA MESA
+====================================================== -->
+
 <script src="button-mesa.js"></script>
+
 <script src="mesa-cliques.js"></script>
+
+
+<!-- =====================================================
+     7. CONFIGURAÇÕES
+====================================================== -->
+
 <script src="config-mesa.js"></script>
+
 
 </body>
 </html>
