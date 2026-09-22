@@ -1112,35 +1112,26 @@
 ====================================================== -->
 
 <!-- 1. NÚCLEO DA MESA + CLIQUES (button-mesa é o dono dos cliques) -->
-<script src="mesa.js"></script>
-<script src="button-mesa.js"></script>
-<script src="mesa-jogadores.js"></script>
-<script src="mesa-aventura.js"></script>
-<script src="config-mesa.js"></script>
-
-<!-- 2. SUPABASE + AUTH (depois da UI, para não matar cliques na carga) -->
+<!-- Bibliotecas externas -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.ably.com/lib/ably.min-1.js"></script>
+
+<!-- Supabase e autenticação -->
 <script src="supabase.js"></script>
 <script src="auth.js"></script>
-<script src="auth-overlay-fix.js"><script>
-<script src="supabase-mesa.js"></script>
 
-<!-- 3. PASSIVAS (opcional na mesa) -->
-<script src="passivas-dados.js"></script>
-<script src="passivas-stacks.js"></script>
-<script src="passivas-efeitos.js"></script>
-<script src="passivas.js"></script>
+<!-- Núcleo da mesa -->
+<script src="mesa.js"></script>
+<script src="mesa-jogadores.js"></script>
 
-<!-- 4. DIAGNÓSTICO + FICHA -->
+<!-- Multiplayer Ably -->
+<script src="mesa-online.js"></script>
+
+<!-- Diagnóstico e controles -->
 <script src="mesa-diagnostico.js"></script>
-<script src="mesa-ficha-modal.js"></script>
-
-<!--
-  5. EMERGÊNCIA DE CLIQUES
-  Deixe COMENTADO no Teste A (só button-mesa).
-  Se os cliques ainda falharem, descomente a linha abaixo.
--->
+<script src="button-mesa.js"></script>
 <script src="mesa-cliques.js"></script>
+<script src="config-mesa.js"></script>
 
 </body>
 </html>
