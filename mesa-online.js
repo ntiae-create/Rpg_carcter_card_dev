@@ -1,13 +1,13 @@
 /* =========================================================
    MESA ONLINE — ABLY
-   Multiplayer, presença e renderização dos slots.
+   Multiplayer, presença, slots e diagnóstico visual.
 ========================================================= */
 (function () {
     "use strict";
 
     const TOKEN_URL = "https://bjkbfxcmyihdruqrwsdf.supabase.co/functions/v1/ably-token";
-    const CHANNEL_PREFIX = "rpg:mesa:";
     const MAX_SLOTS = 8;
+    const CHANNEL_PREFIX = "rpg:mesa:";
 
     let client = null;
     let channel = null;
@@ -27,8 +27,85 @@
         canalNome: null
     };
 
-    function log(message, error = false) {
-        (error ? console.error : console.log)("[MESA ONLINE]", message);
+    function ensureVisualStatus() {
+        let box = document.getElementById("mesa-online-status");
+        if (box) return box;
+
+        box = document.createElement("aside");
+        box.id = "mesa-online-status";
+        box.setAttribute("aria-live", "polite");
+        box.innerHTML = `
+            <div class="mesa-online-status-header">
+                <strong>📡 Mesa online</strong>
+                <button type="button" data-online-close>×</button>
+            </div>
+            <div data-online-summary>Aguardando diagnóstico...</div>
+            <div data-online-details></div>
+        `;
+
+        Object.assign(box.style, {
+            position: "fixed",
+            left: "14px",
+            bottom: "14px",
+            zIndex: "99998",
+            width: "min(92vw, 360px)",
+            padding: "12px 14px",
+            border: "1px solid rgba(201,164,91,.65)",
+            borderRadius: "12px",
+            background: "rgba(11,8,17,.96)",
+            color: "#eee7ff",
+            font: "12px Arial, sans-serif",
+            boxShadow: "0 8px 25px rgba(0,0,0,.55)"
+        });
+
+        const header = box.querySelector(".mesa-online-status-header");
+        Object.assign(header.style, {
+            display: "flex",
+            justifyContent: "space-between",
+            marginBottom: "7px"
+        });
+
+        const close = box.querySelector("[data-online-close]");
+        Object.assign(close.style, {
+            border: "0",
+            background: "transparent",
+            color: "#efd18a",
+            fontSize: "18px",
+            cursor: "pointer"
+        });
+        close.addEventListener("click", () => box.remove());
+
+        document.body.appendChild(box);
+        return box;
+    }
+
+    function visual(message, type = "info") {
+        const box = ensureVisualStatus();
+        const summary = box.querySelector("[data-online-summary]");
+        const details = box.querySelector("[data-online-details]");
+        const colors = {
+            success: "#86efac",
+            error: "#fca5a5",
+            warning: "#fde68a",
+            info: "#c4b5fd"
+        };
+        summary.textContent = message;
+        summary.style.color = colors[type] || colors.info;
+        details.textContent = [
+            state.campanhaId ? `Campanha: ${state.campanhaId}` : "Campanha: não encontrada",
+            state.usuarioId ? "Usuário: identificado" : "Usuário: não identificado",
+            state.slot ? `Slot: ${state.slot}` : "Slot: não definido",
+            state.personagemId ? "Personagem: identificado" : "Personagem: não identificado",
+            `Jogadores online: ${presencePlayers.length}`
+        ].join(" • ");
+        details.style.marginTop = "6px";
+        details.style.lineHeight = "1.4";
+    }
+
+    function log(message, type = "info") {
+        console.log("[MESA ONLINE]", message);
+        visual(message, type);
+
         const target = document.getElementById("diagnostico-log");
         if (!target) return;
         const line = document.createElement("div");
@@ -46,7 +123,7 @@
         window.dispatchEvent(new CustomEvent(name, { detail }));
     }
 
-    function readSavedTable() {
+    function savedTable() {
         try {
             const raw = localStorage.getItem("rpg_mesa_ativa");
             return raw ? JSON.parse(raw) : {};
@@ -56,14 +133,13 @@
     }
 
     function readContext() {
-        const saved = readSavedTable();
+        const saved = savedTable();
         const auth = window.rpgAuth || {};
         const campaign = auth.campaign || window.rpgCampaign?.activeCampaign || {};
         const user = auth.user || {};
         const characters = Array.isArray(auth.campaignCharacters)
             ? auth.campaignCharacters
             : [];
-
         const character = auth.campaignCharacter ||
             auth.currentCharacter ||
             auth.character ||
@@ -83,52 +159,33 @@
         return state;
     }
 
-    async function getAccessToken() {
-        const clients = [
-            window.supabaseClient,
-            window.sb,
-            window.supabaseMesa?.client,
-            window.SupabaseMesa?.client
-        ].filter(Boolean);
-
+    async function accessToken() {
+        const clients = [window.supabaseClient, window.sb,
+            window.supabaseMesa?.client, window.SupabaseMesa?.client].filter(Boolean);
         for (const supabase of clients) {
             if (typeof supabase.auth?.getSession !== "function") continue;
             try {
                 const result = await supabase.auth.getSession();
-                const token = result?.data?.session?.access_token;
-                if (token) return token;
-            } catch (error) {
-                console.warn("[MESA ONLINE] Falha ao obter sessão:", error);
-            }
+                if (result?.data?.session?.access_token) return result.data.session.access_token;
+            } catch {}
         }
         return window.rpgAuth?.session?.access_token || null;
     }
 
-    async function getAblyToken() {
-        const accessToken = await getAccessToken();
-        if (!accessToken) throw new Error("Sessão Supabase não encontrada.");
-
+    async function ablyToken() {
+        const token = await accessToken();
+        if (!token) throw new Error("Sessão Supabase não encontrada.");
         const response = await fetch(TOKEN_URL, {
             method: "POST",
-            headers: {
-                Authorization: "Bearer " + accessToken,
-                "Content-Type": "application/json"
-            },
+            headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
             body: JSON.stringify({ campanhaId: state.campanhaId })
         });
-
         const text = await response.text();
         let data;
-        try {
-            data = text ? JSON.parse(text) : null;
-        } catch {
+        try { data = text ? JSON.parse(text) : null; } catch {
             throw new Error("Resposta inválida da autenticação Ably.");
         }
-
-        if (!response.ok) {
-            throw new Error(data?.error || data?.message || data?.detalhes ||
-                "Não foi possível autenticar no Ably.");
-        }
+        if (!response.ok) throw new Error(data?.error || data?.message || data?.detalhes || "Falha na autenticação Ably.");
         return data;
     }
 
@@ -143,7 +200,7 @@
         };
     }
 
-    function findSlotFor(member) {
+    function findSlot(member) {
         if (member.slot) return member.slot;
         const characters = window.rpgAuth?.campaignCharacters;
         if (!Array.isArray(characters)) return null;
@@ -160,29 +217,25 @@
         const style = document.createElement("style");
         style.id = "mesa-online-slot-styles";
         style.textContent = `
-            .player-card[data-ocupado="true"], .player-card.ocupado {
-                opacity: 1 !important;
-                border-style: solid !important;
-                border-color: rgba(201,164,91,.9) !important;
-            }
-            .player-card[data-conectado="true"] {
-                box-shadow: 0 0 0 2px rgba(92,220,145,.55), 0 12px 30px rgba(0,0,0,.65) !important;
-            }
-            .player-card[data-conectado="true"] .player-name::after {
-                content: "  ● online";
-                color: #86efac;
-                font-size: .8em;
-            }
+            .player-card[data-ocupado="true"], .player-card.ocupado { opacity:1!important; border-style:solid!important; border-color:rgba(201,164,91,.9)!important; }
+            .player-card[data-conectado="true"] { box-shadow:0 0 0 2px rgba(92,220,145,.55), 0 12px 30px rgba(0,0,0,.65)!important; }
+            .player-card[data-conectado="true"] .player-name::after { content:"  ● online"; color:#86efac; font-size:.8em; }
         `;
         document.head.appendChild(style);
     }
 
     function renderMember(member) {
-        const slot = findSlotFor(member);
-        if (!slot) return;
+        const slot = findSlot(member);
+        if (!slot) {
+            log(`${member.nome} está conectado, mas não possui slot definido.`, "warning");
+            return;
+        }
 
         const card = document.querySelector(`.player-card[data-player="${slot}"]`);
-        if (!card) return;
+        if (!card) {
+            log(`Slot ${slot} não foi encontrado na interface.`, "error");
+            return;
+        }
 
         const name = card.querySelector(".player-name");
         card.dataset.ocupado = "true";
@@ -193,9 +246,7 @@
         card.classList.remove("vazio");
         if (name) name.textContent = member.nome;
 
-        const mesaState = typeof window.MesaRPG?.estado === "function"
-            ? window.MesaRPG.estado()
-            : null;
+        const mesaState = typeof window.MesaRPG?.estado === "function" ? window.MesaRPG.estado() : null;
         const seat = mesaState?.jogadores?.[slot - 1];
         if (seat) {
             seat.ocupado = true;
@@ -204,20 +255,18 @@
             seat.characterId = member.personagemId || seat.characterId || null;
             seat.nome = member.nome || seat.nome;
         }
+        log(`${member.nome} apareceu no slot ${slot}.`, "success");
     }
 
     function renderPresence(players) {
         injectSlotStyles();
-        const normalized = players.map(normalizeMember);
-        presencePlayers = normalized;
-
-        // Limpa somente o estado visual de conexão; não apaga personagens persistidos.
+        presencePlayers = players.map(normalizeMember);
         document.querySelectorAll(".player-card[data-conectado]").forEach((card) => {
             card.dataset.conectado = "false";
         });
-
-        normalized.forEach((member) => renderMember(member));
+        presencePlayers.forEach(renderMember);
         window.MesaRPG?.atualizarAssentos?.();
+        visual(`Presença atualizada: ${presencePlayers.length} jogador(es).`, "success");
     }
 
     async function refreshPresence() {
@@ -227,65 +276,47 @@
             const players = Array.isArray(result) ? result : result?.items || [];
             state.jogadores = players;
             renderPresence(players);
-            emit("mesa:multiplayerJogadoresAtualizados", {
-                jogadores: players,
-                quantidade: players.length
-            });
-            log("Jogadores online: " + players.length);
+            emit("mesa:multiplayerJogadoresAtualizados", { jogadores: players, quantidade: players.length });
             return players;
         } catch (error) {
-            log("Erro ao consultar presença: " + error.message, true);
+            log("Erro ao consultar presença: " + error.message, "error");
             return [];
         }
     }
 
     async function enterPresence() {
         if (!channel) return;
-        await channel.presence.enter({
-            usuarioId: state.usuarioId,
-            personagemId: state.personagemId,
-            nome: state.nome,
-            slot: state.slot,
-            isMaster: state.isMaster
-        });
+        await channel.presence.enter({ usuarioId: state.usuarioId, personagemId: state.personagemId, nome: state.nome, slot: state.slot, isMaster: state.isMaster });
+        log(`Presença enviada. Slot informado: ${state.slot || "não definido"}.`);
     }
 
     function subscribePresence() {
-        ["enter", "leave", "update"].forEach((eventName) => {
-            channel.presence.subscribe(eventName, refreshPresence);
-        });
+        ["enter", "leave", "update"].forEach((eventName) => channel.presence.subscribe(eventName, refreshPresence));
     }
 
-    function onConnectionChange(event) {
+    function connectionChanged(event) {
         const current = event?.current || event?.state;
         state.conectado = current === "connected";
         if (current === "connected") {
             setRealtimeStatus("Conectado");
+            log("Multiplayer conectado.", "success");
             emit("mesa:multiplayerConectado", { estado: state });
             refreshPresence();
         } else if (["disconnected", "suspended"].includes(current)) {
             setRealtimeStatus(current);
+            log("Multiplayer " + current, "warning");
             emit("mesa:multiplayerDesconectado", { estado: state });
         } else if (current === "failed") {
             setRealtimeStatus("Falha");
-            emit("mesa:multiplayerErro", {
-                erro: event.reason || new Error("Conexão Ably falhou.")
-            });
+            log("Conexão Ably falhou.", "error");
+            emit("mesa:multiplayerErro", { erro: event.reason || new Error("Conexão Ably falhou.") });
         }
     }
 
     async function disconnect() {
-        try {
-            await channel?.presence?.leave();
-        } catch {}
-        try {
-            client?.close();
-        } catch {}
-        client = null;
-        channel = null;
-        state.conectado = false;
-        state.canalNome = null;
-        state.jogadores = [];
+        try { await channel?.presence?.leave(); } catch {}
+        try { client?.close(); } catch {}
+        client = null; channel = null; state.conectado = false; state.canalNome = null; state.jogadores = [];
         setRealtimeStatus("Desconectado");
     }
 
@@ -293,85 +324,47 @@
         if (connecting) return connecting;
         connecting = (async () => {
             readContext();
-            if (!state.campanhaId) {
-                setRealtimeStatus("Aguardando campanha");
-                return false;
-            }
-            if (!state.usuarioId) {
-                setRealtimeStatus("Aguardando usuário");
-                return false;
-            }
+            visual("Iniciando diagnóstico visual...", "info");
+            if (!state.campanhaId) { log("Campanha não encontrada.", "warning"); setRealtimeStatus("Aguardando campanha"); return false; }
+            if (!state.usuarioId) { log("Usuário não identificado.", "warning"); setRealtimeStatus("Aguardando usuário"); return false; }
             if (!window.Ably?.Realtime) throw new Error("SDK Ably não carregado.");
             if (client && state.conectado && channel) return true;
 
             setRealtimeStatus("Autenticando Ably...");
             client = new window.Ably.Realtime({
                 authCallback: async (_params, callback) => {
-                    try {
-                        callback(null, await getAblyToken());
-                    } catch (error) {
-                        callback(error, null);
-                    }
+                    try { callback(null, await ablyToken()); } catch (error) { callback(error, null); }
                 }
             });
-            client.connection.on(onConnectionChange);
+            client.connection.on(connectionChanged);
             state.canalNome = CHANNEL_PREFIX + state.campanhaId;
             channel = client.channels.get(state.canalNome);
             subscribePresence();
             await enterPresence();
             await refreshPresence();
-            log("Canal multiplayer preparado.");
+            log("Canal multiplayer preparado.", "success");
             return true;
-        })()
-            .catch(async (error) => {
-                log("Erro multiplayer: " + error.message, true);
-                emit("mesa:multiplayerErro", { erro: error });
-                await disconnect();
-                if (!retryTimer) {
-                    retryTimer = setTimeout(() => {
-                        retryTimer = null;
-                        connect();
-                    }, 1500);
-                }
-                return false;
-            })
-            .finally(() => {
-                connecting = null;
-            });
+        })().catch(async (error) => {
+            log("Erro multiplayer: " + error.message, "error");
+            emit("mesa:multiplayerErro", { erro: error });
+            await disconnect();
+            if (!retryTimer) retryTimer = setTimeout(() => { retryTimer = null; connect(); }, 1500);
+            return false;
+        }).finally(() => { connecting = null; });
         return connecting;
     }
 
     async function reconnect() {
-        if (retryTimer) {
-            clearTimeout(retryTimer);
-            retryTimer = null;
-        }
+        if (retryTimer) { clearTimeout(retryTimer); retryTimer = null; }
         await disconnect();
         return connect();
     }
 
-    // O sincronizador de personagens pode redesenhar os cards depois da presença.
-    // Reaplica a presença após cada atualização para impedir que o slot desapareça.
-    document.addEventListener("mesa:jogadoresAtualizados", () => {
-        setTimeout(() => renderPresence(presencePlayers), 0);
-    });
-
-    [
-        "rpgAuth:loginConfirmado",
-        "rpgAuth:campanhaSincronizada",
-        "mesa:campanhaAlterada",
-        "supabase:entradaPronta",
-        "supabase:mesaContextoRecebido"
-    ].forEach((eventName) => {
+    document.addEventListener("mesa:jogadoresAtualizados", () => setTimeout(() => renderPresence(state.jogadores), 0));
+    ["rpgAuth:loginConfirmado", "rpgAuth:campanhaSincronizada", "mesa:campanhaAlterada", "supabase:entradaPronta", "supabase:mesaContextoRecebido"].forEach((eventName) => {
         window.addEventListener(eventName, () => setTimeout(connect, 0));
     });
-
-    window.addEventListener("beforeunload", () => {
-        try {
-            channel?.presence?.leave();
-            client?.close();
-        } catch {}
-    });
+    window.addEventListener("beforeunload", () => { try { channel?.presence?.leave(); client?.close(); } catch {} });
 
     window.mesaOnline = {
         estado: state,
@@ -386,10 +379,7 @@
     };
 
     injectSlotStyles();
-
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", connect, { once: true });
-    } else {
-        connect();
-    }
+    ensureVisualStatus();
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", connect, { once: true });
+    else connect();
 })();
