@@ -7,7 +7,7 @@
    - autenticar no Ably usando a Edge Function do Supabase;
    - entrar no canal exclusivo da campanha;
    - registrar/listar presença dos jogadores;
-   - reagir a login e troca de campanha.
+   - refletir a presença nos slots visuais da mesa.
 
    A chave secreta do Ably nunca deve ficar neste arquivo.
 ========================================================= */
@@ -40,10 +40,8 @@
 
     function diagnostico(texto) {
         console.log("[MESA ONLINE]", texto);
-
         const log = document.querySelector("#diagnostico-log");
         if (!log) return;
-
         const linha = document.createElement("div");
         linha.textContent = "[ONLINE] " + texto;
         log.appendChild(linha);
@@ -54,7 +52,6 @@
         const elemento = document.querySelector(
             '[data-diagnostico="realtime"]'
         );
-
         if (elemento) elemento.textContent = status;
     }
 
@@ -74,12 +71,25 @@
         const campanha = auth.campaign ||
             window.rpgCampaign?.activeCampaign || {};
         const usuario = auth.user || {};
-        const personagem = auth.campaignCharacter ||
+        const personagens = Array.isArray(auth.campaignCharacters)
+            ? auth.campaignCharacters
+            : [];
+
+        let personagem = auth.campaignCharacter ||
             auth.currentCharacter ||
             auth.character ||
-            {};
+            null;
 
-        // A sessão autenticada tem prioridade sobre dados antigos do localStorage.
+        // campaignCharacter nem sempre é preenchido pelo auth.js.
+        // Nesse caso, procuramos o personagem do usuário na campanha.
+        if (!personagem && usuario.id) {
+            personagem = personagens.find((item) =>
+                String(item?.user_id) === String(usuario.id)
+            ) || null;
+        }
+
+        personagem = personagem || {};
+
         estado.campanhaId = campanha.id ||
             salvo.campaignId ||
             salvo.campaign_id ||
@@ -117,7 +127,6 @@
     async function obterAccessToken() {
         for (const cliente of obterClientesSupabase()) {
             if (typeof cliente.auth?.getSession !== "function") continue;
-
             try {
                 const resultado = await cliente.auth.getSession();
                 const token = resultado?.data?.session?.access_token;
@@ -126,16 +135,12 @@
                 console.warn("[MESA ONLINE] Falha ao ler sessão:", erro);
             }
         }
-
         return window.rpgAuth?.session?.access_token || null;
     }
 
     async function obterTokenAbly() {
         const accessToken = await obterAccessToken();
-
-        if (!accessToken) {
-            throw new Error("Sessão Supabase não encontrada.");
-        }
+        if (!accessToken) throw new Error("Sessão Supabase não encontrada.");
 
         const resposta = await fetch(ABLY_TOKEN_URL, {
             method: "POST",
@@ -148,7 +153,6 @@
 
         const texto = await resposta.text();
         let dados = null;
-
         try {
             dados = texto ? JSON.parse(texto) : null;
         } catch {
@@ -157,22 +161,63 @@
 
         if (!resposta.ok) {
             throw new Error(
-                dados?.error ||
-                dados?.message ||
-                dados?.detalhes ||
+                dados?.error || dados?.message || dados?.detalhes ||
                 "Não foi possível autenticar no Ably."
             );
         }
-
-        if (!dados) {
-            throw new Error("Resposta vazia da autenticação Ably.");
-        }
-
+        if (!dados) throw new Error("Resposta vazia da autenticação Ably.");
         return dados;
     }
 
     function disparar(nome, detail = {}) {
         window.dispatchEvent(new CustomEvent(nome, { detail }));
+    }
+
+    function obterDadosPresenca(membro) {
+        const dados = membro?.data || membro?.presenceData || {};
+        return {
+            ...dados,
+            usuarioId: dados.usuarioId || dados.userId || membro?.clientId || null,
+            personagemId: dados.personagemId || dados.characterId || null,
+            slot: Number(dados.slot),
+            nome: dados.nome || dados.name || "Jogador",
+            isMaster: dados.isMaster === true
+        };
+    }
+
+    function aplicarPresencaNosSlots(jogadores) {
+        const mesa = window.MesaRPG;
+        if (!mesa || typeof mesa.atualizarAssento !== "function") return;
+
+        // Primeiro, todos os jogadores deixam de ser marcados como conectados.
+        // O personagem continua ocupado pelo banco; somente o indicador online muda.
+        const jogadoresValidos = jogadores
+            .map(obterDadosPresenca)
+            .filter((jogador) => Number.isInteger(jogador.slot) &&
+                jogador.slot >= 1 && jogador.slot <= 8);
+
+        for (const jogador of jogadoresValidos) {
+            mesa.atualizarAssento(jogador.slot, {
+                ocupado: true,
+                userId: jogador.usuarioId,
+                characterId: jogador.personagemId
+            });
+
+            if (window.MesaJogadores?.identidade?.definir) {
+                window.MesaJogadores.identidade.definir(jogador.slot, {
+                    nome: jogador.nome
+                });
+            }
+
+            if (window.MesaJogadores?.conexao?.definir) {
+                window.MesaJogadores.conexao.definir(jogador.slot, true);
+            }
+        }
+
+        // Atualiza o card mesmo quando o slot foi ocupado apenas pela presença.
+        if (typeof mesa.atualizarAssentos === "function") {
+            mesa.atualizarAssentos();
+        }
     }
 
     function tratarEstadoConexao(evento) {
@@ -222,14 +267,12 @@
                     reject(evento.reason || new Error("Falha na conexão Ably."));
                 }
             };
-
             ably.connection.on(listener);
         });
     }
 
     async function atualizarPresenca() {
         if (!canal) return;
-
         await canal.presence.enter({
             usuarioId: estado.usuarioId,
             personagemId: estado.personagemId,
@@ -249,6 +292,7 @@
                 : resultado?.items || [];
 
             estado.jogadores = jogadores;
+            aplicarPresencaNosSlots(jogadores);
             diagnostico("Jogadores online: " + jogadores.length);
             disparar("mesa:multiplayerJogadoresAtualizados", {
                 jogadores,
@@ -263,7 +307,6 @@
 
     function assinarPresenca() {
         if (!canal?.presence) return;
-
         ["enter", "leave", "update"].forEach((evento) => {
             canal.presence.subscribe(evento, atualizarJogadoresOnline);
         });
@@ -278,7 +321,6 @@
                     console.warn("[MESA ONLINE] Falha ao sair da presença:", erro);
                 }
             }
-
             if (ably) ably.close();
         } finally {
             ably = null;
@@ -292,7 +334,6 @@
 
     function agendarNovaTentativa() {
         if (retryTimer) return;
-
         retryTimer = setTimeout(() => {
             retryTimer = null;
             conectarAbly();
@@ -310,13 +351,11 @@
                 diagnostico("Campanha ainda não identificada.");
                 return false;
             }
-
             if (!estado.usuarioId) {
                 atualizarRealtime("Aguardando usuário");
                 diagnostico("Usuário ainda não identificado.");
                 return false;
             }
-
             if (!window.Ably?.Realtime) {
                 atualizarRealtime("SDK Ably ausente");
                 diagnostico("Biblioteca Ably não encontrada.");
@@ -325,13 +364,11 @@
                 });
                 return false;
             }
-
             if (ably && estado.conectado && canal) return true;
 
             atualizarRealtime("Autenticando Ably...");
             diagnostico("Solicitando autenticação segura do Ably...");
 
-            // authCallback é chamado novamente pelo SDK quando o token expirar.
             ably = new window.Ably.Realtime({
                 authCallback: async function (_params, callback) {
                     try {
@@ -348,7 +385,6 @@
             estado.canalNome = "rpg:mesa:" + estado.campanhaId;
             canal = ably.channels.get(estado.canalNome);
             assinarPresenca();
-
             await atualizarPresenca();
             await atualizarJogadoresOnline();
 
@@ -377,7 +413,6 @@
             clearTimeout(retryTimer);
             retryTimer = null;
         }
-
         await desconectarAbly();
         await conectarAbly();
     }
