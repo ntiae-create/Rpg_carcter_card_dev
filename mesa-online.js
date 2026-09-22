@@ -1,6 +1,5 @@
 /* =========================================================
-   MESA ONLINE — ABLY
-   Diagnóstico detalhado de conexão, autenticação e presença.
+   MESA ONLINE — ABLY (CÓDIGO COMPLETO CORRIGIDO)
 ========================================================= */
 
 (function () {
@@ -201,8 +200,19 @@
             throw new Error("Resposta inválida da autenticação Ably.");
         }
 
-        diagnostico("TokenRequest Ably recebido.");
-        return dados;
+        // ✅ CORRIGIDO: Pega a chave no formato correto
+        const chave = dados.token || dados.key || dados.ablyKey;
+        if (!chave) {
+            registrarDiagnosticoMultiplayer(
+                "token-error",
+                "Token não encontrado na resposta.",
+                JSON.stringify(dados)
+            );
+            throw new Error("Token não encontrado na resposta");
+        }
+
+        diagnostico("Token Ably recebido.");
+        return { key: chave }; // Formato exato que o Ably precisa
     }
 
     async function atualizarPresenca() {
@@ -304,11 +314,11 @@
 
                 if (estadoAtual === "connected") {
                     estado.conectado = true;
-                    atualizarRealtime("Conectado");
+                    atualizarRealtime("Conectado ✅");
                     registrarDiagnosticoMultiplayer(
                         "connected",
-                        "Multiplayer conectado com sucesso.",
-                        `Canal: ${estado.canal || "não definido"}`
+                        "Multiplayer conectado com sucesso! 🎉",
+                        `Canal: ${estado.canal}`
                     );
                     window.dispatchEvent(new CustomEvent("mesa:multiplayerConectado", {
                         detail: { estado }
@@ -322,25 +332,19 @@
                     registrarDiagnosticoMultiplayer(
                         estadoAtual,
                         `Ably está em estado "${estadoAtual}".`,
-                        motivo || "Sem motivo informado pelo Ably."
+                        motivo || "Sem motivo informado."
                     );
-                    window.dispatchEvent(new CustomEvent("mesa:multiplayerDesconectado", {
-                        detail: { estado, evento }
-                    }));
                     return;
                 }
 
                 if (estadoAtual === "failed") {
                     estado.conectado = false;
-                    atualizarRealtime("Falha");
+                    atualizarRealtime("Falha ❌");
                     registrarDiagnosticoMultiplayer(
                         "failed",
                         "A conexão Ably falhou.",
-                        motivo || "Sem motivo informado pelo Ably."
+                        motivo || "Sem motivo informado."
                     );
-                    window.dispatchEvent(new CustomEvent("mesa:multiplayerErro", {
-                        detail: { erro: evento.reason || evento }
-                    }));
                 }
             });
 
@@ -354,19 +358,16 @@
 
             await atualizarPresenca();
             await atualizarJogadoresOnline();
-            diagnostico("Canal multiplayer preparado.");
+            diagnostico("Canal multiplayer preparado ✅");
         } catch (erro) {
             console.error("[MESA ONLINE] Erro ao conectar:", erro);
             estado.conectado = false;
-            atualizarRealtime("Erro");
+            atualizarRealtime("Erro ❌");
             registrarDiagnosticoMultiplayer(
                 "error",
                 "Erro ao iniciar multiplayer.",
                 textoErro(erro)
             );
-            window.dispatchEvent(new CustomEvent("mesa:multiplayerErro", {
-                detail: { erro }
-            }));
         } finally {
             tentativaConexao = false;
         }
@@ -386,7 +387,7 @@
             estado.conectado = false;
             estado.canal = null;
             atualizarRealtime("Desconectado");
-            registrarDiagnosticoMultiplayer("closed", "Conexão encerrada pelo cliente.");
+            registrarDiagnosticoMultiplayer("closed", "Conexão encerrada.");
         }
     }
 
@@ -413,7 +414,7 @@
     };
 
     function iniciar() {
-        console.log("[MESA ONLINE] Camada multiplayer carregada.");
+        console.log("[MESA ONLINE] Camada multiplayer carregada ✅");
         conectarAbly();
     }
 
