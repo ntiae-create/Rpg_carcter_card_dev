@@ -19,6 +19,13 @@
    NÃO UTILIZA ABLY
    NÃO UTILIZA PAT
    NÃO UTILIZA SERVICE_ROLE
+
+   MESTRE:
+     public.campaigns.master_id
+     ↓
+     auth.users.id
+     ↓
+     comparação oficial no banco
 ========================================================= */
 
 (function () {
@@ -286,6 +293,15 @@
                     atual.slot ??
                     estado.slot,
 
+                /*
+                 * IMPORTANTE:
+                 * isMaster continua sendo salvo apenas
+                 * como informação de estado/cache.
+                 *
+                 * Ele NÃO é utilizado para decidir
+                 * quem é Mestre.
+                 */
+
                 isMaster:
                     dados.isMaster ??
                     atual.isMaster ??
@@ -468,29 +484,28 @@
             "Jogador";
 
 
-        /* -----------------------------------------------
-           MESTRE
-        ------------------------------------------------ */
+        /*
+         * ------------------------------------------------
+         * MESTRE
+         * ------------------------------------------------
+         *
+         * NÃO confiamos aqui em:
+         *
+         * auth.isMaster
+         * salvo.isMaster
+         *
+         * A decisão oficial será feita por:
+         *
+         * public.campaigns.master_id
+         *
+         * através da função:
+         *
+         * confirmarMestrePeloBanco()
+         *
+         * Por segurança, começamos como false.
+         */
 
-        estado.isMaster =
-
-            auth.isMaster === true ||
-
-            salvo.isMaster === true ||
-
-            Boolean(
-
-                campanha.master_id &&
-
-                usuario.id &&
-
-                String(
-                    campanha.master_id
-                ) === String(
-                    usuario.id
-                )
-
-            );
+        estado.isMaster = false;
 
 
         logDiagnostico(
@@ -502,7 +517,7 @@
             `Usuário:${estado.usuarioId || "?"} ` +
             `Personagem:${estado.personagemId || "?"} ` +
             `Slot:${estado.slot ?? "auto"} ` +
-            `Mestre:${estado.isMaster}`
+            `Mestre:Aguardando banco`
 
         );
 
@@ -704,7 +719,237 @@
 
 
     /* =====================================================
-       LOCALIZAR MESA
+       CONFIRMAR MESTRE PELO BANCO
+       
+       FONTE OFICIAL:
+
+       public.campaigns.master_id
+
+       A comparação é feita entre:
+
+       campaigns.master_id
+                 ↓
+       session.user.id
+
+       IMPORTANTE:
+       localStorage.isMaster e auth.isMaster
+       NÃO podem promover um usuário a Mestre.
+    ===================================================== */
+
+    async function confirmarMestrePeloBanco() {
+
+        /*
+         * Começa sempre como false.
+         *
+         * Somente o banco pode alterar para true.
+         */
+
+        estado.isMaster = false;
+
+
+        if (!clienteSupabase) {
+
+            logDiagnostico(
+                "❌ Não foi possível confirmar Mestre",
+                "Cliente Supabase indisponível"
+            );
+
+
+            return false;
+
+        }
+
+
+        if (!estado.campanhaId) {
+
+            logDiagnostico(
+                "❌ Não foi possível confirmar Mestre",
+                "Campanha não identificada"
+            );
+
+
+            return false;
+
+        }
+
+
+        if (!estado.usuarioId) {
+
+            logDiagnostico(
+                "❌ Não foi possível confirmar Mestre",
+                "Usuário não identificado"
+            );
+
+
+            return false;
+
+        }
+
+
+        try {
+
+            logDiagnostico(
+                "👑 Verificando Mestre no banco",
+                `Campanha:${estado.campanhaId}`
+            );
+
+
+            const resultado =
+                await clienteSupabase
+                    .from("campaigns")
+                    .select(
+                        "id,master_id"
+                    )
+                    .eq(
+                        "id",
+                        estado.campanhaId
+                    )
+                    .maybeSingle();
+
+
+            if (
+                resultado.error
+            ) {
+
+                logDiagnostico(
+                    "❌ Erro ao consultar Mestre",
+                    textoErro(
+                        resultado.error
+                    )
+                );
+
+
+                estado.isMaster =
+                    false;
+
+
+                return false;
+
+            }
+
+
+            const campanha =
+                resultado.data;
+
+
+            if (!campanha) {
+
+                logDiagnostico(
+                    "⚠️ Campanha não encontrada no banco"
+                );
+
+
+                estado.isMaster =
+                    false;
+
+
+                return false;
+
+            }
+
+
+            if (
+                !campanha.master_id
+            ) {
+
+                logDiagnostico(
+                    "⚠️ A campanha ainda não possui Mestre definido"
+                );
+
+
+                estado.isMaster =
+                    false;
+
+
+                return false;
+
+            }
+
+
+            /*
+             * COMPARAÇÃO OFICIAL
+             */
+
+            estado.isMaster =
+
+                String(
+                    campanha.master_id
+                ) ===
+                String(
+                    estado.usuarioId
+                );
+
+
+            if (
+                estado.isMaster
+            ) {
+
+                logDiagnostico(
+                    "👑 MESTRE CONFIRMADO PELO BANCO",
+                    `Master:${campanha.master_id}`
+                );
+
+            } else {
+
+                logDiagnostico(
+                    "🎮 JOGADOR CONFIRMADO PELO BANCO",
+                    `Master:${campanha.master_id}`
+                );
+
+            }
+
+
+            /*
+             * Atualiza o cache apenas depois
+             * de consultar o banco.
+             */
+
+            salvarMesaAtiva({
+
+                isMaster:
+                    estado.isMaster
+
+            });
+
+
+            /*
+             * Mantém a campanha disponível para
+             * outras partes do sistema.
+             */
+
+            if (
+                window.rpgAuth
+            ) {
+
+                window.rpgAuth.isMaster =
+                    estado.isMaster;
+
+            }
+
+
+            return estado.isMaster;
+
+        } catch (erro) {
+
+            estado.isMaster =
+                false;
+
+
+            logDiagnostico(
+                "❌ Erro ao confirmar Mestre",
+                textoErro(erro)
+            );
+
+
+            return false;
+
+        }
+
+    }
+
+
+    /* =====================================================
+       MESA ATIVA — LOCALIZAR MESA
        
        Procura a Mesa vinculada à campanha atual.
     ===================================================== */
@@ -1519,1665 +1764,4 @@
 
     async function atualizarPresenca() {
 
-        if (!canal) {
-            return;
-        }
-
-
-        try {
-
-            const resultado =
-                await canal.track({
-
-                    user_id:
-                        estado.usuarioId,
-
-                    usuarioId:
-                        estado.usuarioId,
-
-                    character_id:
-                        estado.personagemId,
-
-                    personagemId:
-                        estado.personagemId,
-
-                    nome:
-                        estado.nome,
-
-                    slot:
-                        estado.slot,
-
-                    isMaster:
-                        estado.isMaster,
-
-                    role:
-                        estado.isMaster
-                            ? "master"
-                            : "player"
-
-                });
-
-
-            if (
-                resultado !== "ok"
-            ) {
-
-                logDiagnostico(
-                    "⚠️ Presença não confirmada",
-                    String(resultado)
-                );
-
-
-                return false;
-
-            }
-
-
-            logDiagnostico(
-                "✅ Presença registrada",
-                `Slot:${estado.slot ?? "Mestre"}`
-            );
-
-
-            await atualizarListaJogadores();
-
-
-            return true;
-
-        } catch (erro) {
-
-            logDiagnostico(
-                "⚠️ Erro presença",
-                textoErro(erro)
-            );
-
-
-            return false;
-
-        }
-
-    }
-
-
-    /* =====================================================
-       LISTA DE JOGADORES ONLINE
-    ===================================================== */
-
-    async function atualizarListaJogadores() {
-
-        if (!canal) {
-            return;
-        }
-
-
-        try {
-
-            const estadoPresenca =
-                canal.presenceState();
-
-
-            const jogadores = [];
-
-
-            Object.keys(
-                estadoPresenca
-            ).forEach(
-                (chave) => {
-
-                    const registros =
-                        estadoPresenca[chave];
-
-
-                    if (
-                        !Array.isArray(
-                            registros
-                        )
-                    ) {
-
-                        return;
-
-                    }
-
-
-                    registros.forEach(
-                        (presenca) => {
-
-                            if (
-                                presenca
-                            ) {
-
-                                jogadores.push(
-                                    presenca
-                                );
-
-                            }
-
-                        }
-                    );
-
-                }
-            );
-
-
-            logDiagnostico(
-                `👥 Jogadores online: ${jogadores.length}`
-            );
-
-
-            window.dispatchEvent(
-
-                new CustomEvent(
-                    "mesa:multiplayerJogadoresAtualizados",
-                    {
-                        detail: {
-
-                            jogadores:
-                                jogadores,
-
-                            mesaId:
-                                estado.mesaId
-
-                        }
-                    }
-                )
-
-            );
-
-
-            return jogadores;
-
-        } catch (erro) {
-
-            logDiagnostico(
-                "⚠️ Erro ao obter presença",
-                textoErro(erro)
-            );
-
-
-            return [];
-
-        }
-
-    }
-
-
-    /* =====================================================
-       PLAYER ENTROU
-    ===================================================== */
-
-    function jogadorEntrou(
-        payload
-    ) {
-
-        logDiagnostico(
-            "🟢 Jogador entrou",
-            payload?.key ||
-            "desconhecido"
-        );
-
-
-        atualizarListaJogadores();
-
-    }
-
-
-    /* =====================================================
-       PLAYER SAIU
-    ===================================================== */
-
-    function jogadorSaiu(
-        payload
-    ) {
-
-        logDiagnostico(
-            "🔴 Jogador saiu",
-            payload?.key ||
-            "desconhecido"
-        );
-
-
-        atualizarListaJogadores();
-
-    }
-
-
-    /* =====================================================
-       BROADCAST
-    ===================================================== */
-
-    function configurarBroadcast() {
-
-        if (!canal) {
-            return;
-        }
-
-
-        canal.on(
-
-            "broadcast",
-
-            {
-                event:
-                    "mesa-evento"
-
-            },
-
-            (payload) => {
-
-                const dados =
-                    payload?.payload ||
-                    payload;
-
-
-                logDiagnostico(
-                    "📨 Evento recebido",
-                    dados?.tipo ||
-                    "mesa-evento"
-                );
-
-
-                window.dispatchEvent(
-
-                    new CustomEvent(
-                        "mesa:multiplayerEvento",
-                        {
-                            detail:
-                                dados
-                        }
-                    )
-
-                );
-
-
-                if (
-                    dados?.tipo
-                ) {
-
-                    window.dispatchEvent(
-
-                        new CustomEvent(
-                            `mesa:online:${dados.tipo}`,
-                            {
-                                detail:
-                                    dados
-                            }
-                        )
-
-                    );
-
-                }
-
-            }
-
-        );
-
-    }
-
-
-    /* =====================================================
-       POSTGRES CHANGES
-       
-       Mantido para sincronizações futuras.
-    ===================================================== */
-
-    function configurarPostgresChanges() {
-
-        if (!canal) {
-            return;
-        }
-
-
-        /*
-         * CHARACTERS
-         */
-
-        canal.on(
-
-            "postgres_changes",
-
-            {
-
-                event:
-                    "*",
-
-                schema:
-                    "public",
-
-                table:
-                    "characters",
-
-                filter:
-                    `campaign_id=eq.${estado.campanhaId}`
-
-            },
-
-            (payload) => {
-
-                logDiagnostico(
-                    "🧙 Alteração em personagem",
-                    payload.eventType
-                );
-
-
-                window.dispatchEvent(
-
-                    new CustomEvent(
-                        "mesa:personagemAtualizado",
-                        {
-                            detail:
-                                payload
-                        }
-                    )
-
-                );
-
-
-                window.dispatchEvent(
-
-                    new CustomEvent(
-                        "mesa:multiplayerAtualizacao",
-                        {
-                            detail:
-                                payload
-                        }
-                    )
-
-                );
-
-            }
-
-        );
-
-
-        /*
-         * CAMPAIGN MEMBERS
-         */
-
-        canal.on(
-
-            "postgres_changes",
-
-            {
-
-                event:
-                    "*",
-
-                schema:
-                    "public",
-
-                table:
-                    "campaign_members",
-
-                filter:
-                    `campaign_id=eq.${estado.campanhaId}`
-
-            },
-
-            (payload) => {
-
-                logDiagnostico(
-                    "👥 Alteração em membros",
-                    payload.eventType
-                );
-
-
-                window.dispatchEvent(
-
-                    new CustomEvent(
-                        "mesa:membrosAtualizados",
-                        {
-                            detail:
-                                payload
-                        }
-                    )
-
-                );
-
-
-                atualizarListaJogadores();
-
-            }
-
-        );
-
-    }
-
-
-    /* =====================================================
-       CRIAR CANAL REALTIME
-       
-       IMPORTANTE:
-       Agora utiliza mesaId, NÃO campaignId.
-    ===================================================== */
-
-    function criarCanal() {
-
-        if (!clienteSupabase) {
-
-            throw new Error(
-                "Cliente Supabase não disponível."
-            );
-
-        }
-
-
-        if (!estado.mesaId) {
-
-            throw new Error(
-                "Mesa não identificada."
-            );
-
-        }
-
-
-        const nomeCanal =
-            `rpg:mesa:${estado.mesaId}`;
-
-
-        estado.canal =
-            nomeCanal;
-
-
-        logDiagnostico(
-            "📡 Criando canal privado",
-            nomeCanal
-        );
-
-
-        /*
-         * CANAL PRIVADO
-         */
-
-        canal =
-            clienteSupabase.channel(
-
-                nomeCanal,
-
-                {
-
-                    config: {
-
-                        private:
-                            true,
-
-                        presence: {
-
-                            key:
-                                estado.usuarioId ||
-                                (
-                                    typeof crypto !==
-                                    "undefined" &&
-                                    crypto.randomUUID
-                                )
-                                    ? crypto.randomUUID()
-                                    : String(
-                                        Date.now()
-                                    )
-
-                        },
-
-                        broadcast: {
-
-                            self:
-                                false,
-
-                            ack:
-                                true
-
-                        }
-
-                    }
-
-                }
-
-            );
-
-
-        configurarBroadcast();
-
-        configurarPostgresChanges();
-
-
-        /* -----------------------------------------------
-           PRESENCE — JOIN
-        ------------------------------------------------ */
-
-        canal.on(
-
-            "presence",
-
-            {
-                event:
-                    "join"
-
-            },
-
-            jogadorEntrou
-
-        );
-
-
-        /* -----------------------------------------------
-           PRESENCE — LEAVE
-        ------------------------------------------------ */
-
-        canal.on(
-
-            "presence",
-
-            {
-                event:
-                    "leave"
-
-            },
-
-            jogadorSaiu
-
-        );
-
-
-        return canal;
-
-    }
-
-
-    /* =====================================================
-       CONECTAR AO SUPABASE REALTIME
-    ===================================================== */
-
-    async function conectarSupabaseRealtime() {
-
-        if (
-            tentativaConexao
-        ) {
-
-            logDiagnostico(
-                "⏳ Conexão já está em andamento"
-            );
-
-
-            return;
-
-        }
-
-
-        if (
-            estado.conectado
-        ) {
-
-            logDiagnostico(
-                "🟢 Já conectado",
-                `Mesa:${estado.mesaId}`
-            );
-
-
-            return;
-
-        }
-
-
-        tentativaConexao =
-            true;
-
-
-        estado.realtimeStatus =
-            "CONNECTING";
-
-
-        atualizarStatusRealtime(
-            "🟡 Conectando..."
-        );
-
-
-        try {
-
-            /* -------------------------------------------
-               1. DADOS DA MESA
-            ------------------------------------------- */
-
-            obterDadosMesa();
-
-
-            if (
-                !estado.campanhaId
-            ) {
-
-                throw new Error(
-                    "Campanha não identificada."
-                );
-
-            }
-
-
-            if (
-                !estado.usuarioId
-            ) {
-
-                throw new Error(
-                    "Usuário não identificado."
-                );
-
-            }
-
-
-            /* -------------------------------------------
-               2. CLIENTE SUPABASE
-            ------------------------------------------- */
-
-            clienteSupabase =
-                await obterClienteSupabase();
-
-
-            if (!clienteSupabase) {
-
-                throw new Error(
-                    "Supabase indisponível."
-                );
-
-            }
-
-
-            /* -------------------------------------------
-               3. SESSÃO
-            ------------------------------------------- */
-
-            const session =
-                await verificarSessao();
-
-
-            if (!session) {
-
-                throw new Error(
-                    "Nenhuma sessão Supabase ativa."
-                );
-
-            }
-
-
-            /*
-             * Garante que o ID utilizado pelo
-             * Presence é o mesmo usuário da sessão.
-             */
-
-            estado.usuarioId =
-                session.user.id;
-
-
-            /* -------------------------------------------
-               4. LOCALIZAR / CRIAR MESA
-            ------------------------------------------- */
-
-            const mesa =
-                await garantirMesa();
-
-
-            if (
-                !mesa?.id
-            ) {
-
-                throw new Error(
-                    "Mesa não possui ID válido."
-                );
-
-            }
-
-
-            estado.mesaId =
-                mesa.id;
-
-
-            /* -------------------------------------------
-               5. ENTRAR NA MESA
-            ------------------------------------------- */
-
-            await entrarNaMesa();
-
-
-            /* -------------------------------------------
-               6. REMOVER CANAL ANTERIOR
-            ------------------------------------------- */
-
-            if (canal) {
-
-                try {
-
-                    await clienteSupabase
-                        .removeChannel(
-                            canal
-                        );
-
-                } catch {}
-
-                canal =
-                    null;
-
-            }
-
-
-            /* -------------------------------------------
-               7. CRIAR CANAL DA MESA
-            ------------------------------------------- */
-
-            criarCanal();
-
-
-            atualizarStatusRealtime(
-                "🟡 Entrando na Mesa..."
-            );
-
-
-            /* -------------------------------------------
-               8. SUBSCRIBE
-            ------------------------------------------- */
-
-            await new Promise(
-
-                (resolve, reject) => {
-
-                    let finalizado =
-                        false;
-
-
-                    canal.subscribe(
-
-                        (status, erro) => {
-
-                            estado.realtimeStatus =
-                                status;
-
-
-                            logDiagnostico(
-                                "📡 Supabase Realtime",
-                                status
-                            );
-
-
-                            /*
-                             * DISPONIBILIZA O STATUS
-                             * PARA O DIAGNÓSTICO.
-                             */
-
-                            window.dispatchEvent(
-
-                                new CustomEvent(
-                                    "mesa:realtimeStatus",
-                                    {
-                                        detail: {
-
-                                            status:
-                                                status,
-
-                                            erro:
-                                                erro,
-
-                                            mesaId:
-                                                estado.mesaId,
-
-                                            canal:
-                                                estado.canal
-
-                                        }
-                                    }
-                                )
-
-                            );
-
-
-                            /* --------------------------------
-                               SUBSCRIBED
-                            -------------------------------- */
-
-                            if (
-                                status ===
-                                "SUBSCRIBED"
-                            ) {
-
-                                if (
-                                    finalizado
-                                ) {
-                                    return;
-                                }
-
-
-                                finalizado =
-                                    true;
-
-
-                                estado.conectado =
-                                    true;
-
-
-                                campanhaConectada =
-                                    estado.campanhaId;
-
-
-                                mesaConectada =
-                                    estado.mesaId;
-
-
-                                atualizarStatusRealtime(
-                                    "🟢 Online"
-                                );
-
-
-                                logDiagnostico(
-                                    "🎉 CONECTADO À MESA!",
-                                    `Mesa:${estado.mesaId}`
-                                );
-
-
-                                /*
-                                 * Registra Presence.
-                                 */
-
-                                atualizarPresenca();
-
-
-                                /*
-                                 * Eventos internos.
-                                 */
-
-                                window.dispatchEvent(
-
-                                    new CustomEvent(
-                                        "mesa:multiplayerConectado",
-                                        {
-                                            detail: {
-
-                                                estado:
-                                                    estado,
-
-                                                mesa:
-                                                    mesa
-
-                                            }
-                                        }
-                                    )
-
-                                );
-
-
-                                resolve();
-
-                                return;
-
-                            }
-
-
-                            /* --------------------------------
-                               CHANNEL ERROR
-                            -------------------------------- */
-
-                            if (
-                                status ===
-                                "CHANNEL_ERROR"
-                            ) {
-
-                                estado.conectado =
-                                    false;
-
-
-                                atualizarStatusRealtime(
-                                    "🔴 Erro no canal"
-                                );
-
-
-                                logDiagnostico(
-                                    "❌ Erro no canal",
-                                    textoErro(
-                                        erro
-                                    )
-                                );
-
-
-                                if (
-                                    !finalizado
-                                ) {
-
-                                    finalizado =
-                                        true;
-
-
-                                    reject(
-
-                                        erro ||
-                                        new Error(
-                                            "CHANNEL_ERROR"
-                                        )
-
-                                    );
-
-                                }
-
-
-                                return;
-
-                            }
-
-
-                            /* --------------------------------
-                               TIMED OUT
-                            -------------------------------- */
-
-                            if (
-                                status ===
-                                "TIMED_OUT"
-                            ) {
-
-                                estado.conectado =
-                                    false;
-
-
-                                atualizarStatusRealtime(
-                                    "⏱️ Timeout"
-                                );
-
-
-                                logDiagnostico(
-                                    "⏱️ Supabase Realtime timeout"
-                                );
-
-
-                                if (
-                                    !finalizado
-                                ) {
-
-                                    finalizado =
-                                        true;
-
-
-                                    reject(
-
-                                        new Error(
-                                            "Realtime timeout"
-                                        )
-
-                                    );
-
-                                }
-
-
-                                return;
-
-                            }
-
-
-                            /* --------------------------------
-                               CLOSED
-                            -------------------------------- */
-
-                            if (
-                                status ===
-                                "CLOSED"
-                            ) {
-
-                                estado.conectado =
-                                    false;
-
-
-                                atualizarStatusRealtime(
-                                    "⚪ Desconectado"
-                                );
-
-
-                                logDiagnostico(
-                                    "⚪ Canal fechado"
-                                );
-
-                            }
-
-                        }
-
-                    );
-
-                }
-
-            );
-
-
-        } catch (erro) {
-
-            estado.conectado =
-                false;
-
-
-            estado.realtimeStatus =
-                "CHANNEL_ERROR";
-
-
-            atualizarStatusRealtime(
-                "🔴 Erro"
-            );
-
-
-            logDiagnostico(
-                "❌ Erro na conexão",
-                textoErro(erro)
-            );
-
-
-            window.dispatchEvent(
-
-                new CustomEvent(
-                    "mesa:multiplayerErro",
-                    {
-                        detail: {
-
-                            erro:
-                                erro,
-
-                            mesaId:
-                                estado.mesaId
-
-                        }
-                    }
-                )
-
-            );
-
-
-        } finally {
-
-            tentativaConexao =
-                false;
-
-        }
-
-    }
-
-
-    /* =====================================================
-       ENVIAR EVENTO
-    ===================================================== */
-
-    async function enviarEvento(
-
-        tipo,
-
-        dados = {}
-
-    ) {
-
-        if (!canal) {
-
-            logDiagnostico(
-                "⚠️ Tentativa de enviar sem canal"
-            );
-
-
-            return false;
-
-        }
-
-
-        if (!estado.conectado) {
-
-            logDiagnostico(
-                "⚠️ Tentativa de enviar offline"
-            );
-
-
-            return false;
-
-        }
-
-
-        const evento = {
-
-            tipo:
-                tipo,
-
-            dados:
-                dados,
-
-            user_id:
-                estado.usuarioId,
-
-            usuarioId:
-                estado.usuarioId,
-
-            character_id:
-                estado.personagemId,
-
-            personagemId:
-                estado.personagemId,
-
-            mesa_id:
-                estado.mesaId,
-
-            mesaId:
-                estado.mesaId,
-
-            slot:
-                estado.slot,
-
-            nome:
-                estado.nome,
-
-            isMaster:
-                estado.isMaster,
-
-            timestamp:
-                new Date()
-                    .toISOString()
-
-        };
-
-
-        try {
-
-            const resultado =
-                await canal.send({
-
-                    type:
-                        "broadcast",
-
-                    event:
-                        "mesa-evento",
-
-                    payload:
-                        evento
-
-                });
-
-
-            if (
-                resultado !==
-                "ok"
-            ) {
-
-                logDiagnostico(
-                    "⚠️ Falha ao enviar evento",
-                    String(resultado)
-                );
-
-
-                return false;
-
-            }
-
-
-            logDiagnostico(
-                "📤 Evento enviado",
-                tipo
-            );
-
-
-            return true;
-
-        } catch (erro) {
-
-            logDiagnostico(
-                "❌ Erro ao enviar evento",
-                textoErro(erro)
-            );
-
-
-            return false;
-
-        }
-
-    }
-
-
-    /* =====================================================
-       SINCRONIZAÇÃO
-    ===================================================== */
-
-    async function sincronizar() {
-
-        if (!canal) {
-
-            logDiagnostico(
-                "⚠️ Não existe canal para sincronizar"
-            );
-
-
-            return false;
-
-        }
-
-
-        if (!estado.conectado) {
-
-            logDiagnostico(
-                "⚠️ Mesa offline"
-            );
-
-
-            return false;
-
-        }
-
-
-        try {
-
-            await atualizarPresenca();
-
-            await atualizarListaJogadores();
-
-
-            await enviarEvento(
-
-                "solicitar-sincronizacao",
-
-                {
-
-                    solicitante:
-                        estado.usuarioId,
-
-                    mesaId:
-                        estado.mesaId
-
-                }
-
-            );
-
-
-            logDiagnostico(
-                "🔄 Sincronização solicitada"
-            );
-
-
-            window.dispatchEvent(
-
-                new CustomEvent(
-                    "mesa:sincronizada",
-                    {
-                        detail: {
-
-                            estado:
-                                estado
-
-                        }
-                    }
-                )
-
-            );
-
-
-            return true;
-
-        } catch (erro) {
-
-            logDiagnostico(
-                "❌ Erro sincronização",
-                textoErro(erro)
-            );
-
-
-            return false;
-
-        }
-
-    }
-
-
-    /* =====================================================
-       DESCONECTAR
-    ===================================================== */
-
-    async function desconectarSupabase() {
-
-        try {
-
-            if (canal) {
-
-                try {
-
-                    await canal.untrack();
-
-                } catch {}
-
-
-                if (
-                    clienteSupabase
-                ) {
-
-                    try {
-
-                        await clienteSupabase
-                            .removeChannel(
-                                canal
-                            );
-
-                    } catch {}
-
-                }
-
-            }
-
-        } catch (erro) {
-
-            console.warn(
-                "[MESA-ONLINE] Erro ao desconectar:",
-                erro
-            );
-
-        }
-
-
-        canal =
-            null;
-
-
-        estado.conectado =
-            false;
-
-
-        estado.canal =
-            null;
-
-
-        estado.realtimeStatus =
-            "CLOSED";
-
-
-        campanhaConectada =
-            null;
-
-
-        mesaConectada =
-            null;
-
-
-        atualizarStatusRealtime(
-            "⚪ Desconectado"
-        );
-
-
-        logDiagnostico(
-            "⚪ Multiplayer desconectado"
-        );
-
-
-        window.dispatchEvent(
-
-            new CustomEvent(
-                "mesa:multiplayerDesconectado"
-            )
-
-        );
-
-    }
-
-
-    /* =====================================================
-       MUDANÇA DE CAMPANHA
-    ===================================================== */
-
-    window.addEventListener(
-
-        "mesa:campanhaAlterada",
-
-        async () => {
-
-            logDiagnostico(
-                "🔄 Campanha alterada"
-            );
-
-
-            await desconectarSupabase();
-
-
-            obterDadosMesa();
-
-
-            await conectarSupabaseRealtime();
-
-        }
-
-    );
-
-
-    /* =====================================================
-       VISIBILIDADE
-    ===================================================== */
-
-    document.addEventListener(
-
-        "visibilitychange",
-
-        async () => {
-
-            if (
-                document.visibilityState !==
-                "visible"
-            ) {
-
-                return;
-
-            }
-
-
-            if (
-                !estado.conectado &&
-                !tentativaConexao
-            ) {
-
-                logDiagnostico(
-                    "🔄 Página voltou ao primeiro plano — reconectando"
-                );
-
-
-                await conectarSupabaseRealtime();
-
-
-                return;
-
-            }
-
-
-            if (
-                estado.conectado
-            ) {
-
-                await atualizarPresenca();
-
-            }
-
-        }
-
-    );
-
-
-    /* =====================================================
-       ANTES DE SAIR
-    ===================================================== */
-
-    window.addEventListener(
-
-        "beforeunload",
-
-        () => {
-
-            try {
-
-                if (
-                    canal
-                ) {
-
-                    canal.untrack();
-
-                }
-
-            } catch {}
-
-        }
-
-    );
-
-
-    /* =====================================================
-       API PÚBLICA
-    ===================================================== */
-
-    window.mesaOnline = {
-
-        conectar:
-            conectarSupabaseRealtime,
-
-        desconectar:
-            desconectarSupabase,
-
-        sincronizar:
-            sincronizar,
-
-        enviar:
-            enviarEvento,
-
-        obterDados:
-            obterDadosMesa,
-
-        localizarMesa:
-            localizarMesa,
-
-        garantirMesa:
-            garantirMesa,
-
-        entrarNaMesa:
-            entrarNaMesa,
-
-        obterCanal:
-            () => canal,
-
-        obterCliente:
-            () => clienteSupabase,
-
-        estado:
-            estado
-
-    };
-
-
-    /* =====================================================
-       COMPATIBILIDADE
-       
-       Permite:
-
-       window.mesaOnline.canal
-
-       window.mesaOnline.cliente
-    ===================================================== */
-
-    Object.defineProperty(
-
-        window.mesaOnline,
-
-        "canal",
-
-        {
-
-            configurable:
-                true,
-
-            enumerable:
-                true,
-
-            get() {
-
-                return canal;
-
-            }
-
-        }
-
-    );
-
-
-    Object.defineProperty(
-
-        window.mesaOnline,
-
-        "cliente",
-
-        {
-
-            configurable:
-                true,
-
-            enumerable:
-                true,
-
-            get() {
-
-                return clienteSupabase;
-
-            }
-
-        }
-
-    );
-
-
-    /* =====================================================
-       INICIALIZAÇÃO
-    ===================================================== */
-
-    async function iniciar() {
-
-        logDiagnostico(
-            "================================"
-        );
-
-
-        logDiagnostico(
-            "MESA ONLINE — SUPABASE REALTIME"
-        );
-
-
-        logDiagnostico(
-            "=== SCRIPT CARREGADO ==="
-        );
-
-
-        logDiagnostico(
-            "Ably: DESATIVADA"
-        );
-
-
-        logDiagnostico(
-            "Realtime: SUPABASE"
-        );
-
-
-        logDiagnostico(
-            "Arquitetura: CAMPANHA → MESA → JOGADORES → REALTIME"
-        );
-
-
-        await conectarSupabaseRealtime();
-
-    }
-
-
-    /* =====================================================
-       START
-    ===================================================== */
-
-    if (
-        document.readyState ===
-        "loading"
-    ) {
-
-        document.addEventListener(
-
-            "DOMContentLoaded",
-
-            iniciar,
-
-            {
-                once:
-                    true
-            }
-
-        );
-
-    } else {
-
-        iniciar();
-
-    }
-
-
-})();
+        if (!can
