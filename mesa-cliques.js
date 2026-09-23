@@ -1,12 +1,6 @@
 /* =========================================================
-   MESA — CLIQUES À PROVA DE FALHA (v3.1)
+   MESA — CLIQUES À PROVA DE FALHA (v3.2)
    Carregar por ÚLTIMO no mesa.html
-
-   Problema tratado:
-   - 1º clique funciona
-   - depois tudo "morre"
-   Causa típica: overlay (menu mestre / diagnóstico / ficha)
-   fica invisível por cima e engole os próximos toques.
 ========================================================= */
 
 (function () {
@@ -47,17 +41,13 @@
         document.documentElement.style.pointerEvents = "auto";
         document.body.style.pointerEvents = "auto";
 
-        // área central (CTE e tela principal)
         var stage = $("mesa-stage") || document.querySelector(".mesa-stage");
         var screen = $("mesa-screen");
         var content = $("mesa-screen-content");
         [stage, screen, content].forEach(function (el) {
-            if (el) {
-                el.style.pointerEvents = "auto";
-            }
+            if (el) el.style.pointerEvents = "auto";
         });
 
-        // botão do CTE
         var cteBtn = $("cte-click-button");
         if (cteBtn) {
             cteBtn.style.pointerEvents = "auto";
@@ -66,32 +56,21 @@
             cteBtn.style.position = "relative";
         }
 
-        // cards dos jogadores
         var grid = $("jogadores");
-        if (grid) {
-            grid.style.pointerEvents = "none";
-        }
+        if (grid) grid.style.pointerEvents = "none";
 
         document.querySelectorAll(".player-card, [data-player]").forEach(function (card) {
             card.style.pointerEvents = "auto";
         });
 
-        // botões do cabeçalho e ações
         document.querySelectorAll(
-            "#btn-diagnostico, #btn-configuracoes, .mesa-settings-btn, .mesa-diagnostico-btn, [data-mesa-action], [data-master-action], #btn-fechar-diagnostico, #btn-limpar-diagnostico"
+            "#btn-diagnostico, #btn-configuracoes, #btn-fechar-diagnostico, button, a, [data-mesa-action]"
         ).forEach(function (btn) {
-            btn.style.pointerEvents = "auto";
-            btn.style.cursor = "pointer";
+            if (btn) {
+                btn.style.pointerEvents = "auto";
+                btn.style.cursor = "pointer";
+            }
         });
-
-        var header = document.querySelector(".mesa-header-actions");
-        if (header) {
-            header.style.pointerEvents = "none";
-            header.querySelectorAll("button, a").forEach(function (b) {
-                b.style.pointerEvents = "auto";
-                b.style.zIndex = "10050";
-            });
-        }
     }
 
     function forcarUILivre() {
@@ -116,131 +95,79 @@
         if (!target || !target.closest) return;
 
         try {
-            // sempre libera pointer-events primeiro
             liberarPointerEvents();
 
-            // fechar diagnóstico
-            if (target.closest("#btn-fechar-diagnostico")) {
-                event.preventDefault();
-                event.stopPropagation();
-                fecharOverlay($("mesa-diagnostico"));
-                liberarPointerEvents();
+            // botão fechar diagnóstico / config
+            if (target.closest("#btn-fechar-diagnostico") || target.closest(".diagnostico-fechar")) {
+                fecharTudoQueBloqueia();
                 return;
             }
 
-            // botão diagnóstico
+            // abrir diagnóstico
             if (target.closest("#btn-diagnostico")) {
-                event.preventDefault();
-                event.stopPropagation();
-                var painel = $("mesa-diagnostico");
-                if (overlayVisivel(painel)) {
-                    fecharOverlay(painel);
-                    liberarPointerEvents();
-                } else if (painel) {
-                    fecharTudoQueBloqueia();
-                    abrirOverlay(painel, "flex");
-                    if (window.MesaDiagnostico && typeof window.MesaDiagnostico.abrir === "function") {
-                        try { window.MesaDiagnostico.abrir(); } catch (e) {}
-                    }
-                }
                 return;
             }
 
-            // botão configurações
+            // abrir configurações / menu mestre
             if (target.closest("#btn-configuracoes")) {
+                return;
+            }
+
+            // clique fora de overlays abertos → fecha
+            var menu = $("master-menu");
+            var diag = $("mesa-diagnostico");
+            if (overlayVisivel(menu) && !target.closest("#master-menu")) {
+                fecharTudoQueBloqueia();
+                return;
+            }
+            if (overlayVisivel(diag) && !target.closest("#mesa-diagnostico")) {
+                fecharTudoQueBloqueia();
+                return;
+            }
+
+            // CTE
+            var cteBtn = target.closest("#cte-click-button, [data-cte-action='clique']");
+            if (cteBtn) {
                 event.preventDefault();
                 event.stopPropagation();
-                var menu = $("master-menu");
-                if (overlayVisivel(menu)) {
-                    fecharOverlay(menu);
-                    liberarPointerEvents();
-                } else if (menu) {
-                    fecharTudoQueBloqueia();
-                    abrirOverlay(menu, "flex");
+                if (window.MesaRPG && typeof window.MesaRPG.executarCliqueCTE === "function") {
+                    window.MesaRPG.executarCliqueCTE();
                 }
-                return;
-            }
-
-            // clique no fundo do menu / diagnóstico / ficha → fecha
-            if (target.id === "master-menu" || target.id === "mesa-diagnostico" || target.id === "ficha-overlay") {
-                event.preventDefault();
-                event.stopPropagation();
-                forcarUILivre();
-                return;
-            }
-
-            // ações do mestre
-            var masterAction = target.closest("[data-master-action]");
-            if (masterAction) {
-                var acaoMaster = masterAction.getAttribute("data-master-action");
-                document.dispatchEvent(new CustomEvent("mesa:masterAction", {
-                    detail: { acao: acaoMaster, elemento: masterAction }
-                }));
-                // fecha o menu depois da ação
                 setTimeout(forcarUILivre, 50);
                 return;
             }
 
-            // ações da mesa / CTE
-            var mesaAction = target.closest("[data-mesa-action]");
-            if (mesaAction) {
-                var acao = mesaAction.getAttribute("data-mesa-action");
-                var cteAcao = mesaAction.getAttribute("data-cte-action");
-
-                if (acao === "cte" || cteAcao === "clique") {
-                    if (window.MesaRPG && typeof window.MesaRPG.executarCliqueCTE === "function") {
-                        event.preventDefault();
-                        window.MesaRPG.executarCliqueCTE(mesaAction, event);
-                        setTimeout(liberarPointerEvents, 30);
-                        return;
-                    }
-                }
-
-                if (cteAcao === "iniciar" && window.MesaRPG && typeof window.MesaRPG.iniciarCTE === "function") {
-                    event.preventDefault();
+            // ações data-mesa-action
+            var actionEl = target.closest("[data-mesa-action]");
+            if (actionEl) {
+                var action = actionEl.getAttribute("data-mesa-action");
+                if (action === "cte" && window.MesaRPG && typeof window.MesaRPG.iniciarCTE === "function") {
                     window.MesaRPG.iniciarCTE();
-                    setTimeout(liberarPointerEvents, 30);
-                    return;
                 }
-
-                if (acao === "voltar" && window.MesaRPG && typeof window.MesaRPG.voltarParaMesaNormal === "function") {
-                    event.preventDefault();
-                    window.MesaRPG.voltarParaMesaNormal();
-                    forcarUILivre();
-                    return;
-                }
-            }
-
-            // se algum overlay ainda estiver aberto, não processa card por baixo
-            if (overlayVisivel($("master-menu")) || overlayVisivel($("mesa-diagnostico")) || overlayVisivel($("ficha-overlay"))) {
+                setTimeout(forcarUILivre, 50);
                 return;
             }
 
-            // clique em card de jogador
-            var card = target.closest("[data-player]");
-            if (card && !target.closest("button, a, input, select, textarea")) {
-                if (card.getAttribute("data-interactive") === "false") return;
-                var slot = Number(card.getAttribute("data-player"));
-                if (slot >= 1 && slot <= 8) {
-                    if (window.MesaRPG && typeof window.MesaRPG.selecionarJogador === "function") {
-                        window.MesaRPG.selecionarJogador(slot);
-                    } else {
-                        document.dispatchEvent(new CustomEvent("mesa:jogadorSelecionado", {
-                            detail: { slot: slot }
-                        }));
-                    }
+            // card de jogador
+            var card = target.closest(".player-card, [data-player]");
+            if (card) {
+                var slot = Number(card.getAttribute("data-player") || card.dataset.player);
+                if (window.MesaRPG && typeof window.MesaRPG.selecionarJogador === "function") {
+                    window.MesaRPG.selecionarJogador(slot);
                 }
+                return;
             }
 
-        } catch (erro) {
+            // qualquer clique solto: garante UI livre
             forcarUILivre();
+        } catch (err) {
+            try { forcarUILivre(); } catch (e2) {}
         }
     }
 
     function iniciar() {
         forcarUILivre();
 
-        // capture = true → pega o clique antes de qualquer outro script
         document.addEventListener("click", tratarClique, true);
 
         document.addEventListener("pointerdown", function () {
@@ -248,17 +175,14 @@
         }, true);
 
         document.addEventListener("keydown", function (e) {
-            if (e.key === "Escape" || e.keyCode === 27) {
+            if (e.key === "Escape") {
                 forcarUILivre();
             }
         }, true);
 
-        // proteção contínua
-        setInterval(liberarPointerEvents, 1500);
-
-        // depois que os outros scripts terminam de iniciar
         setTimeout(forcarUILivre, 300);
         setTimeout(forcarUILivre, 1000);
+        setInterval(forcarUILivre, 2000);
     }
 
     if (document.readyState === "loading") {
