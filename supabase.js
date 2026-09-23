@@ -3,9 +3,9 @@
 (function () {
 
     console.log("[supabase.js] Iniciando...");
-    
-window.__SUPABASE_JS_CARREGOU = true;
-    
+
+    window.__SUPABASE_JS_CARREGOU = true;
+
     const SUPABASE_URL =
         "https://bjkbfxcmyihdruqrwsdf.supabase.co";
 
@@ -31,6 +31,13 @@ window.__SUPABASE_JS_CARREGOU = true;
         );
 
     window.supabaseClient = cliente;
+
+    // Ponte usada pelo mesa.js (obterSupabaseMesa)
+    window.SupabaseMesa = {
+        obterCliente: function () {
+            return window.supabaseClient || null;
+        }
+    };
 
     console.log(
         "[supabase.js] Cliente criado."
