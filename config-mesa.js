@@ -130,6 +130,8 @@
 
         /* ----------------------------------------------
            BOTÃO DE CONFIGURAÇÕES
+           (mesa-cliques.js também trata no capture;
+            aqui mantemos como fallback)
         ---------------------------------------------- */
 
         settingsButton.addEventListener(
@@ -139,9 +141,6 @@
             function (event) {
 
                 event.preventDefault();
-
-                event.stopPropagation();
-
 
                 alternarMenuConfiguracoes();
 
@@ -166,9 +165,6 @@
                     function (event) {
 
                         event.preventDefault();
-
-                        event.stopPropagation();
-
 
                         const acao =
                             button.dataset.masterAction;
@@ -326,7 +322,9 @@
 
             !masterMenu ||
 
-            masterMenu.hidden
+            masterMenu.hidden ||
+
+            masterMenu.style.display === "none"
 
         ) {
 
@@ -338,23 +336,6 @@
         const alvo =
             event.target;
 
-
-        /*
-         IMPORTANTE:
-
-         #master-menu pode ser o overlay inteiro
-         que cobre a tela.
-
-         Por isso não usamos:
-
-             masterMenu.contains(alvo)
-
-         pois isso faria qualquer toque no overlay
-         ser considerado "dentro do menu".
-
-         O conteúdo real do menu é:
-             .master-menu-content
-        */
 
         const menuContent =
             masterMenu.querySelector(
@@ -375,17 +356,6 @@
                 alvo
             );
 
-
-        /*
-         Se tocou no conteúdo do menu:
-         mantém aberto.
-
-         Se tocou no botão:
-         mantém o comportamento do botão.
-
-         Qualquer outra área:
-         fecha.
-        */
 
         if (
 
@@ -418,6 +388,11 @@
 
 
         masterMenu.hidden = false;
+        masterMenu.removeAttribute("hidden");
+        masterMenu.style.display = "flex";
+        masterMenu.style.pointerEvents = "auto";
+        masterMenu.style.visibility = "visible";
+        masterMenu.style.opacity = "1";
 
     }
 
@@ -430,6 +405,11 @@
 
 
         masterMenu.hidden = true;
+        masterMenu.setAttribute("hidden", "");
+        masterMenu.style.display = "none";
+        masterMenu.style.pointerEvents = "none";
+        masterMenu.style.visibility = "hidden";
+        masterMenu.style.opacity = "0";
 
     }
 
@@ -441,7 +421,7 @@
         }
 
 
-        if (masterMenu.hidden) {
+        if (masterMenu.hidden || masterMenu.style.display === "none") {
 
             abrirMenuConfiguracoes();
 
@@ -510,10 +490,6 @@
             usuarioEhJogador();
 
 
-        /* ----------------------------------------------
-           BOTÕES DO MESTRE
-        ---------------------------------------------- */
-
         masterButtons.forEach(
 
             function (button) {
@@ -525,11 +501,6 @@
 
         );
 
-
-
-        /* ----------------------------------------------
-           MENU DO JOGADOR
-        ---------------------------------------------- */
 
         if (!jogadorMenu) {
 
@@ -559,11 +530,6 @@
 
         }
 
-
-
-        /* ----------------------------------------------
-           TÍTULO
-        ---------------------------------------------- */
 
         const titulo =
             masterMenu.querySelector(
@@ -688,9 +654,6 @@
                     function (event) {
 
                         event.preventDefault();
-
-                        event.stopPropagation();
-
 
                         const acao =
                             button.dataset.playerConfigAction;
