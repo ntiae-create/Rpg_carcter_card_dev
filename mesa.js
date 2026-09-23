@@ -323,7 +323,38 @@ async function pararRealtimeMesa() {
 
 async function sincronizarRealtimeCampanha() {
     if (!mesaState.campanha.id) {
+        try {
+            var bruto = localStorage.getItem("rpg_mesa_ativa");
+            if (bruto) {
+                var dados = JSON.parse(bruto);
+                var cid = dados.campaignId || dados.campaign_id || null;
+                if (cid) {
+                    mesaState.campanha.id = cid;
+                    mesaState.campanha.nome =
+                        dados.campaignName ||
+                        dados.name ||
+                        mesaState.campanha.nome ||
+                        "Campanha";
+                    mesaState.campanha.codigoMesa =
+                        dados.campaignCode ||
+                        dados.codigoMesa ||
+                        mesaState.campanha.codigoMesa;
+                    mesaState.campanha.masterId =
+                        dados.masterId || mesaState.campanha.masterId;
+                }
+            }
+        } catch (e) {}
+    }
+
+    if (!mesaState.campanha.id) {
         await pararRealtimeMesa();
+        try {
+            var el = document.getElementById("nome-campanha");
+            if (el) {
+                el.textContent =
+                    (mesaState.campanha.nome || "Campanha") + " · sem ID";
+            }
+        } catch (e2) {}
         return;
     }
 
@@ -346,7 +377,7 @@ function obterMesaSalva() {
         const salvo = localStorage.getItem("rpg_mesa_ativa");
         if (!salvo) return null;
         const dados = JSON.parse(salvo);
-        if (!dados || !dados.campaignId) return null;
+        if (!dados || !(dados.campaignId || dados.campaign_id)) return null;
         return dados;
     } catch (erro) {
         console.warn("[Mesa] Erro ao ler rpg_mesa_ativa:", erro);
@@ -373,9 +404,9 @@ function obterCampanhaAtiva() {
 
     const salvo = obterMesaSalva();
 
-    if (salvo && salvo.campaignId) {
+    if (salvo && (salvo.campaignId || salvo.campaign_id)) {
         return {
-            id: salvo.campaignId,
+            id: salvo.campaignId || salvo.campaign_id,
             name: salvo.campaignName || salvo.name || "Campanha",
             codigo_mesa: salvo.campaignCode || salvo.codigoMesa || null,
             master_id: salvo.masterId || null
@@ -431,8 +462,8 @@ function carregarContextoUsuario() {
             campanha.master_id || campanha.masterId || null;
     }
 
-    if (!mesaState.campanha.id && salvo && salvo.campaignId) {
-        mesaState.campanha.id = salvo.campaignId;
+    if (!mesaState.campanha.id && salvo) {
+        mesaState.campanha.id = salvo.campaignId || salvo.campaign_id || null;
         mesaState.campanha.nome =
             salvo.campaignName ||
             salvo.name ||
@@ -473,8 +504,14 @@ function atualizarPermissaoUsuario() {
 
 function atualizarCampanhaVisual() {
     if (!MesaUI.nomeCampanha) return;
-    MesaUI.nomeCampanha.textContent =
-        mesaState.campanha.nome || "Campanha";
+    var atual = MesaUI.nomeCampanha.textContent || "";
+    var base = mesaState.campanha.nome || "Campanha";
+    if (atual.indexOf(" · ") !== -1) {
+        var sufixo = atual.split(" · ").slice(1).join(" · ");
+        MesaUI.nomeCampanha.textContent = base + " · " + sufixo;
+    } else {
+        MesaUI.nomeCampanha.textContent = base;
+    }
 }
 
 function atualizarAssentos() {
