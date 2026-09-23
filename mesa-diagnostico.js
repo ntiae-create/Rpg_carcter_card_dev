@@ -1985,63 +1985,93 @@
 
 
         /* ---------------------------------------------
-   SUBSCRIBED / JOINED (sucesso)
---------------------------------------------- */
-if (
-    estadoCanal === "SUBSCRIBED" ||
-    estadoCanal === "joined"
-) {
-    definirStatus("realtime", `🟢 Conectado (${quantidadePresenca})`);
-    definirStatus("multiplayer", `🟢 Conectado (${quantidadePresenca})`);
+           SUBSCRIBED
+        --------------------------------------------- */
 
-    definirTeste(
-        "realtime",
-        "sucesso",
-        "Supabase Realtime",
-        "Canal Realtime conectado com sucesso.",
-        detalhes.join(" | "),
-        "A Mesa está conectada ao canal multiplayer do Supabase.",
-        [],
-        ""
-    );
+        if (
+            estadoCanal ===
+            "SUBSCRIBED"
+        ) {
 
-    definirTeste(
-        "multiplayer",
-        "sucesso",
-        "Multiplayer Supabase",
-        "Multiplayer Supabase Realtime conectado.",
-        detalhes.join(" | "),
-        "A presença dos jogadores pode ser sincronizada em tempo real.",
-        [],
-        ""
-    );
+            definirStatus(
 
-    registrarDiagnosticoTeste("realtime");
-    registrarDiagnosticoTeste("multiplayer");
-    return;
-}
+                "realtime",
 
-/* ---------------------------------------------
-   JOINING (ainda conectando)
---------------------------------------------- */
-if (estadoCanal === "joining") {
-    definirStatus("realtime", "🟡 Entrando...");
-    definirStatus("multiplayer", "🟡 Entrando...");
+                `🟢 Conectado (${quantidadePresenca})`
 
-    definirTeste(
-        "realtime",
-        "aviso",
-        "Supabase Realtime",
-        'O canal está em estado "joining".',
-        detalhes.join(" | "),
-        "Aguarde a conexão terminar.",
-        [],
-        "Aguarde alguns segundos."
-    );
+            );
 
-    // mesmo para multiplayer...
-    return;
-}
+
+            definirStatus(
+
+                "multiplayer",
+
+                `🟢 Conectado (${quantidadePresenca})`
+
+            );
+
+
+            definirTeste(
+
+                "realtime",
+
+                "sucesso",
+
+                "Supabase Realtime",
+
+                "Canal Realtime conectado com sucesso.",
+
+                detalhes.join(
+                    " | "
+                ),
+
+                "A Mesa está conectada ao canal multiplayer do Supabase.",
+
+                [],
+
+                ""
+
+            );
+
+
+            definirTeste(
+
+                "multiplayer",
+
+                "sucesso",
+
+                "Multiplayer Supabase",
+
+                "Multiplayer Supabase Realtime conectado.",
+
+                detalhes.join(
+                    " | "
+                ),
+
+                "A presença dos jogadores pode ser sincronizada em tempo real.",
+
+                [],
+
+                ""
+
+            );
+
+
+            registrarDiagnosticoTeste(
+                "realtime"
+            );
+
+
+            registrarDiagnosticoTeste(
+                "multiplayer"
+            );
+
+
+            return;
+
+        }
+
+
         /* ---------------------------------------------
            CHANNEL ERROR
         --------------------------------------------- */
